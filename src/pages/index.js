@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReactPlayer from "react-player";
 import NotificationList from "../components/NotificationList";
-import VideoList from "../components/VideoList";
 import { useNavigate } from "react-router-dom";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
@@ -76,6 +75,24 @@ export default function Home() {
     );
   }
 
+  function navNoti(id) {
+    const selNoti = notifications.find((i) => i.notification_log_id === id);
+
+    const url =
+      localStorage.getItem("cfUrl") +
+      "get_video?path=" +
+      selNoti.filepath +
+      "&filename=" +
+      selNoti.filename;
+
+    navigate("/notifications", {
+      state: {
+        id: id,
+        url: url,
+      },
+    });
+  }
+
   const navigate = useNavigate();
 
   return (
@@ -107,8 +124,7 @@ export default function Home() {
           })}
         </div>
       </div>
-      <VideoList cameraList={cameraList} date={new Date()} />
-      {/* <NotificationList notifications={notifications} /> */}
+      <NotificationList notifications={notifications} setMainVideo={navNoti} />
     </div>
   );
 }
