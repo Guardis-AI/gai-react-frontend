@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function User() {
+  const navigate = useNavigate();
   // const userColumns = [
   //   "user_id",
   //   "user_name",
@@ -111,6 +113,8 @@ export default function User() {
   };
 
   useEffect(() => {
+    if (localStorage.getItem("loginStatus") !== "true")
+      return navigate("/log-in");
     axios
       .post(`${baseUrlApi}/api/user/getuserdetails`, {})
       .then(function (response) {
@@ -125,7 +129,7 @@ export default function User() {
         console.log(error);
       });
     Modal.setAppElement("body");
-  }, []);
+  }, [navigate]);
 
   const handleChange = (e) => {
     e.preventDefault();

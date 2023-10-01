@@ -4,15 +4,19 @@ import VideoList from "../components/VideoList";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Playback() {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [cameraList, setCameraList] = useState(null);
   const [currCamNum, setCurrCamNum] = useState(null);
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
   useEffect(() => {
+    if (localStorage.getItem("loginStatus") !== "true")
+      return navigate("/log-in");
     axios
       .post(`${baseUrlApi}/api/user/getdevicelist`, {
         p_user_id: localStorage.getItem("userId"),
@@ -40,7 +44,7 @@ export default function Playback() {
       .catch(function (error) {
         console.log(error);
       });
-  }, [selectedDate]);
+  }, [navigate, selectedDate]);
 
   function setMainVideo(date, camType) {
     // Format date

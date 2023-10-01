@@ -6,10 +6,13 @@ import { useNavigate } from "react-router-dom";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Home() {
+  const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
   const [notifications, setNotifications] = useState(null);
 
   useEffect(() => {
+    if (localStorage.getItem("loginStatus") !== "true")
+      return navigate("/log-in");
     axios
       .post(`${baseUrlApi}/api/user/getdevicelist`, {
         p_user_id: localStorage.getItem("userId"),
@@ -53,7 +56,7 @@ export default function Home() {
       .catch(function (error) {
         console.log(error);
       });
-  }, []);
+  }, [navigate]);
 
   function createUrl(camType) {
     // Format date
@@ -92,8 +95,6 @@ export default function Home() {
       },
     });
   }
-
-  const navigate = useNavigate();
 
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
