@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/gai-react-frontend/static/css/main.d7620825.css",
-    "main.js": "/gai-react-frontend/static/js/main.0a6c5c8a.js",
-    "static/js/787.650e8fe5.chunk.js": "/gai-react-frontend/static/js/787.650e8fe5.chunk.js",
-    "static/media/Login.png": "/gai-react-frontend/static/media/Login.badfb29ef978a36e88ef.png",
-    "static/media/logoG.png": "/gai-react-frontend/static/media/logoG.d20e95dd1df9a010b8dd.png",
-    "index.html": "/gai-react-frontend/index.html",
-    "main.d7620825.css.map": "/gai-react-frontend/static/css/main.d7620825.css.map",
-    "main.0a6c5c8a.js.map": "/gai-react-frontend/static/js/main.0a6c5c8a.js.map",
-    "787.650e8fe5.chunk.js.map": "/gai-react-frontend/static/js/787.650e8fe5.chunk.js.map"
+    "main.css": "/static/css/main.d7620825.css",
+    "main.js": "/static/js/main.6c1c4140.js",
+    "static/js/787.650e8fe5.chunk.js": "/static/js/787.650e8fe5.chunk.js",
+    "static/media/Login.png": "/static/media/Login.badfb29ef978a36e88ef.png",
+    "static/media/logoG.png": "/static/media/logoG.d20e95dd1df9a010b8dd.png",
+    "index.html": "/index.html",
+    "main.d7620825.css.map": "/static/css/main.d7620825.css.map",
+    "main.6c1c4140.js.map": "/static/js/main.6c1c4140.js.map",
+    "787.650e8fe5.chunk.js.map": "/static/js/787.650e8fe5.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.d7620825.css",
-    "static/js/main.0a6c5c8a.js"
+    "static/js/main.6c1c4140.js"
   ]
 }
