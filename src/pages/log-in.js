@@ -15,8 +15,6 @@ export default function LogIn() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    console.log(username, password);
     axios
       .post(`${baseUrlApi}/api/user_api/gailoginv1`, {
         p_username: username,

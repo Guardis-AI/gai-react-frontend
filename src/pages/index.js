@@ -22,7 +22,6 @@ export default function Home() {
         login_user_id: localStorage.getItem("userId"),
       })
       .then(function (response) {
-        console.log(response);
         response = response.data.gai_get_device_list;
         if (response == null) {
           console.log("No devices found!");
@@ -45,7 +44,6 @@ export default function Home() {
         p_read_flag: "N",
       })
       .then(function (response) {
-        console.log(response);
         response = response.data.gai_get_user_notification_log;
         if (response == null) {
           console.log("No notifications found!");

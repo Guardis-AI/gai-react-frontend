@@ -26,16 +26,12 @@ export default function Playback() {
         login_user_id: localStorage.getItem("userId"),
       })
       .then(function (response) {
-        console.log(response);
         response = response.data.gai_get_device_list;
         if (response == null) {
           console.log("No devices found!");
         } else {
           setCameraList(response);
-          console.log("res in axios");
-          console.log(response);
           const firstCam = response[0].camera_type;
-          console.log(firstCam);
           // this.isloading = true;
           setMainVideo(selectedDate, firstCam);
           setCurrCamNum(firstCam);
