@@ -68,7 +68,7 @@ export default function Live() {
   }
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
+    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <h6>{currCamNum}</h6>
         <DatePicker

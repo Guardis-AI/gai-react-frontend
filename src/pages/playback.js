@@ -62,7 +62,7 @@ export default function Playback() {
   }
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
+    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <div className="w-5/6 self-center flex flex-col py-3">
           <h6>{currCamNum}</h6>
