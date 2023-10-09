@@ -17,29 +17,41 @@ export default function Playback() {
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
-    axios
-      .post(`${baseUrlApi}/api/user/getdevicelist`, {
-        p_user_id: localStorage.getItem("userId"),
-        p_device_token: "",
-        p_device_type: "",
-        p_port: "",
-        login_user_id: localStorage.getItem("userId"),
-      })
-      .then(function (response) {
-        response = response.data.gai_get_device_list;
-        if (response == null) {
-          console.log("No devices found!");
-        } else {
-          setCameraList(response);
-          const firstCam = response[0].camera_type;
-          // this.isloading = true;
-          setMainVideo(selectedDate, firstCam);
-          setCurrCamNum(firstCam);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    // axios
+    //   .post(`${baseUrlApi}/api/user/getdevicelist`, {
+    //     p_user_id: localStorage.getItem("userId"),
+    //     p_device_token: "",
+    //     p_device_type: "",
+    //     p_port: "",
+    //     login_user_id: localStorage.getItem("userId"),
+    //   })
+    //   .then(function (response) {
+    //     response = response.data.gai_get_device_list;
+    //     if (response == null) {
+    //       console.log("No devices found!");
+    //     } else {
+    //       setCameraList(response);
+    //       const firstCam = response[0].camera_type;
+    //       // this.isloading = true;
+    //       setMainVideo(selectedDate, firstCam);
+    //       setCurrCamNum(firstCam);
+    //     }
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //   });
+    setCameraList([
+      { camera_type: "Camera1" },
+      { camera_type: "Camera2" },
+      { camera_type: "Camera3" },
+      { camera_type: "Camera4" },
+      { camera_type: "Camera5" },
+      { camera_type: "Camera6" },
+      { camera_type: "Camera7" },
+      { camera_type: "Camera8" },
+    ]);
+    setCurrCamNum("Camera1");
+    setMainVideo(selectedDate, "Camera1");
   }, [navigate, selectedDate]);
 
   function setMainVideo(date, camType) {
