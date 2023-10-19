@@ -13,36 +13,20 @@ export default function Home() {
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
-    // axios
-    //   .post(`${baseUrlApi}/api/user/getdevicelist`, {
-    //     p_user_id: localStorage.getItem("userId"),
-    //     p_device_token: "",
-    //     p_device_type: "",
-    //     p_port: "",
-    //     login_user_id: localStorage.getItem("userId"),
-    //   })
-    //   .then(function (response) {
-    //     response = response.data.gai_get_device_list;
-    //     if (response == null) {
-    //       console.log("No devices found!");
-    //     } else {
-    //       setCameraList(response);
-    //     }
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
 
-    setCameraList([
-      { camera_type: "Camera1" },
-      { camera_type: "Camera2" },
-      { camera_type: "Camera3" },
-      { camera_type: "Camera4" },
-      { camera_type: "Camera5" },
-      { camera_type: "Camera6" },
-      { camera_type: "Camera7" },
-      { camera_type: "Camera8" },
-    ]);
+    axios
+      .get(localStorage.getItem("cfUrl") + "get_camera_list")
+      .then(function (response) {
+        if (response == null) {
+          console.log("No devices found!");
+        } else {
+          setCameraList(response.data.camera_list);
+          // this.isloading = true;
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
 
     axios
       .post(`${baseUrlApi}/api/noti/getnotilog`, {
@@ -117,17 +101,19 @@ export default function Home() {
                 onClick={() =>
                   navigate("/live", {
                     state: {
-                      url: createUrl(camera.camera_type),
-                      camType: camera.camera_type,
+                      url: createUrl(camera),
+                      camType: camera,
                     },
                   })
                 }
               >
-                <h1 className="pb-2 text-white">{camera.camera_type}</h1>
+                <h1 className="pb-2 text-white">{camera}</h1>
                 <ReactPlayer
-                  url={createUrl(camera.camera_type)}
+                  url={createUrl(camera)}
                   width="100%"
                   height="auto"
+                  playing={true}
+                  volume={0}
                 />
               </div>
             );

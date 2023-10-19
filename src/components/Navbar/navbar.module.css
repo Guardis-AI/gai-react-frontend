@@ -4,6 +4,7 @@
   height: 100vh;
   background-color: #26272f;
   padding-top: 28px;
+  overflow: auto;
 }
 .sidenavClosed {
   composes: sidenav;

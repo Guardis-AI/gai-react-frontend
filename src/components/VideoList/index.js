@@ -33,13 +33,15 @@ export default function VideoList(props) {
           <div
             className="p-4 border-solid border-2 border-black rounded-xl bg-[#26272f]"
             key={i}
-            onClick={() => updatePlayer(props.date, camera.camera_type)}
+            onClick={() => updatePlayer(props.date, camera)}
           >
-            <h1 className="pb-2">{camera.camera_type}</h1>
+            <h1 className="pb-2">{camera}</h1>
             <ReactPlayer
-              url={createUrl(props.date, camera.camera_type)}
+              url={createUrl(props.date, camera)}
               width="100%"
               height="auto"
+              playing={true}
+              volume={0}
             />
           </div>
         );

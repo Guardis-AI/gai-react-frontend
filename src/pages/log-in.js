@@ -42,7 +42,7 @@ export default function LogIn() {
           localStorage.setItem("cfUrl", response.cf_url);
           localStorage.setItem("Devices", response.user_devices);
           // Set the authenticated flag to true
-          navigate("/live");
+          navigate("/");
         }
       })
       .catch(function (error) {

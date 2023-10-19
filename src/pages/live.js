@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import ReactPlayer from "react-player";
 import VideoList from "../components/VideoList";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-const baseUrlApi = process.env.REACT_APP_BASE_URL;
+// const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Live() {
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [cameraList, setCameraList] = useState(null);
   const [currCamNum, setCurrCamNum] = useState(null);
   const [currVidUrl, setCurrVidUrl] = useState(null);
@@ -18,60 +16,27 @@ export default function Live() {
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
-    // axios
-    //   .post(`${baseUrlApi}/api/user/getdevicelist`, {
-    //     p_user_id: localStorage.getItem("userId"),
-    //     p_device_token: "",
-    //     p_device_type: "",
-    //     p_port: "",
-    //     login_user_id: localStorage.getItem("userId"),
-    //   })
-    //   .then(function (response) {
-    //     response = response.data.gai_get_device_list;
-    //     if (response == null) {
-    //       console.log("No devices found!");
-    //     } else {
-    //       setCameraList(response);
-    //       if (state) {
-    //         setCurrVidUrl(state.url);
-    //         setCurrCamNum(state.camType);
-    //       } else {
-    //         const firstCam = response[0].camera_type;
-    //         // this.isloading = true;
-    //         setMainVideo(selectedDate, firstCam);
-    //       }
-    //     }
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
 
-    setCameraList([
-      { camera_type: "Camera1" },
-      { camera_type: "Camera2" },
-      { camera_type: "Camera3" },
-      { camera_type: "Camera4" },
-      { camera_type: "Camera5" },
-      { camera_type: "Camera6" },
-      { camera_type: "Camera7" },
-    ]);
-    const firstCam = "Camera1";
-    // this.isloading = true;
-    setMainVideo(selectedDate, firstCam);
-
-    // axios
-    //   .get(`${baseUrlApi}/camera-list`)
-    //   .then(function (response) {
-    //     if (response == null) {
-    //       console.log("No devices found!");
-    //     } else {
-    //       setCameraList(response);
-    //     }
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
-  }, [navigate, selectedDate, state]);
+    axios
+      .get(localStorage.getItem("cfUrl") + "get_camera_list")
+      .then(function (response) {
+        if (response == null) {
+          console.log("No devices found!");
+        } else {
+          setCameraList(response.data.camera_list);
+          if (state) {
+            setCurrVidUrl(state.url);
+            setCurrCamNum(state.camType);
+          } else {
+            // this.isloading = true;
+            setMainVideo(new Date(), response.data.camera_list[0]);
+          }
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }, [navigate, state]);
 
   function setMainVideo(date, camType) {
     // Format date
@@ -96,18 +61,18 @@ export default function Live() {
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
-        <h6>{currCamNum}</h6>
-        <DatePicker
-          selected={selectedDate}
-          onChange={(date) => setSelectedDate(date)}
-        />
-        <div className="w-5/6 self-center">
+        <div className="w-5/6 self-center flex flex-col py-3">
+          <div className="px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
+            <h6>{currCamNum}</h6>
+          </div>
+
           <ReactPlayer
             id="main"
             url={currVidUrl}
             width="100%"
             // height="100%"
-            controls
+            playing={true}
+            volume={0}
           />
         </div>
       </div>
@@ -115,7 +80,7 @@ export default function Live() {
         cameraList={cameraList}
         setMainVideo={setMainVideo}
         setCurrCamNum={setCurrCamNum}
-        date={selectedDate}
+        date={new Date()}
       />
     </div>
   );

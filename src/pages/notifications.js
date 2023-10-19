@@ -27,15 +27,21 @@ export default function Notifications() {
         p_read_flag: "N",
       })
       .then(function (response) {
-        response = response.data.gai_get_user_notification_log;
+        response = response.data.gai_get_user_notification_log[0];
         if (response == null) {
           console.log("No notifications found!");
         } else {
-          setUnreadCount(response[0].message_count);
-          setNotifications(response[0].notification_log);
+          console.log(response.notification_log);
+          setUnreadCount(response.message_count);
+          setNotifications(response.notification_log);
           if (state) {
             setCurrVidUrl(state.url);
             setCurrNoti(state.id);
+          } else {
+            setMainVideo(
+              response.notification_log[0].notification_log_id,
+              response.notification_log
+            );
           }
         }
       })
@@ -44,25 +50,33 @@ export default function Notifications() {
       });
   }, [navigate, state]);
 
-  function setMainVideo(id) {
-    const selNoti = notifications.find((i) => i.notification_log_id === id);
+  function setMainVideo(id, notifs) {
+    if (state) {
+      setCurrVidUrl(state.url);
+      setCurrNoti(state.id);
+      return;
+    }
+    let selNoti;
+    if (notifs) {
+      selNoti = notifs.find((i) => i.notification_log_id === id);
+    } else {
+      selNoti = notifications.find((i) => i.notification_log_id === id);
+    }
 
     const streamUrl =
-      localStorage.getItem("cfUrl") +
-      "get_video?path=" +
-      selNoti.filepath +
-      "&filename=" +
-      selNoti.filename;
+      localStorage.getItem("cfUrl") + "get_video?path=" + selNoti.filepath;
     setCurrVidUrl(streamUrl);
-    setCurrNoti(id);
+    setCurrNoti(selNoti);
   }
 
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <div className="w-5/6 self-center">
-          <h6>Notification count: {unreadCount}</h6>
-          <h6>{currNoti}</h6>
+          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
+            <h6>{currNoti?.noti_camera_type}</h6>
+            <h6>{currNoti?.sent_date}</h6>
+          </div>
           <ReactPlayer
             url={currVidUrl}
             width="100%"
@@ -72,6 +86,7 @@ export default function Notifications() {
         </div>
       </div>
       <NotificationList
+        unreadCount={unreadCount}
         notifications={notifications}
         setMainVideo={setMainVideo}
       />

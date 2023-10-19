@@ -19,7 +19,9 @@ export default function Navbar() {
 
   return (
     <div
-      className={"overflow-auto" + open ? styles.sidenav : styles.sidenavClosed}
+      className={
+        "overflow-auto " + open ? styles.sidenav : styles.sidenavClosed
+      }
     >
       <li style={{ listStyleType: "none" }}>
         <div className="h-24 pb-4">

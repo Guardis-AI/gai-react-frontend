@@ -5,7 +5,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-const baseUrlApi = process.env.REACT_APP_BASE_URL;
+// const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Playback() {
   const navigate = useNavigate();
@@ -17,41 +17,22 @@ export default function Playback() {
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
-    // axios
-    //   .post(`${baseUrlApi}/api/user/getdevicelist`, {
-    //     p_user_id: localStorage.getItem("userId"),
-    //     p_device_token: "",
-    //     p_device_type: "",
-    //     p_port: "",
-    //     login_user_id: localStorage.getItem("userId"),
-    //   })
-    //   .then(function (response) {
-    //     response = response.data.gai_get_device_list;
-    //     if (response == null) {
-    //       console.log("No devices found!");
-    //     } else {
-    //       setCameraList(response);
-    //       const firstCam = response[0].camera_type;
-    //       // this.isloading = true;
-    //       setMainVideo(selectedDate, firstCam);
-    //       setCurrCamNum(firstCam);
-    //     }
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
-    setCameraList([
-      { camera_type: "Camera1" },
-      { camera_type: "Camera2" },
-      { camera_type: "Camera3" },
-      { camera_type: "Camera4" },
-      { camera_type: "Camera5" },
-      { camera_type: "Camera6" },
-      { camera_type: "Camera7" },
-      { camera_type: "Camera8" },
-    ]);
-    setCurrCamNum("Camera1");
-    setMainVideo(selectedDate, "Camera1");
+
+    axios
+      .get(localStorage.getItem("cfUrl") + "get_camera_list")
+      .then(function (response) {
+        if (response == null) {
+          console.log("No devices found!");
+        } else {
+          setCameraList(response.data.camera_list);
+          // this.isloading = true;
+          setMainVideo(selectedDate, response.data.camera_list[0]);
+          setCurrCamNum(response.data.camera_list[0]);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }, [navigate, selectedDate]);
 
   function setMainVideo(date, camType) {
@@ -77,11 +58,17 @@ export default function Playback() {
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <div className="w-5/6 self-center flex flex-col py-3">
-          <h6>{currCamNum}</h6>
-          <DatePicker
-            selected={selectedDate}
-            onChange={(date) => setSelectedDate(date)}
-          />
+          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
+            <h6>{currCamNum}</h6>
+            <div>
+              <span>Selected date: </span>
+              <DatePicker
+                className="text-black"
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+              />
+            </div>
+          </div>
           <ReactPlayer
             id="main"
             url={currVidUrl}

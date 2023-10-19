@@ -3,17 +3,18 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-// import { BrowserRouter } from "react-router-dom";
 import { HashRouter } from "react-router-dom";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    {/* <BrowserRouter> */}
-    <HashRouter>
-      <App />
-    </HashRouter>
-    {/* </BrowserRouter> */}
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </LocalizationProvider>
   </React.StrictMode>
 );
 
