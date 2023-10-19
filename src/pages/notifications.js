@@ -31,7 +31,6 @@ export default function Notifications() {
         if (response == null) {
           console.log("No notifications found!");
         } else {
-          console.log(response.notification_log);
           setUnreadCount(response.message_count);
           setNotifications(response.notification_log);
           if (state) {

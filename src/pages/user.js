@@ -172,12 +172,14 @@ export default function User() {
         // onAfterOpen={afterOpenModal}
         onRequestClose={closeUserModal}
         contentLabel="Add User Modal"
-        className="bg-slate-200 w-2/5 h-11/12 overflow-auto"
+        className="bg-[#4f5263] w-2/5 h-11/12 overflow-auto text-white rounded-xl"
         style={customStyles}
       >
-        <div className="flex bg-slate-300 justify-between p-2">
-          <h2>Add User</h2>
-          <button onClick={closeUserModal}>X</button>
+        <div className="flex bg-[#26272f] justify-between py-2 px-4">
+          <h2 className="font-semibold text-xl">Add User</h2>
+          <button onClick={closeUserModal} className="font-semibold text-xl">
+            X
+          </button>
         </div>
         <form
           className="flex flex-col space-y-3 px-5 py-2 pb-4"
@@ -190,6 +192,7 @@ export default function User() {
               name="username"
               value={userFormData.username}
               onChange={handleUserFormChange}
+              className="text-black"
             />
           </label>
           <label className="flex flex-col w-3/5">
@@ -199,6 +202,7 @@ export default function User() {
               name="urole"
               value={userFormData.urole}
               onChange={handleUserFormChange}
+              className="text-black"
             />
           </label>
           <label className="flex flex-col w-3/5">
@@ -208,6 +212,7 @@ export default function User() {
               name="password"
               value={userFormData.password}
               onChange={handleUserFormChange}
+              className="text-black"
             />
           </label>
           <label className="flex flex-col w-3/5">
@@ -217,6 +222,7 @@ export default function User() {
               name="passwordConfirm"
               value={userFormData.passwordConfirm}
               onChange={handleUserFormChange}
+              className="text-black"
             />
           </label>
           <label className="flex flex-col w-3/5">
@@ -226,6 +232,7 @@ export default function User() {
               name="cfurl"
               value={userFormData.cfurl}
               onChange={handleUserFormChange}
+              className="text-black"
             />
           </label>
           <label className="flex flex-col w-3/5">
@@ -235,6 +242,7 @@ export default function User() {
               name="p_edgeunit"
               value={userFormData.p_edgeunit}
               onChange={handleUserFormChange}
+              className="text-black"
             />
           </label>
           <div className="flex space-x-2">
@@ -245,6 +253,7 @@ export default function User() {
                 name="start_date"
                 value={userFormData.start_date}
                 onChange={handleUserFormChange}
+                className="text-black"
               />
             </label>
             <label className="flex flex-col w-3/5">
@@ -254,6 +263,7 @@ export default function User() {
                 name="end_date"
                 value={userFormData.end_date}
                 onChange={handleUserFormChange}
+                className="text-black"
               />
             </label>
           </div>
@@ -271,12 +281,14 @@ export default function User() {
         isOpen={deviceModalIsOpen}
         onRequestClose={closeDeviceModal}
         contentLabel="Add Device Modal"
-        className="bg-slate-200 w-2/5 h-11/12 overflow-auto"
+        className="bg-[#4f5263] w-2/5 h-11/12 overflow-auto text-white rounded-xl"
         style={customStyles}
       >
-        <div className="flex bg-slate-300 justify-between p-2">
-          <h2>Add Device</h2>
-          <button onClick={closeDeviceModal}>X</button>
+        <div className="flex bg-[#26272f] justify-between py-2 px-4">
+          <h2 className="font-semibold text-xl">Add Device</h2>
+          <button onClick={closeDeviceModal} className="font-semibold text-xl">
+            X
+          </button>
         </div>
         <form
           className="flex flex-col space-y-3 px-5 py-2 pb-4"
@@ -290,6 +302,7 @@ export default function User() {
                 name="user_id"
                 value={deviceFormData.user_id}
                 onChange={handleDeviceFormChange}
+                className="text-black"
               />
             </label>
             <label className="flex flex-col w-3/5">
@@ -299,6 +312,7 @@ export default function User() {
                 name="p_IP_Address"
                 value={deviceFormData.p_IP_Address}
                 onChange={handleDeviceFormChange}
+                className="text-black"
               />
             </label>
           </div>
@@ -309,6 +323,7 @@ export default function User() {
               name="p_url"
               value={deviceFormData.p_url}
               onChange={handleDeviceFormChange}
+              className="text-black"
             />
           </label>
           <div className="flex space-x-2">
@@ -319,6 +334,7 @@ export default function User() {
                 name="p_Camera_Type"
                 value={deviceFormData.p_Camera_Type}
                 onChange={handleDeviceFormChange}
+                className="text-black"
               />
             </label>
             <label className="flex flex-col w-3/5">
@@ -328,6 +344,7 @@ export default function User() {
                 name="p_port"
                 value={deviceFormData.p_port}
                 onChange={handleDeviceFormChange}
+                className="text-black"
               />
             </label>
           </div>
@@ -339,6 +356,7 @@ export default function User() {
                 name="start_date"
                 value={deviceFormData.start_date}
                 onChange={handleDeviceFormChange}
+                className="text-black"
               />
             </label>
             <label className="flex flex-col w-3/5">
@@ -348,6 +366,7 @@ export default function User() {
                 name="end_date"
                 value={deviceFormData.end_date}
                 onChange={handleDeviceFormChange}
+                className="text-black"
               />
             </label>
           </div>

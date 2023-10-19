@@ -28,7 +28,7 @@ export default function LogIn() {
         p_app_version: "",
       })
       .then(function (response) {
-        console.log(response);
+        // TODO: fix return to not leak information
         response = response.data.gai_login_v1;
         if (response.login_status === true) {
           // Store the access token , refresh Token in the local storage
@@ -43,6 +43,8 @@ export default function LogIn() {
           localStorage.setItem("Devices", response.user_devices);
           // Set the authenticated flag to true
           navigate("/");
+        } else {
+          alert("Invalid login");
         }
       })
       .catch(function (error) {
