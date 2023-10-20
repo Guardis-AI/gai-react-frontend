@@ -27,6 +27,7 @@ export default function Notifications() {
         p_read_flag: "N",
       })
       .then(function (response) {
+        console.log(response);
         response = response.data.gai_get_user_notification_log[0];
         if (response == null) {
           console.log("No notifications found!");
