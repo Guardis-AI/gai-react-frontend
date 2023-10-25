@@ -3,6 +3,8 @@ import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Events() {
@@ -88,13 +90,13 @@ export default function Events() {
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={() => console.log("up")}
             >
-              Up
+              <ThumbUpIcon />
             </button>
             <button
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={() => console.log("down")}
             >
-              Down
+              <ThumbDownIcon />
             </button>
           </div>
         </div>

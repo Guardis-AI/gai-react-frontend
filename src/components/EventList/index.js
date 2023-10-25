@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ReactPlayer from "react-player";
+// import ReactPlayer from "react-player";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -14,10 +14,10 @@ export default function EventList(props) {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  function createUrl(id) {
-    const selNoti = props.events.find((i) => i.notification_log_id === id);
-    return localStorage.getItem("cfUrl") + "get_video?path=" + selNoti.filepath;
-  }
+  // function createUrl(id) {
+  //   const selNoti = props.events.find((i) => i.notification_log_id === id);
+  //   return localStorage.getItem("cfUrl") + "get_video?path=" + selNoti.filepath;
+  // }
 
   function dateFilter(event) {
     if (!startDate || !endDate) {
@@ -64,7 +64,7 @@ export default function EventList(props) {
         .map((event, i) => {
           return (
             <div
-              className="flex p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] space-x-2 pb-5"
+              className="flex p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] space-x-2"
               key={i}
               onClick={() =>
                 props.setMainVideo(event.notification_log_id, null)
