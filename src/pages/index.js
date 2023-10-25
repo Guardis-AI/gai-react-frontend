@@ -52,22 +52,8 @@ export default function Home() {
   }, [navigate]);
 
   function createUrl(camType) {
-    // Format date
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = today.getMonth() + 1;
-    const d = today.getDate();
-    const mm = m < 10 ? "0" + m : m;
-    const dd = d < 10 ? "0" + d : d;
-    const yyyyMMdd = "" + y + mm + dd;
-
     return (
-      localStorage.getItem("cfUrl") +
-      "media/" +
-      camType +
-      "/" +
-      yyyyMMdd +
-      "/output.m3u8"
+      localStorage.getItem("cfUrl") + "media/live/" + camType + "/output.m3u8"
     );
   }
 

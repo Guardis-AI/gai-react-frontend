@@ -39,11 +39,13 @@ export default function Live() {
   }, [navigate, state]);
 
   function createUrl(_, camType) {
-    return localStorage.getItem("cfUrl") + "media/live/" + camType;
+    return (
+      localStorage.getItem("cfUrl") + "media/live/" + camType + "/output.m3u8"
+    );
   }
 
   function setMainVideo(_, camType) {
-    const streamUrl = localStorage.getItem("cfUrl") + "media/live/" + camType;
+    const streamUrl = createUrl(_, camType);
     setCurrVidUrl(streamUrl);
     setCurrCamNum(camType);
   }
