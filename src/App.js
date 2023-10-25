@@ -10,7 +10,7 @@ import Events from "./pages/events";
 import LogIn from "./pages/log-in";
 import SignOut from "./pages/signout";
 
-function App() {
+export default function App() {
   return (
     <div className="App h-screen">
       <Navbar />
@@ -28,5 +28,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
