@@ -35,7 +35,7 @@ export default function Playback() {
       });
   }, [navigate, selectedDate]);
 
-  function setMainVideo(date, camType) {
+  function createUrl(date, camType) {
     // Format date
     const y = date.getFullYear();
     const m = date.getMonth() + 1;
@@ -44,13 +44,18 @@ export default function Playback() {
     const dd = d < 10 ? "0" + d : d;
     const yyyyMMdd = "" + y + mm + dd;
 
-    const streamUrl =
+    return (
       localStorage.getItem("cfUrl") +
       "media/" +
       camType +
       "/" +
       yyyyMMdd +
-      "/output.m3u8";
+      "/output.m3u8"
+    );
+  }
+
+  function setMainVideo(date, camType) {
+    const streamUrl = createUrl(date, camType);
     setCurrVidUrl(streamUrl);
   }
 
@@ -80,6 +85,7 @@ export default function Playback() {
       </div>
       <VideoList
         cameraList={cameraList}
+        createUrl={createUrl}
         setMainVideo={setMainVideo}
         setCurrCamNum={setCurrCamNum}
         date={selectedDate}

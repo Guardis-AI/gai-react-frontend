@@ -6,7 +6,7 @@ import Home from "./pages";
 import User from "./pages/user";
 import Live from "./pages/live";
 import Playback from "./pages/playback";
-import Notifications from "./pages/notifications";
+import Events from "./pages/events";
 import LogIn from "./pages/log-in";
 import SignOut from "./pages/signout";
 
@@ -20,7 +20,7 @@ function App() {
           <Route path="/user" element={<User />} />
           <Route path="/live" element={<Live />} />
           <Route path="/playback" element={<Playback />} />
-          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/events" element={<Events />} />
           <Route path="/log-in" element={<LogIn />} />
           <Route path="/sign-out" element={<SignOut />} />
         </Routes>

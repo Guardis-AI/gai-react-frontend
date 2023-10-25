@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import ReactPlayer from "react-player";
-import NotificationList from "../components/NotificationList";
+import EventList from "../components/EventList";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
-export default function Notifications() {
+export default function Events() {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(null);
-  const [notifications, setNotifications] = useState(null);
+  const [events, setEvents] = useState(null);
   const [currNoti, setCurrNoti] = useState(null);
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
@@ -27,12 +27,13 @@ export default function Notifications() {
         p_read_flag: "N",
       })
       .then(function (response) {
+        console.log(response);
         response = response.data.gai_get_user_notification_log[0];
         if (response == null) {
-          console.log("No notifications found!");
+          console.log("No events found!");
         } else {
           setUnreadCount(response.message_count);
-          setNotifications(response.notification_log);
+          setEvents(response.notification_log);
           if (state) {
             setCurrVidUrl(state.url);
             setCurrNoti(state.id);
@@ -59,7 +60,7 @@ export default function Notifications() {
     if (notifs) {
       selNoti = notifs.find((i) => i.notification_log_id === id);
     } else {
-      selNoti = notifications.find((i) => i.notification_log_id === id);
+      selNoti = events.find((i) => i.notification_log_id === id);
     }
 
     const streamUrl =
@@ -82,11 +83,25 @@ export default function Notifications() {
             // height="100%"
             controls
           />
+          <div className="flex mt-2 space-x-2 justify-end">
+            <button
+              className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
+              onClick={() => console.log("up")}
+            >
+              Up
+            </button>
+            <button
+              className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
+              onClick={() => console.log("down")}
+            >
+              Down
+            </button>
+          </div>
         </div>
       </div>
-      <NotificationList
+      <EventList
         unreadCount={unreadCount}
-        notifications={notifications}
+        events={events}
         setMainVideo={setMainVideo}
       />
     </div>

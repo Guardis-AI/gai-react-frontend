@@ -29,7 +29,7 @@ export default function Live() {
             setCurrCamNum(state.camType);
           } else {
             // this.isloading = true;
-            setMainVideo(new Date(), response.data.camera_list[0]);
+            setMainVideo(null, response.data.camera_list[0]);
           }
         }
       })
@@ -38,22 +38,12 @@ export default function Live() {
       });
   }, [navigate, state]);
 
-  function setMainVideo(date, camType) {
-    // Format date
-    const y = date.getFullYear();
-    const m = date.getMonth() + 1;
-    const d = date.getDate();
-    const mm = m < 10 ? "0" + m : m;
-    const dd = d < 10 ? "0" + d : d;
-    const yyyyMMdd = "" + y + mm + dd;
+  function createUrl(_, camType) {
+    return localStorage.getItem("cfUrl") + "media/live/" + camType;
+  }
 
-    const streamUrl =
-      localStorage.getItem("cfUrl") +
-      "media/" +
-      camType +
-      "/" +
-      yyyyMMdd +
-      "/output.m3u8";
+  function setMainVideo(_, camType) {
+    const streamUrl = localStorage.getItem("cfUrl") + "media/live/" + camType;
     setCurrVidUrl(streamUrl);
     setCurrCamNum(camType);
   }
@@ -73,11 +63,20 @@ export default function Live() {
             // height="100%"
             playing={true}
             volume={0}
+            config={{
+              file: {
+                hlsOptions: {
+                  maxBufferLength: 10, // or 15 or 20 based on tests
+                  maxMaxBufferLength: 30,
+                },
+              },
+            }}
           />
         </div>
       </div>
       <VideoList
         cameraList={cameraList}
+        createUrl={createUrl}
         setMainVideo={setMainVideo}
         setCurrCamNum={setCurrCamNum}
         date={new Date()}

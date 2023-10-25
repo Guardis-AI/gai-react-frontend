@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReactPlayer from "react-player";
-import NotificationList from "../components/NotificationList";
+import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
-  const [notifications, setNotifications] = useState(null);
+  const [events, setEvents] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -41,9 +41,9 @@ export default function Home() {
       .then(function (response) {
         response = response.data.gai_get_user_notification_log;
         if (response == null) {
-          console.log("No notifications found!");
+          console.log("No events found!");
         } else {
-          setNotifications(response[0].notification_log);
+          setEvents(response[0].notification_log);
         }
       })
       .catch(function (error) {
@@ -72,7 +72,7 @@ export default function Home() {
   }
 
   function navNoti(id) {
-    const selNoti = notifications.find((i) => i.notification_log_id === id);
+    const selNoti = events.find((i) => i.notification_log_id === id);
 
     const url =
       localStorage.getItem("cfUrl") +
@@ -81,7 +81,7 @@ export default function Home() {
       "&filename=" +
       selNoti.filename;
 
-    navigate("/notifications", {
+    navigate("/events", {
       state: {
         id: id,
         url: url,
@@ -92,6 +92,7 @@ export default function Home() {
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow w-5/6 px-6 pr-8">
+        <h2 className="font-semibold text-3xl mb-2">Live Feeds</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 md:gap-2">
           {cameraList?.map((camera, i) => {
             return (
@@ -120,7 +121,7 @@ export default function Home() {
           })}
         </div>
       </div>
-      <NotificationList notifications={notifications} setMainVideo={navNoti} />
+      <EventList events={events} setMainVideo={navNoti} />
     </div>
   );
 }

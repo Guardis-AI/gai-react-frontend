@@ -32,8 +32,8 @@ export const navData = [
   {
     id: 4,
     icon: <NotificationsIcon />,
-    text: "Notifications",
-    link: "notifications",
+    text: "Events",
+    link: "events",
   },
   {
     id: 5,

@@ -2,25 +2,6 @@ import React from "react";
 import ReactPlayer from "react-player";
 
 export default function VideoList(props) {
-  function createUrl(date, camType) {
-    // Format date
-    const y = date.getFullYear();
-    const m = date.getMonth() + 1;
-    const d = date.getDate();
-    const mm = m < 10 ? "0" + m : m;
-    const dd = d < 10 ? "0" + d : d;
-    const yyyyMMdd = "" + y + mm + dd;
-
-    return (
-      localStorage.getItem("cfUrl") +
-      "media/" +
-      camType +
-      "/" +
-      yyyyMMdd +
-      "/output.m3u8"
-    );
-  }
-
   function updatePlayer(date, camType) {
     props.setMainVideo(date, camType);
     props.setCurrCamNum(camType);
@@ -37,7 +18,7 @@ export default function VideoList(props) {
           >
             <h1 className="pb-2">{camera}</h1>
             <ReactPlayer
-              url={createUrl(props.date, camera)}
+              url={props.createUrl(props.date, camera)}
               width="100%"
               height="auto"
               playing={true}
