@@ -20,12 +20,14 @@ export default function EventList(props) {
   // }
 
   function dateFilter(event) {
-    if (!startDate || !endDate) {
+    if (!startDate && !endDate) {
       return event;
     }
 
     const sentDate = new Date(event.sent_date);
-    if (startDate <= sentDate && sentDate <= endDate) {
+    const startCheck = startDate <= sentDate || !startDate;
+    const endCheck = sentDate <= endDate || !endDate;
+    if (startCheck && endCheck) {
       return event;
     }
   }
