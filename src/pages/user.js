@@ -27,6 +27,31 @@ export default function User() {
   const [userData, setUserData] = useState(null);
   const [searchInput, setSearchInput] = useState("");
 
+  useEffect(() => {
+    if (localStorage.getItem("loginStatus") !== "true")
+      return navigate("/log-in");
+    axios
+      .post(`${baseUrlApi}/api/user/getuserdetails`, {})
+      .then(function (response) {
+        response = response.data.gai_get_user_details;
+        if (response === null) {
+          console.log("No user found!");
+        } else {
+          setUserData(response);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    Modal.setAppElement("body");
+  }, [navigate]);
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    setSearchInput(e.target.value);
+  };
+
+  // User Modal
   const [userModalIsOpen, setUserModalIsOpen] = useState(false);
   function openUserModal() {
     setUserModalIsOpen(true);
@@ -52,6 +77,8 @@ export default function User() {
     });
   }
   function onUserSubmit() {
+    console.log("submitting add User form: ");
+    console.log(userFormData);
     axios
       .post(`${baseUrlApi}/api/user/insuser`, userFormData)
       .then(function (response) {
@@ -62,6 +89,7 @@ export default function User() {
       });
   }
 
+  // Device Modal
   const [deviceModalIsOpen, setDeviceModalIsOpen] = useState(false);
   function openDeviceModal() {
     setDeviceModalIsOpen(true);
@@ -93,6 +121,8 @@ export default function User() {
     devobj.p_device_type = "";
     devobj.p_device_token = "";
     devobj.p_logindevice_id = "";
+    console.log("submitting add Device form: ");
+    console.log(devobj);
     axios
       .post(`${baseUrlApi}/api/user/insuserdevice`, devobj)
       .then(function (response) {
@@ -110,30 +140,6 @@ export default function User() {
       left: "50%",
       transform: "translate(-50%, -50%)",
     },
-  };
-
-  useEffect(() => {
-    if (localStorage.getItem("loginStatus") !== "true")
-      return navigate("/log-in");
-    axios
-      .post(`${baseUrlApi}/api/user/getuserdetails`, {})
-      .then(function (response) {
-        response = response.data.gai_get_user_details;
-        if (response === null) {
-          console.log("No user found!");
-        } else {
-          setUserData(response);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-    Modal.setAppElement("body");
-  }, [navigate]);
-
-  const handleChange = (e) => {
-    e.preventDefault();
-    setSearchInput(e.target.value);
   };
 
   return (
@@ -156,7 +162,7 @@ export default function User() {
           className="px-8 bg-[#26272f] rounded-full text-white font-semibold"
           onClick={openUserModal}
         >
-          Add
+          Add User
         </button>
         <button
           className="px-8 bg-[#26272f] rounded-full text-white font-semibold"
