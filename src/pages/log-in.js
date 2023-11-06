@@ -73,7 +73,7 @@ export default function LogIn() {
     passwordConfirm: "",
     cfurl: "",
     p_edgeunit: "",
-    start_date: "",
+    start_date: new Date(),
     end_date: "",
   });
   function handleSignUpFormChange(e) {
@@ -298,28 +298,6 @@ export default function LogIn() {
               className="text-black"
             />
           </label>
-          <div className="flex space-x-2">
-            <label className="flex flex-col w-3/5">
-              Start Date
-              <input
-                type="date"
-                name="start_date"
-                value={signUpFormData.start_date}
-                onChange={handleSignUpFormChange}
-                className="text-black"
-              />
-            </label>
-            <label className="flex flex-col w-3/5">
-              End Date
-              <input
-                type="date"
-                name="end_date"
-                value={signUpFormData.end_date}
-                onChange={handleSignUpFormChange}
-                className="text-black"
-              />
-            </label>
-          </div>
           <button
             type="submit"
             className="bg-[#26272f] rounded-full text-white font-semibold"
