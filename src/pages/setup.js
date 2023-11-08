@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ScanModalButton from "../components/ScanModalButton";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Setup() {
@@ -142,18 +143,6 @@ export default function Setup() {
     },
   };
 
-  function onScan() {
-    console.log("Scanning devices...");
-    axios
-      .get(localStorage.getItem("cfUrl") + "scan")
-      .then(function (response) {
-        console.log(response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  }
-
   return (
     <div className="py-3 px-8 h-full overflow-auto">
       <div className="flex flex-row space-x-4">
@@ -182,12 +171,7 @@ export default function Setup() {
         >
           Add Device
         </button>
-        <button
-          className="px-8 bg-[#26272f] rounded-full text-white font-semibold"
-          onClick={onScan}
-        >
-          Scan Devices
-        </button>
+        <ScanModalButton />
       </div>
 
       {/* User Modal */}
