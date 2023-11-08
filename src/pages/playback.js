@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ReactPlayer from "react-player";
 import VideoList from "../components/VideoList";
 import DatePicker from "react-datepicker";
@@ -13,6 +13,11 @@ export default function Playback() {
   const [cameraList, setCameraList] = useState(null);
   const [currCamNum, setCurrCamNum] = useState(null);
   const [currVidUrl, setCurrVidUrl] = useState(null);
+
+  const setMainVideo = useCallback((date, camType) => {
+    const streamUrl = createUrl(date, camType);
+    setCurrVidUrl(streamUrl);
+  }, []);
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -33,7 +38,7 @@ export default function Playback() {
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, selectedDate]);
+  }, [navigate, selectedDate, setMainVideo]);
 
   function createUrl(date, camType) {
     // Format date
@@ -52,11 +57,6 @@ export default function Playback() {
       yyyyMMdd +
       "/output.m3u8"
     );
-  }
-
-  function setMainVideo(date, camType) {
-    const streamUrl = createUrl(date, camType);
-    setCurrVidUrl(streamUrl);
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ReactPlayer from "react-player";
 import VideoList from "../components/VideoList";
 import "react-datepicker/dist/react-datepicker.css";
@@ -13,6 +13,16 @@ export default function Live() {
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
   const { state } = useLocation();
+
+  const setMainVideo = useCallback(
+    (_, camType) => {
+      const streamUrl = createUrl(_, camType);
+      setCurrVidUrl(streamUrl);
+      setCurrCamNum(camType);
+    },
+    [setCurrVidUrl, setCurrCamNum]
+  );
+
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
@@ -36,18 +46,12 @@ export default function Live() {
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, state]);
+  }, [navigate, state, setMainVideo]);
 
   function createUrl(_, camType) {
     return (
       localStorage.getItem("cfUrl") + "media/live/" + camType + "/output.m3u8"
     );
-  }
-
-  function setMainVideo(_, camType) {
-    const streamUrl = createUrl(_, camType);
-    setCurrVidUrl(streamUrl);
-    setCurrCamNum(camType);
   }
 
   return (

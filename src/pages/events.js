@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import axios from "axios";
@@ -15,6 +15,29 @@ export default function Events() {
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
   const { state } = useLocation();
+
+  const setMainVideo = useCallback(
+    (id, notifs) => {
+      if (state) {
+        setCurrVidUrl(state.url);
+        setCurrNoti(state.id);
+        return;
+      }
+      let selNoti;
+      if (notifs) {
+        selNoti = notifs.find((i) => i.notification_log_id === id);
+      } else {
+        selNoti = events.find((i) => i.notification_log_id === id);
+      }
+
+      const streamUrl =
+        localStorage.getItem("cfUrl") + "get_video?path=" + selNoti.filepath;
+      setCurrVidUrl(streamUrl);
+      setCurrNoti(selNoti);
+    },
+    [events, state]
+  );
+
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
@@ -50,26 +73,7 @@ export default function Events() {
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, state]);
-
-  function setMainVideo(id, notifs) {
-    if (state) {
-      setCurrVidUrl(state.url);
-      setCurrNoti(state.id);
-      return;
-    }
-    let selNoti;
-    if (notifs) {
-      selNoti = notifs.find((i) => i.notification_log_id === id);
-    } else {
-      selNoti = events.find((i) => i.notification_log_id === id);
-    }
-
-    const streamUrl =
-      localStorage.getItem("cfUrl") + "get_video?path=" + selNoti.filepath;
-    setCurrVidUrl(streamUrl);
-    setCurrNoti(selNoti);
-  }
+  }, [navigate, state, setMainVideo]);
 
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
