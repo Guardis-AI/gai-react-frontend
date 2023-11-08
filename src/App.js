@@ -3,7 +3,7 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages";
-import User from "./pages/user";
+import Setup from "./pages/setup";
 import Live from "./pages/live";
 import Playback from "./pages/playback";
 import Events from "./pages/events";
@@ -17,7 +17,7 @@ export default function App() {
       <main className="w-full">
         <Routes>
           <Route exact path="/" element={<Home />} />
-          <Route path="/user" element={<User />} />
+          <Route path="/setup" element={<Setup />} />
           <Route path="/live" element={<Live />} />
           <Route path="/playback" element={<Playback />} />
           <Route path="/events" element={<Events />} />

@@ -19,7 +19,7 @@ export default function Playback() {
       return navigate("/log-in");
 
     axios
-      .get(localStorage.getItem("cfUrl") + "get_camera_list")
+      .get(localStorage.getItem("cfUrl") + "camera/list")
       .then(function (response) {
         if (response == null) {
           console.log("No devices found!");

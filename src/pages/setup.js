@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ScanModalButton from "../components/ScanModalButton";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
-export default function User() {
+export default function Setup() {
   const navigate = useNavigate();
   // const userColumns = [
   //   "user_id",
@@ -170,6 +171,7 @@ export default function User() {
         >
           Add Device
         </button>
+        <ScanModalButton />
       </div>
 
       {/* User Modal */}

@@ -15,7 +15,7 @@ export const navData = [
     id: 1,
     icon: <SettingsIcon />,
     text: "Setup",
-    link: "user",
+    link: "setup",
   },
   {
     id: 2,
