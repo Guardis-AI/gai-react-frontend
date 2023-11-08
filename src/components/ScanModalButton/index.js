@@ -1,6 +1,15 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  Fragment,
+} from "react";
 import Modal from "react-modal";
 import axios from "axios";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
+import { red } from "@mui/material/colors";
 
 const DEFAULT_USERNAME = "admin";
 const DEFAULT_PASSWORD = "Guardis123";
@@ -10,17 +19,18 @@ export default function ScanModalButton() {
   const [scanModalIsOpen, setScanModalIsOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
   const [step, setStep] = useState("edit");
-  const [confirming, setConfirming] = useState(false);
   const [successCams, setSuccessCams] = useState([]);
   const [failedCams, setFailedCams] = useState([]);
+  const [loading, setLoading] = useState(null);
 
   function openScanModal() {
     setScanModalIsOpen(true);
   }
 
-  function closeScanModal() {
+  const closeScanModal = useCallback(() => {
     setScanModalIsOpen(false);
-  }
+    setScanData(null);
+  }, [setScanModalIsOpen, setScanData]);
 
   function onScan() {
     console.log("Scanning devices...");
@@ -31,18 +41,102 @@ export default function ScanModalButton() {
       .get(localStorage.getItem("cfUrl") + "camera/scan")
       .then(function (response) {
         console.log(response.data);
-        setScanData(response.data);
+        const tempData = response.data;
+        const tempLoading = [];
+        tempData.forEach((device) => {
+          device.username = DEFAULT_USERNAME;
+          device.password = DEFAULT_PASSWORD;
+          tempLoading.push(false);
+        });
+        setScanData(tempData);
+        setLoading(tempLoading);
       })
       .catch(function (error) {
         console.error(error);
       });
   }
 
-  const onDelete = useCallback((i) => {
-    setScanData((prevScanData) =>
-      prevScanData.filter((j) => prevScanData[i] !== j)
-    );
-  }, []);
+  const onDelete = useCallback(
+    (i) => {
+      setScanData((prevScanData) =>
+        prevScanData.filter((cam) => prevScanData[i] !== cam)
+      );
+      setFailedCams((prevFailedCams) =>
+        prevFailedCams.filter((failedCam) => prevFailedCams[i] !== failedCam)
+      );
+    },
+    [setScanData]
+  );
+
+  function onUsernameChange(e, i) {
+    setScanData((prevScanData) => {
+      const newScanData = [...prevScanData];
+      newScanData[i].username = e.target.value;
+      return newScanData;
+    });
+  }
+
+  function onPasswordChange(e, i) {
+    setScanData((prevScanData) => {
+      const newScanData = [...prevScanData];
+      newScanData[i].password = e.target.value;
+      return newScanData;
+    });
+  }
+
+  const onValidate = useCallback(
+    async (i) => {
+      console.log("Validating device:", i);
+      const camera = scanData[i];
+      try {
+        const response = await axios.post(
+          localStorage.getItem("cfUrl") + "camera/credentials",
+          {
+            ip: camera.ip,
+            mac: camera.mac,
+            vendor_name: camera.vendor_name,
+            username: camera.username,
+            password: camera.password,
+          }
+        );
+        console.log("POST response:", response);
+        setFailedCams((prevFailedCams) =>
+          prevFailedCams.filter((failedCam) => failedCam !== camera)
+        );
+        setSuccessCams((prevSuccessCams) => [...prevSuccessCams, camera]);
+      } catch (postError) {
+        if (
+          postError.response &&
+          postError.response.data === "Camera already exists"
+        ) {
+          try {
+            const response = await axios.put(
+              localStorage.getItem("cfUrl") + "camera/credentials",
+              {
+                ip: camera.ip,
+                mac: camera.mac,
+                vendor_name: camera.vendor_name,
+                username: camera.username,
+                password: camera.password,
+              }
+            );
+            console.log("PUT response:", camera, response);
+            setFailedCams((prevFailedCams) =>
+              prevFailedCams.filter((failedCam) => failedCam !== camera)
+            );
+            setSuccessCams((prevSuccessCams) => [...prevSuccessCams, camera]);
+          } catch (putError) {
+            console.error("PUT error:", camera, putError);
+            setFailedCams((prevFailedCams) => [...prevFailedCams, camera]);
+          }
+        } else {
+          console.error("POST error:", camera, postError);
+          setFailedCams((prevFailedCams) => [...prevFailedCams, camera]);
+        }
+      }
+    },
+    [scanData, setFailedCams, setSuccessCams]
+  );
 
   const customStyles = {
     content: {
@@ -53,9 +147,15 @@ export default function ScanModalButton() {
     },
   };
 
+  const onFinish = useCallback(() => {
+    closeScanModal();
+    setScanData(null);
+    setSuccessCams([]);
+    setFailedCams([]);
+  }, [closeScanModal, setScanData, setSuccessCams, setFailedCams]);
+
   const confirmModalContent = useMemo(() => {
-    function getConfirmModalContent(confirming, successCams, failedCams) {
-      if (confirming) return <h1>Confirming...</h1>;
+    function getConfirmModalContent(successCams, failedCams) {
       return (
         <React.Fragment>
           <h2 className="font-semibold">Success:</h2>
@@ -88,19 +188,29 @@ export default function ScanModalButton() {
               </div>
             );
           })}
+          <button
+            type="button"
+            className="bg-[#26272f] rounded-full text-white font-semibold py-2 px-4 self-end"
+            onClick={onFinish}
+          >
+            Finish
+          </button>
         </React.Fragment>
       );
     }
-    return getConfirmModalContent(confirming, successCams, failedCams);
-  }, [confirming, successCams, failedCams]);
+    return getConfirmModalContent(successCams, failedCams);
+  }, [successCams, failedCams, onFinish]);
+
+  const onContinue = useCallback(() => {
+    console.log(successCams);
+    // update sql here
+    setStep("confirm");
+    setModalContent(confirmModalContent);
+  }, [successCams, confirmModalContent, setStep, setModalContent]);
 
   const onConfirm = useCallback(async () => {
     console.log("Confirming devices...");
     console.log(scanData);
-    setStep("confirm");
-    setModalContent(confirmModalContent);
-    setConfirming(true);
-
     const successCamsArray = [];
     const failedCamsArray = [];
 
@@ -114,8 +224,8 @@ export default function ScanModalButton() {
                 ip: camera.ip,
                 mac: camera.mac,
                 vendor_name: camera.vendor_name,
-                username: DEFAULT_USERNAME,
-                password: DEFAULT_PASSWORD,
+                username: camera.username,
+                password: camera.password,
               }
             );
             console.log("POST response:", response);
@@ -132,8 +242,8 @@ export default function ScanModalButton() {
                     ip: camera.ip,
                     mac: camera.mac,
                     vendor_name: camera.vendor_name,
-                    username: DEFAULT_USERNAME,
-                    password: DEFAULT_PASSWORD,
+                    username: camera.username,
+                    password: camera.password,
                   }
                 );
                 console.log("PUT response:", camera, response);
@@ -156,11 +266,9 @@ export default function ScanModalButton() {
       console.error("Error occurred during confirmation:", error);
     }
 
-    setConfirming(false);
     console.log(successCamsArray);
     console.log(failedCamsArray);
-    setScanData(null);
-  }, [scanData, confirmModalContent, setStep, setModalContent, setConfirming]);
+  }, [scanData]);
 
   const editModalContent = useMemo(() => {
     function getEditModalContent(scanData) {
@@ -170,43 +278,93 @@ export default function ScanModalButton() {
           {scanData?.length === 0 && <h1>No devices found!</h1>}
           {scanData?.length > 0 && (
             <React.Fragment>
-              <div className="flex">
-                <span className="w-1/5 font-semibold">IP</span>
-                <span className="w-2/5 font-semibold">Mac Address</span>
-                <span className="w-2/5 font-semibold">Vendor</span>
+              <div className="flex space-x-2">
+                <span className="w-[10%] font-semibold">IP</span>
+                <span className="w-[15%] font-semibold">Mac Address</span>
+                <span className="w-[24%] font-semibold">Vendor</span>
+                <span className="w-[15%] font-semibold">Username</span>
+                <span className="w-[15%] font-semibold">Password</span>
               </div>
               {scanData.map((device, i) => {
                 return (
-                  <div key={i} className="flex">
-                    <span className="w-1/5">{device.ip}</span>
-                    <span className="w-2/5">{device.mac}</span>
-                    <span className="w-2/5">{device.vendor_name}</span>
-                    {/* <button className="bg-[#26272f] rounded-full text-white font-semibold px-2">
-                      Edit
-                    </button> */}
-                    <button
-                      className="bg-[#26272f] rounded-full text-white font-semibold px-2 ml-1"
-                      onClick={() => onDelete(i)}
-                    >
-                      Delete
-                    </button>
+                  <div key={i} className="flex space-x-2 items-center">
+                    <span className="w-[10%]">{device.ip}</span>
+                    <span className="w-[15%]">{device.mac}</span>
+                    <span className="w-[24%]">{device.vendor_name}</span>
+                    {!successCams.includes(scanData[i]) && (
+                      <Fragment>
+                        <input
+                          type="text"
+                          className="w-[15%] text-black"
+                          value={scanData[i].username}
+                          onChange={(e) => onUsernameChange(e, i)}
+                        />
+                        <input
+                          type="text"
+                          className="w-[15%] text-black"
+                          value={scanData[i].password}
+                          onChange={(e) => onPasswordChange(e, i)}
+                        />
+                        <button
+                          className="bg-[#26272f] rounded-full text-white font-semibold px-2 h-7"
+                          onClick={() => onValidate(i)}
+                        >
+                          Validate
+                        </button>
+                        <button
+                          className="bg-[#26272f] rounded-full text-white font-semibold px-2 h-7"
+                          onClick={() => onDelete(i)}
+                        >
+                          Delete
+                        </button>
+                      </Fragment>
+                    )}
+                    {successCams.includes(scanData[i]) && (
+                      <Fragment>
+                        <span className="w-[15%]">{scanData[i].username}</span>
+                        <span className="w-[15%]">{scanData[i].password}</span>
+                        <div className="flex grow justify-end">
+                          <CheckCircleIcon color="success" />
+                        </div>
+                      </Fragment>
+                    )}
+                    {failedCams.includes(scanData[i]) && (
+                      <DisabledByDefaultIcon sx={{ color: red[500] }} />
+                    )}
                   </div>
                 );
               })}
             </React.Fragment>
           )}
-          <button
-            type="button"
-            className="bg-[#26272f] rounded-full text-white font-semibold py-2 px-4 mr-4 mb-4 self-end w-1/5"
-            onClick={onConfirm}
-          >
-            Confirm
-          </button>
+          <div className="self-end space-x-4">
+            <button
+              type="button"
+              className="bg-[#26272f] rounded-full text-white font-semibold py-2 px-4 self-end"
+              onClick={onConfirm}
+            >
+              Validate All
+            </button>
+            <button
+              type="button"
+              className="bg-[#26272f] rounded-full text-white font-semibold py-2 px-4 self-end"
+              onClick={onContinue}
+            >
+              Continue
+            </button>
+          </div>
         </React.Fragment>
       );
     }
     return getEditModalContent(scanData);
-  }, [scanData, onDelete, onConfirm]);
+  }, [
+    scanData,
+    successCams,
+    failedCams,
+    onValidate,
+    onDelete,
+    onConfirm,
+    onContinue,
+  ]);
 
   useEffect(() => {
     if (step === "edit") setModalContent(editModalContent);
@@ -223,9 +381,9 @@ export default function ScanModalButton() {
       </button>
       <Modal
         isOpen={scanModalIsOpen}
-        onRequestClose={closeScanModal}
-        contentLabel="Add Device Modal"
-        className="bg-[#4f5263] w-3/5 h-11/12 overflow-auto text-white rounded-xl"
+        onRequestClose={onFinish}
+        contentLabel="Scan Device Modal"
+        className="bg-[#4f5263] w-4/5 h-11/12 overflow-auto text-white rounded-xl"
         style={customStyles}
       >
         <div className="flex bg-[#26272f] justify-between py-2 px-4">
@@ -234,9 +392,6 @@ export default function ScanModalButton() {
             X
           </button>
         </div>
-        {/* <div className="flex flex-col space-y-3 px-5 py-2 pb-4">
-          {editModalContent}
-        </div> */}
         <div className="flex flex-col space-y-3 px-5 py-2 pb-4">
           {modalContent}
         </div>
