@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 
+const DEFAULT_USERNAME = "admin";
+const DEFAULT_PASSWORD = "Guardis123";
+
 export default function ScanModalButton() {
   const [scanData, setScanData] = useState(null);
   const [scanModalIsOpen, setScanModalIsOpen] = useState(false);
@@ -55,7 +58,12 @@ export default function ScanModalButton() {
       if (confirming) return <h1>Confirming...</h1>;
       return (
         <React.Fragment>
-          <span>Success:</span>
+          <h2 className="font-semibold">Success:</h2>
+          <div className="flex">
+            <span className="w-1/5 font-semibold">IP</span>
+            <span className="w-2/5 font-semibold">Mac Address</span>
+            <span className="w-2/5 font-semibold">Vendor</span>
+          </div>
           {successCams.map((cam, i) => {
             return (
               <div key={i} className="flex">
@@ -65,7 +73,12 @@ export default function ScanModalButton() {
               </div>
             );
           })}
-          <span>Failed:</span>
+          <h2 className="font-semibold">Failed:</h2>
+          <div className="flex">
+            <span className="w-1/5 font-semibold">IP</span>
+            <span className="w-2/5 font-semibold">Mac Address</span>
+            <span className="w-2/5 font-semibold">Vendor</span>
+          </div>
           {failedCams.map((cam, i) => {
             return (
               <div key={i} className="flex">
@@ -80,69 +93,6 @@ export default function ScanModalButton() {
     }
     return getConfirmModalContent(confirming, successCams, failedCams);
   }, [confirming, successCams, failedCams]);
-
-  // const onConfirm = useCallback(() => {
-  //   console.log("Confirming devices...");
-  //   console.log(scanData);
-  //   setStep("confirm");
-  //   setModalContent(confirmModalContent);
-  //   setConfirming(true);
-  //   for (let i = 0; i < scanData.length; i++) {
-  //     axios
-  //       .post(localStorage.getItem("cfUrl") + "camera/credentials", {
-  //         ip: scanData[i].ip,
-  //         mac: scanData[i].mac,
-  //         vendor_name: scanData[i].vendor_name,
-  //         username: "admin",
-  //         password: "admin",
-  //       })
-  //       .then(function (response) {
-  //         console.log("POST response:", response);
-  //         setSuccessCams([...successCams, scanData[i]]);
-  //         console.log("POST Success:", i);
-  //       })
-  //       .catch(function (error) {
-  //         if ((error.response.data = "Camera already exists")) {
-  //           axios
-  //             .put(localStorage.getItem("cfUrl") + "camera/credentials", {
-  //               ip: scanData[i].ip,
-  //               mac: scanData[i].mac,
-  //               vendor_name: scanData[i].vendor_name,
-  //               username: "admin",
-  //               password: "admin",
-  //             })
-  //             .then(function (response) {
-  //               console.log("PUT response:", response);
-  //               setSuccessCams([...successCams, scanData[i]]);
-  //               console.log("PUT Success:", i);
-  //             })
-  //             .catch(function (error) {
-  //               console.error("PUT error:", error);
-  //               setFailedCams([...failedCams, scanData[i]]);
-  //               console.log("PUT Failed:", i);
-  //             });
-  //         } else {
-  //           console.error("POST error:", error);
-  //           setFailedCams([...failedCams, scanData[i]]);
-  //           console.log("POST Failed:", i);
-  //         }
-  //       });
-  //   }
-  //   setConfirming(false);
-  //   console.log(successCams);
-  //   console.log(failedCams);
-  //   setScanData(null);
-  // }, [
-  //   scanData,
-  //   confirmModalContent,
-  //   setStep,
-  //   setModalContent,
-  //   setConfirming,
-  //   successCams,
-  //   setSuccessCams,
-  //   failedCams,
-  //   setFailedCams,
-  // ]);
 
   const onConfirm = useCallback(async () => {
     console.log("Confirming devices...");
@@ -164,16 +114,16 @@ export default function ScanModalButton() {
                 ip: camera.ip,
                 mac: camera.mac,
                 vendor_name: camera.vendor_name,
-                username: "admin",
-                password: "admin",
+                username: DEFAULT_USERNAME,
+                password: DEFAULT_PASSWORD,
               }
             );
             console.log("POST response:", response);
             successCamsArray.push(camera);
-          } catch (error) {
+          } catch (postError) {
             if (
-              error.response &&
-              error.response.data === "Camera already exists"
+              postError.response &&
+              postError.response.data === "Camera already exists"
             ) {
               try {
                 const response = await axios.put(
@@ -182,18 +132,18 @@ export default function ScanModalButton() {
                     ip: camera.ip,
                     mac: camera.mac,
                     vendor_name: camera.vendor_name,
-                    username: "admin",
-                    password: "admin",
+                    username: DEFAULT_USERNAME,
+                    password: DEFAULT_PASSWORD,
                   }
                 );
-                console.log("PUT response:", response);
+                console.log("PUT response:", camera, response);
                 successCamsArray.push(camera);
-              } catch (error) {
-                console.error("PUT error:", error);
+              } catch (putError) {
+                console.error("PUT error:", camera, putError);
                 failedCamsArray.push(camera);
               }
             } else {
-              console.error("POST error:", error);
+              console.error("POST error:", camera, postError);
               failedCamsArray.push(camera);
             }
           }
