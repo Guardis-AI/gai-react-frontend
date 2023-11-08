@@ -11,8 +11,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 import { red } from "@mui/material/colors";
 
-const DEFAULT_USERNAME = "admin";
-const DEFAULT_PASSWORD = "Guardis123";
+const DEFAULT_USERNAME = "";
+const DEFAULT_PASSWORD = "";
 
 export default function ScanModalButton() {
   const [scanData, setScanData] = useState(null);
@@ -295,12 +295,14 @@ export default function ScanModalButton() {
                       <Fragment>
                         <input
                           type="text"
+                          placeholder="Username"
                           className="w-[15%] text-black"
                           value={scanData[i].username}
                           onChange={(e) => onUsernameChange(e, i)}
                         />
                         <input
                           type="text"
+                          placeholder="Password"
                           className="w-[15%] text-black"
                           value={scanData[i].password}
                           onChange={(e) => onPasswordChange(e, i)}
