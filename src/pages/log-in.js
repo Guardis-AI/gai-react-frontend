@@ -82,7 +82,8 @@ export default function LogIn() {
       [e.target.name]: e.target.value,
     });
   }
-  function onSignUp() {
+  function onSignUp(e) {
+    e.preventDefault();
     console.log("submitting sign up form: ");
     console.log(signUpFormData);
     axios
@@ -227,6 +228,7 @@ export default function LogIn() {
         contentLabel="Sign Up Modal"
         className="bg-[#4f5263] w-2/5 h-11/12 overflow-auto text-white rounded-xl"
         style={customStyles}
+        ariaHideApp={false}
       >
         <div className="flex bg-[#26272f] justify-between py-2 px-4">
           <h2 className="font-semibold text-xl">Sign Up</h2>
