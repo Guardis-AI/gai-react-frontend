@@ -31,8 +31,16 @@ export default function Setup() {
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
+
+    var userId = localStorage.getItem("userId");
     axios
-      .post(`${baseUrlApi}/api/user/getuserdetails`, {})
+      .post(`${baseUrlApi}/api/user/getuserdetails`, {
+        user_id: userId,
+        login_user_id: "",
+        p_device_type: "",
+        p_device_token: "",
+        p_logindevice_id: "",
+      })
       .then(function (response) {
         response = response.data.gai_get_user_details;
         if (response === null) {
