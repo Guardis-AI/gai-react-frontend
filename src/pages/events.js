@@ -63,7 +63,6 @@ export default function Events() {
             setCurrVidUrl(state.url);
             setCurrNoti(state.id);
           } else {
-            console.log("here1");
             setMainVideo(
               response.notification_log[0].notification_log_id,
               response.notification_log
