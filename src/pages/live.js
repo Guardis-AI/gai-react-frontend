@@ -16,9 +16,9 @@ export default function Live() {
 
   const setMainVideo = useCallback(
     (_, camType) => {
-      const streamUrl = createUrl(_, camType);
+      const streamUrl = createUrl(_, camType.uuid);
       setCurrVidUrl(streamUrl);
-      setCurrCamNum(camType);
+      setCurrCamNum(camType.name);
     },
     [setCurrVidUrl, setCurrCamNum]
   );
@@ -28,18 +28,21 @@ export default function Live() {
       return navigate("/log-in");
 
     axios
-      .get(localStorage.getItem("cfUrl") + "camera/list")
+      .get(localStorage.getItem("cfUrl") + "camera/credentials")
       .then(function (response) {
         if (response == null) {
           console.log("No devices found!");
         } else {
+          const camera_list = response.data.map((camera) => {
+            return { uuid: camera.uuid, name: camera.name };
+          });
           setCameraList(response.data.camera_list);
           if (state) {
             setCurrVidUrl(state.url);
             setCurrCamNum(state.camType);
           } else {
             // this.isloading = true;
-            setMainVideo(null, response.data.camera_list[0]);
+            setMainVideo(null, camera_list);
           }
         }
       })
