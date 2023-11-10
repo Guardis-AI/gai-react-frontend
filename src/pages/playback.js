@@ -24,15 +24,19 @@ export default function Playback() {
       return navigate("/log-in");
 
     axios
-      .get(localStorage.getItem("cfUrl") + "camera/list")
+      .get(localStorage.getItem("cfUrl") + "camera/credentials")
       .then(function (response) {
         if (response == null) {
           console.log("No devices found!");
         } else {
-          setCameraList(response.data.camera_list);
+          const camera_list = response.data.map((camera) => {
+            return { uuid: camera.uuid, name: camera.name };
+          });
+
+          setCameraList(camera_list);
           // this.isloading = true;
-          setMainVideo(selectedDate, response.data.camera_list[0]);
-          setCurrCamNum(response.data.camera_list[0]);
+          setMainVideo(selectedDate, camera_list[0].uuid);
+          setCurrCamNum(camera_list[0].name);
         }
       })
       .catch(function (error) {

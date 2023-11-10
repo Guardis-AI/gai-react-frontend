@@ -15,12 +15,16 @@ export default function Home() {
       return navigate("/log-in");
 
     axios
-      .get(localStorage.getItem("cfUrl") + "camera/list")
+      .get(localStorage.getItem("cfUrl") + "camera/credentials")
       .then(function (response) {
         if (response == null) {
           console.log("No devices found!");
         } else {
-          setCameraList(response.data.camera_list);
+          const camera_list = response.data.map((camera) => {
+            return { uuid: camera.uuid, name: camera.name };
+          });
+
+          setCameraList(camera_list);
           // this.isloading = true;
         }
       })
@@ -88,15 +92,15 @@ export default function Home() {
                 onClick={() =>
                   navigate("/live", {
                     state: {
-                      url: createUrl(camera),
-                      camType: camera,
+                      url: createUrl(camera.uuid),
+                      camType: camera.name,
                     },
                   })
                 }
               >
-                <h1 className="pb-2 text-white">{camera}</h1>
+                <h1 className="pb-2 text-white">{camera.name}</h1>
                 <ReactPlayer
-                  url={createUrl(camera)}
+                  url={createUrl(camera.uuid)}
                   width="100%"
                   height="auto"
                   playing={true}

@@ -3,8 +3,8 @@ import ReactPlayer from "react-player";
 
 export default function VideoList(props) {
   function updatePlayer(date, camType) {
-    props.setMainVideo(date, camType);
-    props.setCurrCamNum(camType);
+    props.setMainVideo(date, camType.uuid);
+    props.setCurrCamNum(camType.name);
   }
 
   return (
@@ -16,9 +16,9 @@ export default function VideoList(props) {
             key={i}
             onClick={() => updatePlayer(props.date, camera)}
           >
-            <h1 className="pb-2">{camera}</h1>
+            <h1 className="pb-2">{camera.name}</h1>
             <ReactPlayer
-              url={props.createUrl(props.date, camera)}
+              url={props.createUrl(props.date, camera.uuid)}
               width="100%"
               height="auto"
               playing={true}
