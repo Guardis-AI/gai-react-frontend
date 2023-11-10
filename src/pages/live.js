@@ -42,7 +42,7 @@ export default function Live() {
             setCurrCamNum(state.camType);
           } else {
             // this.isloading = true;
-            setMainVideo(null, camera_list);
+            setMainVideo(null, camera_list[0]);
           }
         }
       })
