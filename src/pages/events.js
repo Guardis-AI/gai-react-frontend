@@ -54,7 +54,7 @@ export default function Events() {
       .then(function (response) {
         console.log(response);
         response = response.data.gai_get_user_notification_log[0];
-        if (response == null) {
+        if (response == null || response.notification_log.length === 0) {
           console.log("No events found!");
         } else {
           setUnreadCount(response.message_count);
