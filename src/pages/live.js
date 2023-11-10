@@ -36,7 +36,7 @@ export default function Live() {
           const camera_list = response.data.map((camera) => {
             return { uuid: camera.uuid, name: camera.name };
           });
-          setCameraList(response.data.camera_list);
+          setCameraList(camera_list);
           if (state) {
             setCurrVidUrl(state.url);
             setCurrCamNum(state.camType);
