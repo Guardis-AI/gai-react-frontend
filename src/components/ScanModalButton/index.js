@@ -201,8 +201,16 @@ export default function ScanModalButton() {
     return getConfirmModalContent(successCams, failedCams);
   }, [successCams, failedCams, onFinish]);
 
-  const onContinue = useCallback(() => {
+  const onContinue = useCallback(async () => {
     console.log(successCams);
+
+    const response = await axios.post(
+      localStorage.getItem("cfUrl") + "streams/restart",
+      null
+    );
+
+    console.log(response);
+
     // update sql here
     setStep("confirm");
     setModalContent(confirmModalContent);
