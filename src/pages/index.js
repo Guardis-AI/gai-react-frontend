@@ -3,6 +3,7 @@ import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
+import RemoveIcon from "@mui/icons-material/Delete";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Home() {
@@ -21,7 +22,7 @@ export default function Home() {
           console.log("No devices found!");
         } else {
           const camera_list = response.data.map((camera) => {
-            return { uuid: camera.uuid, name: camera.name };
+            return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
           });
 
           setCameraList(camera_list);
@@ -79,6 +80,30 @@ export default function Home() {
     });
   }
 
+  function removeCamera(cameraToRemove) {
+    axios
+      .delete(localStorage.getItem("cfUrl") + "camera/credentials", {
+        data: {
+          uuid: cameraToRemove.uuid,
+          mac: cameraToRemove.mac,
+        },
+      })
+      .then(function (response) {
+        if (response == null) {
+          console.log("No camera found!");
+        } else {
+          const newCameraList = cameraList.filter((camera) => {
+            return camera.uuid !== cameraToRemove.uuid;
+          });
+
+          setCameraList(newCameraList);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow w-5/6 px-6 pr-8">
@@ -89,23 +114,35 @@ export default function Home() {
               <div
                 className="p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] pt-2"
                 key={i}
-                onClick={() =>
-                  navigate("/live", {
-                    state: {
-                      url: createUrl(camera.uuid),
-                      camType: camera.name,
-                    },
-                  })
-                }
               >
-                <h1 className="pb-2 text-white">{camera.name}</h1>
-                <ReactPlayer
-                  url={createUrl(camera.uuid)}
-                  width="100%"
-                  height="auto"
-                  playing={true}
-                  volume={0}
-                />
+                <div
+                  onClick={() =>
+                    navigate("/live", {
+                      state: {
+                        url: createUrl(camera.uuid),
+                        camType: camera.name,
+                      },
+                    })
+                  }
+                >
+                  <h1 className="pb-2 text-white">{camera.name}</h1>
+                  <ReactPlayer
+                    url={createUrl(camera.uuid)}
+                    width="100%"
+                    height="auto"
+                    playing={true}
+                    volume={0}
+                  />
+                </div>
+                <div className="text-right">
+                  <button
+                    type="button"
+                    className="pt-1 bg-[#26272f] rounded-full text-white font-semibold "
+                    onClick={() => removeCamera(camera)}
+                  >
+                    <RemoveIcon />
+                  </button>
+                </div>
               </div>
             );
           })}
