@@ -34,7 +34,7 @@ export default function Live() {
           console.log("No devices found!");
         } else {
           const camera_list = response.data.map((camera) => {
-            return { uuid: camera.uuid, name: camera.name };
+            return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
           });
           setCameraList(camera_list);
           if (state) {
@@ -55,6 +55,30 @@ export default function Live() {
     return (
       localStorage.getItem("cfUrl") + "media/live/" + camType + "/output.m3u8"
     );
+  }
+
+  function removeCamera(cameraToRemove) {
+    axios
+      .delete(localStorage.getItem("cfUrl") + "camera/credentials", {
+        data: {
+          uuid: cameraToRemove.uuid,
+          mac: cameraToRemove.mac,
+        },
+      })
+      .then(function (response) {
+        if (response == null) {
+          console.log("No camera found!");
+        } else {
+          const newCameraList = cameraList.filter((camera) => {
+            return camera.uuid !== cameraToRemove.uuid;
+          });
+
+          setCameraList(newCameraList);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
 
   return (
@@ -89,6 +113,7 @@ export default function Live() {
         setMainVideo={setMainVideo}
         setCurrCamNum={setCurrCamNum}
         date={new Date()}
+        removeCamera={removeCamera}
       />
     </div>
   );

@@ -30,7 +30,7 @@ export default function Playback() {
           console.log("No devices found!");
         } else {
           const camera_list = response.data.map((camera) => {
-            return { uuid: camera.uuid, name: camera.name };
+            return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
           });
 
           setCameraList(camera_list);
@@ -63,6 +63,30 @@ export default function Playback() {
     );
   }
 
+  function removeCamera(cameraToRemove) {
+    axios
+      .delete(localStorage.getItem("cfUrl") + "camera/credentials", {
+        data: {
+          uuid: cameraToRemove.uuid,
+          mac: cameraToRemove.mac,
+        },
+      })
+      .then(function (response) {
+        if (response == null) {
+          console.log("No camera found!");
+        } else {
+          const newCameraList = cameraList.filter((camera) => {
+            return camera.uuid !== cameraToRemove.uuid;
+          });
+
+          setCameraList(newCameraList);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
@@ -93,6 +117,7 @@ export default function Playback() {
         setMainVideo={setMainVideo}
         setCurrCamNum={setCurrCamNum}
         date={selectedDate}
+        removeCamera={removeCamera}
       />
     </div>
   );

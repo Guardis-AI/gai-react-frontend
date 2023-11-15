@@ -1,5 +1,6 @@
 import React from "react";
 import ReactPlayer from "react-player";
+import RemoveIcon from "@mui/icons-material/Delete";
 
 export default function VideoList(props) {
   function updatePlayer(date, camType) {
@@ -14,16 +15,28 @@ export default function VideoList(props) {
           <div
             className="p-4 border-solid border-2 border-black rounded-xl bg-[#26272f]"
             key={i}
-            onClick={() => updatePlayer(props.date, camera)}
           >
-            <h1 className="pb-2">{camera.name}</h1>
-            <ReactPlayer
-              url={props.createUrl(props.date, camera.uuid)}
-              width="100%"
-              height="auto"
-              playing={true}
-              volume={0}
-            />
+            <div onClick={() => updatePlayer(props.date, camera)}>
+              <h1 className="pb-2">{camera.name}</h1>
+
+              <ReactPlayer
+                url={props.createUrl(props.date, camera.uuid)}
+                width="100%"
+                height="auto"
+                playing={true}
+                volume={0}
+              />
+
+              <div className="text-right">
+                <button
+                  type="button"
+                  className="pt-1 bg-[#26272f] rounded-full text-white font-semibold "
+                  onClick={() => props.removeCamera(camera)}
+                >
+                  <RemoveIcon />
+                </button>
+              </div>
+            </div>
           </div>
         );
       })}
