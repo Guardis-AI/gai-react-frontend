@@ -3,6 +3,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 export const navData = [
   {
@@ -37,7 +38,7 @@ export const navData = [
   },
   {
     id: 5,
-    icon: <SettingsIcon />,
+    icon: <LogoutIcon />,
     text: "Sign Out",
     link: "sign-out",
   },

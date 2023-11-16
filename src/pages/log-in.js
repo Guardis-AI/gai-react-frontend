@@ -106,15 +106,15 @@ export default function LogIn() {
   };
 
   return (
-    <div className="flex h-full w-full bg-[#e0e2da] place-content-center place-items-center">
+    <div className="flex h-full w-full bg-[#e0e2da] place-content-center place-items-center overflow-hidden">
       <div
-        className="flex w-3/5 h-3/5 min-w-[760px] min-h-[400px] place-content-center place-items-center"
+        className="flex w-3/5 h-5/6 md:h-3/5 min-w-[760px] min-h-[400px] place-content-center place-items-center"
         // style={{ minHeight: "250px !important" }}
       >
-        <div className="bg-white h-3/5 w-1/6 min-h-[300px]">
+        <div className="hidden md:block w-1/6 h-3/5 min-h-[300px] bg-white">
           <img className="pt-5" src={logoG} alt="Projecttitle" />
         </div>
-        <div className="bg-[#26272f] h-full w-3/6 p-5">
+        <div className="hidden md:block bg-[#26272f] h-full w-3/6 p-5">
           <div
             className="h-full w-full p-5"
             style={{
@@ -130,7 +130,12 @@ export default function LogIn() {
           </div>
         </div>
 
-        <div className="flex bg-white h-3/5 w-5/12 place-content-center place-items-center min-h-[300px]">
+        <div className="flex flex-col bg-white h-5/6 md:h-3/5 w-5/12 place-content-center place-items-center min-h-[300px]">
+          <div className="md:hidden flex w-full p-3 pb-0 justify-center items-center">
+            <img className="w-7/12" src={logoG} alt="Projecttitle" />
+            <h2 className="md:hidden text-black text-3xl">LOGIN</h2>
+          </div>
+
           <form
             className="p-3 pb-5 space-y-3"
             onSubmit={(e) => handleSubmit(e)}
