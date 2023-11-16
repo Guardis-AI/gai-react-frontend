@@ -5,16 +5,24 @@
   background-color: #26272f;
   padding-top: 28px;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 .sidenavClosed {
-  composes: sidenav;
+  width: 62px;
   transition: width 0.3s ease-in-out;
-  width: 61px;
+  height: 100vh;
+  background-color: #26272f;
+  padding-top: 28px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 .sideitem {
   display: flex;
   align-items: center;
   padding: 10px 20px;
+  padding-left: 19px;
   cursor: pointer;
   color: #b2bac2;
   text-decoration: none;

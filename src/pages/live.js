@@ -93,7 +93,7 @@ export default function Live() {
             id="main"
             url={currVidUrl}
             width="100%"
-            // height="100%"
+            // height="auto"
             playing={true}
             volume={0}
             config={{
