@@ -357,13 +357,13 @@ export default function ScanModalButton() {
             </React.Fragment>
           )}
           <div className="self-end space-x-4">
-            <button
+            {/* <button
               type="button"
               className="bg-[#26272f] rounded-full text-white font-semibold py-2 px-4 self-end"
               onClick={onConfirm}
             >
               Validate All
-            </button>
+            </button> */}
             <button
               type="button"
               className="bg-[#26272f] rounded-full text-white font-semibold py-2 px-4 self-end"
