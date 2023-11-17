@@ -4,12 +4,15 @@ import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
 import RemoveIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
   const [events, setEvents] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [newName, setNewName] = useState();
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -104,6 +107,34 @@ export default function Home() {
       });
   }
 
+  function renameCamera() {
+    // axios
+    // .delete(localStorage.getItem("cfUrl") + "camera/credentials", {
+    //   data: {
+    //     uuid: cameraToRemove.uuid,
+    //     mac: cameraToRemove.mac,
+    //   },
+    // })
+    // .then(function (response) {
+    //   if (response == null) {
+    //     console.log("No camera found!");
+    //   } else {
+    //     const newCameraList = cameraList.filter((camera) => {
+    //       return camera.uuid !== cameraToRemove.uuid;
+    //     });
+    //     setCameraList(newCameraList);
+    //   }
+    // })
+    // .catch(function (error) {
+    //   console.log(error);
+    // });
+  }
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    setNewName(e.target.value);
+  };
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow w-5/6 px-6 pr-8">
@@ -115,6 +146,25 @@ export default function Home() {
                 className="p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] pt-2"
                 key={i}
               >
+                {editMode ? (
+                  <div>
+                    <input
+                      type="text"
+                      className="border-solid border-1 border-gray rounded mb-2 pl-1"
+                      defaultValue={camera.name}
+                    ></input>
+                    <button className="ml-1 mb-2 border-solid border-1 border-gray rounded text-white" onClick={()=> renameCamera(camera)} >
+                      <SaveIcon/>
+                      </button>
+                  </div>
+                ) : (
+                  <h1
+                    className="pb-2 text-white"
+                    onClick={() => setEditMode(true)}
+                  >
+                    {camera.name}
+                  </h1>
+                )}
                 <div
                   onClick={() =>
                     navigate("/live", {
@@ -125,7 +175,6 @@ export default function Home() {
                     })
                   }
                 >
-                  <h1 className="pb-2 text-white">{camera.name}</h1>
                   <ReactPlayer
                     url={createUrl(camera.uuid)}
                     width="100%"
