@@ -69,7 +69,7 @@ export default function EventList(props) {
               className="flex p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] space-x-2"
               key={i}
               onClick={() =>
-                props.setMainVideo(event.notification_log_id, null)
+                props.setMainVideo(event.clip_id, null)
               }
             >
               <PlayCircleOutlineIcon
@@ -77,7 +77,7 @@ export default function EventList(props) {
                 fontSize="large"
               />
               <div className="space-y-3">
-                <h1>{event.noti_camera_type}</h1>
+                <h1>{event.cameraname}</h1>
                 <h1>{event.sent_date}</h1>
               </div>
 
