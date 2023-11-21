@@ -37,21 +37,33 @@ export default function Home() {
       });
 
     axios
-      .post(`${baseUrlApi}/api/noti/getnotilog`, {
-        p_user_id: localStorage.getItem("userId"),
-        p_device_token: "",
-        p_device_type: "",
-        p_device_id: "",
-        login_user_id: localStorage.getItem("userId"),
-        p_notification_log_id: "",
-        p_read_flag: "N",
-      })
-      .then(function (response) {
-        response = response.data.gai_get_user_notification_log;
+      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
+      .then(async function (response) {
+        console.log(response);
+
         if (response == null) {
           console.log("No events found!");
         } else {
-          setEvents(response[0].notification_log);
+          const notification_list = response.data.map((notification) => {
+            let cameraname = "Generic";
+
+            if (cameraList !== null) {
+              const camera = cameraList.find(
+                (c) => c.mac === notification.camera_id
+              );
+              cameraname = camera ? camera.name : cameraname;
+            }
+
+            return {
+              clip_id: notification.clip_id,
+              camera_id: notification.camera_id,
+              cameraname: cameraname,
+              sent_date: new Date(notification.timestamp).toLocaleDateString(),
+              severity: notification.severity,
+              user_feedback: notification.user_feedback,
+            };
+          });
+          setEvents(notification_list);
         }
       })
       .catch(function (error) {
@@ -66,14 +78,11 @@ export default function Home() {
   }
 
   function navNoti(id) {
-    const selNoti = events.find((i) => i.notification_log_id === id);
+    const selNoti = events.find((i) => i.clip_id === id);
 
-    const url =
-      localStorage.getItem("cfUrl") +
-      "get_video?path=" +
-      selNoti.filepath +
-      "&filename=" +
-      selNoti.filename;
+    const url = `${localStorage.getItem("cfUrl")}/notifications/get_video/${
+      selNoti.clip_id
+    }`;
 
     navigate("/events", {
       state: {
@@ -181,6 +190,14 @@ export default function Home() {
                     height="auto"
                     playing={true}
                     volume={0}
+                    config={{
+                      file: {
+                        hlsOptions: {
+                          maxBufferLength: 10, // or 15 or 20 based on tests
+                          maxMaxBufferLength: 30,
+                        },
+                      },
+                    }}
                   />
                 </div>
                 <div className="text-right">

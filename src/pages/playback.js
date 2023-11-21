@@ -108,6 +108,14 @@ export default function Playback() {
             width="100%"
             // height="100%"
             controls
+            config={{
+              file: {
+                hlsOptions: {
+                  maxBufferLength: 10, // or 15 or 20 based on tests
+                  maxMaxBufferLength: 30,
+                },
+              },
+            }}
           />
         </div>
       </div>

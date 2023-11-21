@@ -5,6 +5,7 @@ import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrow
 import { navData } from "../../lib/navData";
 import { useState } from "react";
 import logoG from "../../assets/images/logoG.png";
+import { Fragment } from "react";
 
 export default function Navbar() {
   const [open, setopen] = useState(true);
@@ -13,16 +14,12 @@ export default function Navbar() {
   };
 
   let path = useLocation();
-  if (path.pathname === "/log-in" || path.pathname === " /sign-out") {
+  if (path.pathname === "/log-in" || path.pathname === "/sign-out") {
     return null;
   }
 
   return (
-    <div
-      className={
-        "overflow-auto " + open ? styles.sidenav : styles.sidenavClosed
-      }
-    >
+    <div className={open ? styles.sidenav : styles.sidenavClosed}>
       <li style={{ listStyleType: "none" }}>
         <div className="h-24 pb-4">
           <img
@@ -46,13 +43,29 @@ export default function Navbar() {
         )}
       </button>
       {navData.map((item, i) => {
+        if (i === navData.length - 1)
+          return (
+            <Fragment key={item.id}>
+              <div className="grow" />
+              <NavLink
+                key={item.id}
+                className={
+                  styles.sideitem +
+                  (item.text === window.location.href ? "active" : "")
+                }
+                to={item.link}
+              >
+                {item.icon}
+                <span className={styles.linkText}>{item.text}</span>
+              </NavLink>
+            </Fragment>
+          );
         return (
           <NavLink
             key={item.id}
             className={
               styles.sideitem +
-              (item.text === window.location.href ? "active" : "") +
-              (i === 5 ? " absolute bottom-2" : "")
+              (item.text === window.location.href ? "active" : "")
             }
             to={item.link}
           >
