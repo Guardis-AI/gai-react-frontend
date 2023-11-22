@@ -11,7 +11,7 @@ export default function Playback() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [cameraList, setCameraList] = useState(null);
-  const [currCamNum, setCurrCamNum] = useState(null);
+  const [currCamera, setCurrCamera] = useState({ namr: "" });
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
   const setMainVideo = useCallback((date, camType) => {
@@ -30,13 +30,19 @@ export default function Playback() {
           console.log("No devices found!");
         } else {
           const camera_list = response.data.map((camera) => {
-            return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
+            return {
+              uuid: camera.uuid,
+              name: camera.name,
+              mac: camera.mac,
+              editMode: false,
+              originalname: camera.name,
+            };
           });
 
           setCameraList(camera_list);
           // this.isloading = true;
           setMainVideo(selectedDate, camera_list[0].uuid);
-          setCurrCamNum(camera_list[0].name);
+          setCurrCamera(camera_list[0]);
         }
       })
       .catch(function (error) {
@@ -87,12 +93,60 @@ export default function Playback() {
       });
   }
 
+  function renameCamera(index) {
+    const cameras = [...cameraList];
+    const camera = cameras[index];
+
+    axios
+      .put(localStorage.getItem("cfUrl") + "camera/credentials", {
+        mac: camera.mac,
+        name: camera.name,
+        uuid: camera.uuid,
+      })
+      .then(function (response) {
+        if (response == null) {
+          console.log("No devices found!");
+        } else {
+          const camera_list = response.data.map((camera) => {
+            return {
+              uuid: camera.uuid,
+              name: camera.name,
+              mac: camera.mac,
+              editMode: false,
+              originalname: camera.name,
+            };
+          });
+
+          setCameraList(camera_list);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  const handleChange = (index, value) => {
+    const updatedCamera = [...cameraList];
+    updatedCamera[index].name = value;
+    setCameraList(updatedCamera);
+  };
+
+  const handleEditMode = (index, value) => {    
+    const updatedCamera = [...cameraList];
+    updatedCamera[index].editMode = value;
+
+    if(!value){
+      updatedCamera[index].name = updatedCamera[index].originalname;
+    }
+    setCameraList(updatedCamera);
+  };
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <div className="w-5/6 self-center flex flex-col py-3">
           <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
-            <h6>{currCamNum}</h6>
+            <h6>{currCamera.name}</h6>
             <div>
               <span>Selected date: </span>
               <DatePicker
@@ -123,9 +177,12 @@ export default function Playback() {
         cameraList={cameraList}
         createUrl={createUrl}
         setMainVideo={setMainVideo}
-        setCurrCamNum={setCurrCamNum}
+        setCurrCamera={setCurrCamera}
         date={selectedDate}
         removeCamera={removeCamera}
+        handleChange={handleChange}
+        handleEditMode={handleEditMode}
+        renameCamera={renameCamera}
       />
     </div>
   );
