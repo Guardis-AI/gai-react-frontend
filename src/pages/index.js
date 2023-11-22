@@ -4,6 +4,7 @@ import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
 import RemoveIcon from "@mui/icons-material/Delete";
+import moment from 'moment';
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Home() {
@@ -55,7 +56,7 @@ export default function Home() {
               clip_id: notification.clip_id,
               camera_id: notification.camera_id,
               cameraname: cameraname,
-              sent_date: new Date(notification.timestamp).toLocaleDateString(),
+              sent_date: moment(notification.timestamp).format('MM/DD/yyyy, h:mm:ss A'),
               severity: notification.severity,
               user_feedback: notification.user_feedback,
             };
