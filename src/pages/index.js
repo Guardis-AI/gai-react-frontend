@@ -5,6 +5,8 @@ import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
 import RemoveIcon from "@mui/icons-material/Delete";
 import moment from 'moment';
+import SaveIcon from "@mui/icons-material/SaveTwoTone";
+import CancelIcon from "@mui/icons-material/CancelTwoTone";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Home() {
@@ -23,11 +25,15 @@ export default function Home() {
           console.log("No devices found!");
         } else {
           const camera_list = response.data.map((camera) => {
-            return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
+            return {
+              uuid: camera.uuid,
+              name: camera.name,
+              mac: camera.mac,
+              editMode: false,
+            };
           });
 
           setCameraList(camera_list);
-          // this.isloading = true;
         }
       })
       .catch(function (error) {
@@ -114,17 +120,88 @@ export default function Home() {
       });
   }
 
+  function renameCamera(index) {
+    const cameras = [...cameraList];
+    const camera = cameras[index];
+
+    axios
+      .put(localStorage.getItem("cfUrl") + "camera/credentials", {
+        mac: camera.mac,
+        name: camera.name,
+        uuid: camera.uuid,
+      })
+      .then(function (response) {
+        if (response == null) {
+          console.log("No devices found!");
+        } else {
+          const camera_list = response.data.map((camera) => {
+            return {
+              uuid: camera.uuid,
+              name: camera.name,
+              mac: camera.mac,
+              editMode: false,
+            };
+          });
+          setCameraList(camera_list);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  const handleChange = (index, value) => {
+    const updatedCamera = [...cameraList];
+    updatedCamera[index].name = value;
+    setCameraList(updatedCamera);
+  };
+
+  const handleEditMode = (index, value) => {
+    const updatedCamera = [...cameraList];
+    updatedCamera[index].editMode = value;
+    setCameraList(updatedCamera);
+  };
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow w-5/6 px-6 pr-8">
         <h2 className="font-semibold text-3xl mb-2">Live Feeds</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 md:gap-2">
-          {cameraList?.map((camera, i) => {
+          {cameraList?.map((camera, index) => {
             return (
               <div
                 className="p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] pt-2"
-                key={i}
+                key={index}
               >
+                {camera.editMode ? (
+                  <div>
+                    <input
+                      type="text"
+                      className="border-solid border-1 border-gray rounded mb-2 pl-1"
+                      defaultValue={camera.name}
+                      onChange={(e) => handleChange(index, e.target.value)}
+                    ></input>
+                    <button
+                      className="ml-1 mb-2 border-solid border-1 border-gray rounded text-white"
+                      onClick={() => renameCamera(index)}
+                    >
+                      <SaveIcon />
+                    </button>
+                    <button
+                      className="ml-1 mb-2 border-solid border-1 border-gray rounded text-white"
+                      onClick={() => handleEditMode(index, false)}
+                    >
+                      <CancelIcon />
+                    </button>
+                  </div>
+                ) : (
+                  <h1
+                    className="pb-2 text-white"
+                    onClick={() => handleEditMode(index, true)}
+                  >
+                    {camera.name}
+                  </h1>
+                )}
                 <div
                   onClick={() =>
                     navigate("/live", {
@@ -135,7 +212,6 @@ export default function Home() {
                     })
                   }
                 >
-                  <h1 className="pb-2 text-white">{camera.name}</h1>
                   <ReactPlayer
                     url={createUrl(camera.uuid)}
                     width="100%"
