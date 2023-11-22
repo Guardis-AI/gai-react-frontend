@@ -5,6 +5,8 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
+import moment from "moment";
+
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Events() {
@@ -37,7 +39,7 @@ export default function Events() {
 
       const streamUrl = `${localStorage.getItem(
         "cfUrl"
-      )}/notifications/get_video/${selNoti.clip_id}`;
+      )}notifications/get_video/${selNoti.clip_id}`;
       setCurrVidUrl(streamUrl);
       setCurrNoti(selNoti);
     },
@@ -70,11 +72,10 @@ export default function Events() {
     axios
       .get(`${localStorage.getItem("cfUrl")}notifications`, null)
       .then(async function (response) {
-       
         if (response == null || response.data.length === 0) {
           console.log("No events found!");
         } else {
-          const notification_list = response.data.map((notification) => {
+          let notification_list = response.data.map((notification) => {
             let cameraname = "Generic";
 
             if (cameraList !== null) {
@@ -88,7 +89,9 @@ export default function Events() {
               clip_id: notification.clip_id,
               camera_id: notification.camera_id,
               cameraname: cameraname,
-              sent_date: new Date(notification.timestamp).toLocaleDateString(),
+              sent_date: moment(notification.timestamp).format(
+                "MM/DD/yyyy, h:mm:ss A"
+              ),
               severity: notification.severity,
               user_feedback: notification.user_feedback,
             };
@@ -98,17 +101,27 @@ export default function Events() {
             (n) => n.user_feedback === null
           ).length;
 
+          notification_list = notification_list.sort(
+            (a, b) => a.sent_date - b.sent_date
+          );
+
           setTimeout(function () {
             setUnreadCount(notificationUnreadCount);
             setEvents(notification_list);
           }, 5000);
 
-          if (state) {          
-              const selNoti = notification_list.find((i) => i.clip_id === state.id);
+          if (state) {
+            if (!currVidUrl) {
+              const selNoti = notification_list.find(
+                (i) => i.clip_id === state.id
+              );
               setCurrVidUrl(state.url);
-              setCurrNoti(selNoti);           
+              setCurrNoti(selNoti);
+            }
           } else {
-            setMainVideo(notification_list[0].clip_id, notification_list);
+            if (!currVidUrl) {
+              setMainVideo(notification_list[0].clip_id, notification_list);
+            }
           }
         }
       })
@@ -119,12 +132,15 @@ export default function Events() {
 
   function saveUserFeedback(notification, wasgood) {
     axios
-      .put(`${localStorage.getItem("cfUrl")}notifications/${notification.clip_id}`, {
-        clip_id: notification.clip_id,
-        camera_id: notification.camera_id,
-        severity: notification.severity,
-        user_feedback: wasgood,
-      })
+      .put(
+        `${localStorage.getItem("cfUrl")}notifications/${notification.clip_id}`,
+        {
+          clip_id: notification.clip_id,
+          camera_id: notification.camera_id,
+          severity: notification.severity,
+          user_feedback: wasgood,
+        }
+      )
       .then(function (response) {
         console.log("No devices found!");
       })
