@@ -111,11 +111,13 @@ export default function Events() {
           }, 5000);
 
           if (state) {
-            const selNoti = notification_list.find(
-              (i) => i.clip_id === state.id
-            );
-            setCurrVidUrl(state.url);
-            setCurrNoti(selNoti);
+            if (!currVidUrl) {
+              const selNoti = notification_list.find(
+                (i) => i.clip_id === state.id
+              );
+              setCurrVidUrl(state.url);
+              setCurrNoti(selNoti);
+            }
           } else {
             if (!currVidUrl) {
               setMainVideo(notification_list[0].clip_id, notification_list);
