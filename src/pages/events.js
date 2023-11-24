@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import axios from "axios";
@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import moment from "moment";
+import UserFeedbackModal from "../components/UserFeedbackModal";
 
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
@@ -17,6 +18,8 @@ export default function Events() {
   const [currVidUrl, setCurrVidUrl] = useState(null);
   const [cameraList, setCameraList] = useState(null);
   const { state } = useLocation();
+  
+  let userFeedbackModal = useRef();
 
   const setMainVideo = useCallback(
     (id, notifs) => {
@@ -149,6 +152,12 @@ export default function Events() {
       });
   }
 
+  function openFeedbackModal(){
+    if (userFeedbackModal.current) {    
+      userFeedbackModal.current.openModal();
+    }
+  }
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
@@ -172,7 +181,7 @@ export default function Events() {
             </button>
             <button
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
-              onClick={() => saveUserFeedback(currNoti, false)}
+              onClick= {()=>openFeedbackModal()}//{() => saveUserFeedback(currNoti, false)}
             >
               <ThumbDownIcon />
             </button>
@@ -182,8 +191,9 @@ export default function Events() {
       <EventList
         unreadCount={unreadCount}
         events={events}
-        setMainVideo={setMainVideo}
+        setMainVideo={setMainVideo}s
       />
+      <UserFeedbackModal ref={userFeedbackModal}  />
     </div>
   );
 }
