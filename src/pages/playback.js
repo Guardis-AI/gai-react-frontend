@@ -5,7 +5,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// const baseUrlApi = process.env.REACT_APP_BASE_URL;
+import moment from "moment";
 
 export default function Playback() {
   const navigate = useNavigate();
@@ -14,8 +14,8 @@ export default function Playback() {
   const [currCamera, setCurrCamera] = useState({ namr: "" });
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
-  const setMainVideo = useCallback((date, camType) => {
-    const streamUrl = createUrl(date, camType);
+  const setMainVideo = useCallback((camera) => {
+    const streamUrl = createUrl(camera.mac);
     setCurrVidUrl(streamUrl);
   }, []);
 
@@ -39,9 +39,8 @@ export default function Playback() {
             };
           });
 
-          setCameraList(camera_list);
-          // this.isloading = true;
-          setMainVideo(selectedDate, camera_list[0].uuid);
+          setCameraList(camera_list);          
+          setMainVideo(camera_list[0]);
           setCurrCamera(camera_list[0]);
         }
       })
@@ -50,23 +49,14 @@ export default function Playback() {
       });
   }, [navigate, selectedDate, setMainVideo]);
 
-  function createUrl(date, camType) {
-    // Format date
-    const y = date.getFullYear();
-    const m = date.getMonth() + 1;
-    const d = date.getDate();
-    const mm = m < 10 ? "0" + m : m;
-    const dd = d < 10 ? "0" + d : d;
-    const yyyyMMdd = "" + y + mm + dd;
-
-    return (
-      localStorage.getItem("cfUrl") +
-      "media/" +
-      camType +
-      "/" +
-      yyyyMMdd +
-      "/output.m3u8"
+  function createUrl(macOfCamera) {
+   
+    const yyyyMMdd = moment(selectedDate).format(
+      "yyyyMMDD"
     );
+
+    const videoUrl = `${localStorage.getItem("cfUrl")}media/${macOfCamera}/${yyyyMMdd}/output.m3u8`;
+    return videoUrl;
   }
 
   function removeCamera(cameraToRemove) {
@@ -159,8 +149,7 @@ export default function Playback() {
           <ReactPlayer
             id="main"
             url={currVidUrl}
-            width="100%"
-            // height="100%"
+            width="100%"            
             controls
             config={{
               file: {
@@ -177,8 +166,7 @@ export default function Playback() {
         cameraList={cameraList}
         createUrl={createUrl}
         setMainVideo={setMainVideo}
-        setCurrCamera={setCurrCamera}
-        date={selectedDate}
+        setCurrCamera={setCurrCamera}        
         removeCamera={removeCamera}
         handleChange={handleChange}
         handleEditMode={handleEditMode}

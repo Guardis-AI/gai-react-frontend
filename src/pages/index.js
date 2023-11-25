@@ -53,7 +53,7 @@ function getNotifications(listOfCameras){
     if (response == null) {
       console.log("No events found!");
     } else {
-      const notification_list = updateCameraNameInNotificatinos(
+      const notification_list = updateCameraNameInNotifications(
         response.data,
         listOfCameras
       );
