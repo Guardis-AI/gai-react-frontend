@@ -21,16 +21,7 @@ export default function Events() {
   const setMainVideo = useCallback(
     (id, notifs) => {
       let selNoti;
-
-      if (state) {
-        selNoti = events.find((i) => i.clip_id === state.id);
-        if (selNoti) {
-          setCurrVidUrl(state.url);
-          setCurrNoti(selNoti);
-        }
-        return;
-      }
-
+      
       if (notifs) {
         selNoti = notifs.find((i) => i.clip_id === id);
       } else {
@@ -57,6 +48,7 @@ export default function Events() {
           if (response == null) {
             console.log("No devices found!");
           } else {
+            
             const camera_list = response.data.map((camera) => {
               return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
             });
@@ -75,35 +67,11 @@ export default function Events() {
         if (response == null || response.data.length === 0) {
           console.log("No events found!");
         } else {
-          let notification_list = response.data.map((notification) => {
-            let cameraname = "Generic";
-
-            if (cameraList !== null) {
-              const camera = cameraList.find(
-                (c) => c.mac === notification.camera_id
-              );
-              cameraname = camera ? camera.name : cameraname;
-            }
-
-            return {
-              clip_id: notification.clip_id,
-              camera_id: notification.camera_id,
-              cameraname: cameraname,
-              sent_date: moment(notification.timestamp).format(
-                "MM/DD/yyyy, h:mm:ss A"
-              ),
-              severity: notification.severity,
-              user_feedback: notification.user_feedback,
-            };
-          });
+          let notification_list = updateCameraNameInNotificatios(response.data);
 
           const notificationUnreadCount = notification_list.filter(
             (n) => n.user_feedback === null
           ).length;
-
-          notification_list = notification_list.sort(
-            (a, b) => a.sent_date - b.sent_date
-          );
 
           setTimeout(function () {
             setUnreadCount(notificationUnreadCount);
@@ -115,6 +83,8 @@ export default function Events() {
               const selNoti = notification_list.find(
                 (i) => i.clip_id === state.id
               );
+
+              selNoti.cameraname = state.cameraname;
               setCurrVidUrl(state.url);
               setCurrNoti(selNoti);
             }
@@ -129,6 +99,39 @@ export default function Events() {
         console.log(error);
       });
   }, [navigate, state, setMainVideo]);
+
+
+  function updateCameraNameInNotificatios(notifications){
+
+    let notification_list = notifications.map((notification) => {
+      let cameraname = "Generic";
+
+      if (cameraList !== null) {
+        const camera = cameraList.find(
+          (c) => c.mac === notification.camera_id
+        );
+        cameraname = camera ? camera.name : cameraname;
+      }
+
+      return {
+        clip_id: notification.clip_id,
+        camera_id: notification.camera_id,
+        cameraname: cameraname,
+        sent_date: moment(notification.timestamp).format(
+          "MM/DD/yyyy, h:mm:ss A"
+        ),
+        severity: notification.severity,
+        user_feedback: notification.user_feedback,
+      };
+    });
+   
+    notification_list = notification_list.sort(
+      (a, b) => a.sent_date - b.sent_date
+    );
+
+    return notification_list;
+  }
+
 
   function saveUserFeedback(notification, wasgood) {
     axios
