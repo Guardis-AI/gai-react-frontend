@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import ReactPlayer from "react-player";
 import VideoList from "../components/VideoList";
 import DatePicker from "react-datepicker";
@@ -9,13 +9,14 @@ import moment from "moment";
 
 export default function Playback() {
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [cameraList, setCameraList] = useState(null);
   const [currCamera, setCurrCamera] = useState({ namr: "" });
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
-  const setMainVideo = useCallback((camera, date = null) => {   
-    const streamUrl = createUrl(camera.mac,date);
+  const selectedDateRef = useRef(new Date());
+
+  const setMainVideo = useCallback((camera) => {
+    const streamUrl = createUrl(camera.mac);
     setCurrVidUrl(streamUrl);
   }, []);
 
@@ -39,7 +40,7 @@ export default function Playback() {
             };
           });
 
-          setCameraList(camera_list);          
+          setCameraList(camera_list);
           setMainVideo(camera_list[0]);
           setCurrCamera(camera_list[0]);
         }
@@ -47,15 +48,14 @@ export default function Playback() {
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate,  setMainVideo]);
+  }, [navigate, setMainVideo]);
 
-  function createUrl(macOfCamera, date = null) {
-    date = date? date:selectedDate;
-    const yyyyMMdd = moment(date).format(
-      "yyyyMMDD"
-    );
+  function createUrl(macOfCamera) {
+    const yyyyMMdd = moment(selectedDateRef.current).format("yyyyMMDD");
 
-    const videoUrl = `${localStorage.getItem("cfUrl")}media/${macOfCamera}/${yyyyMMdd}/output.m3u8`;
+    const videoUrl = `${localStorage.getItem(
+      "cfUrl"
+    )}media/${macOfCamera}/${yyyyMMdd}/output.m3u8`;
     return videoUrl;
   }
 
@@ -121,20 +121,20 @@ export default function Playback() {
     setCameraList(updatedCamera);
   };
 
-  const handleEditMode = (index, value) => {    
+  const handleEditMode = (index, value) => {
     const updatedCamera = [...cameraList];
     updatedCamera[index].editMode = value;
 
-    if(!value){
+    if (!value) {
       updatedCamera[index].name = updatedCamera[index].originalname;
     }
     setCameraList(updatedCamera);
   };
 
- const handleDateChange = async(date) => {
-  await setSelectedDate(date);
-   setMainVideo(currCamera,date);
- };
+  const handleDateChange = async (date) => {
+    selectedDateRef.current = date;
+    setMainVideo(currCamera);
+  };
 
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
@@ -146,7 +146,7 @@ export default function Playback() {
               <span>Selected date: </span>
               <DatePicker
                 className="text-black"
-                selected={selectedDate}
+                selected={selectedDateRef.current}
                 onChange={(date) => handleDateChange(date)}
               />
             </div>
@@ -154,7 +154,7 @@ export default function Playback() {
           <ReactPlayer
             id="main"
             url={currVidUrl}
-            width="100%"            
+            width="100%"
             controls
             config={{
               file: {
@@ -171,7 +171,7 @@ export default function Playback() {
         cameraList={cameraList}
         createUrl={createUrl}
         setMainVideo={setMainVideo}
-        setCurrCamera={setCurrCamera}        
+        setCurrCamera={setCurrCamera}
         removeCamera={removeCamera}
         handleChange={handleChange}
         handleEditMode={handleEditMode}
