@@ -4,7 +4,6 @@ import VideoList from "../components/VideoList";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-// const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Live() {
   const navigate = useNavigate();
@@ -15,10 +14,10 @@ export default function Live() {
   const { state } = useLocation();
 
   const setMainVideo = useCallback(
-    (_, camType) => {
-      const streamUrl = createUrl(_, camType.uuid);
+    (camera) => {
+      const streamUrl = createUrl(camera.mac);
       setCurrVidUrl(streamUrl);
-      setCurrCamera(camType);
+      setCurrCamera(camera);
     },
     [setCurrVidUrl, setCurrCamera]
   );
@@ -50,9 +49,9 @@ export default function Live() {
       });
   }, [navigate, state, setMainVideo]);
 
-  function createUrl(_, camType) {
+  function createUrl(macOfCamera) {
     return (
-      localStorage.getItem("cfUrl") + "media/live/" + camType + "/output.m3u8"
+      localStorage.getItem("cfUrl") + "media/live/" + macOfCamera + "/output.m3u8"
     );
   }
 
@@ -157,8 +156,7 @@ export default function Live() {
         cameraList={cameraList}
         createUrl={createUrl}
         setMainVideo={setMainVideo}
-        setCurrCamera={setCurrCamera}
-        date={new Date()}
+        setCurrCamera={setCurrCamera}       
         removeCamera={removeCamera}
         handleChange={handleChange}
         handleEditMode={handleEditMode}
