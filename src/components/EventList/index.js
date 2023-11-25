@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// import ReactPlayer from "react-player";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -13,11 +12,6 @@ const darkTheme = createTheme({
 export default function EventList(props) {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-
-  // function createUrl(id) {
-  //   const selNoti = props.events.find((i) => i.notification_log_id === id);
-  //   return localStorage.getItem("cfUrl") + "get_video?path=" + selNoti.filepath;
-  // }
 
   function dateFilter(event) {
     if (!startDate && !endDate) {
@@ -79,24 +73,7 @@ export default function EventList(props) {
               <div className="space-y-3">
                 <h1>{event.cameraname}</h1>
                 <h1>{event.sent_date}</h1>
-              </div>
-
-              {/* <ReactPlayer
-                url={createUrl(event.notification_log_id)}
-                width="100%"
-                height="auto"
-                playing={false}
-                volume={0}
-                config={{
-                  file: {
-                    hlsOptions: {
-                      maxBufferLength: 10, // or 15 or 20 based on tests
-                      maxMaxBufferLength: 30,
-                    },
-                    attributes: { preload: "none" },
-                  },
-                }}
-              /> */}
+              </div>             
             </div>
           );
         })}

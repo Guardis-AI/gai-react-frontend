@@ -4,7 +4,7 @@ import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
 import RemoveIcon from "@mui/icons-material/Delete";
-import moment from 'moment';
+import moment from "moment";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
@@ -33,58 +33,79 @@ export default function Home() {
             };
           });
 
-          setCameraList(camera_list);
+          setCameraList(camera_list);      
+          getNotifications(camera_list);   
         }
       })
       .catch(function (error) {
         console.log(error);
       });
 
-    axios
-      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
-      .then(async function (response) {
-        console.log(response);
-
-        if (response == null) {
-          console.log("No events found!");
-        } else {
-          const notification_list = response.data.map((notification) => {
-            let cameraname = "Generic";
-
-            if (cameraList !== null) {
-              const camera = cameraList.find(
-                (c) => c.mac === notification.camera_id
-              );
-              cameraname = camera ? camera.name : cameraname;
-            }
-
-            return {
-              clip_id: notification.clip_id,
-              camera_id: notification.camera_id,
-              cameraname: cameraname,
-              sent_date: moment(notification.timestamp).format('MM/DD/yyyy, h:mm:ss A'),
-              severity: notification.severity,
-              user_feedback: notification.user_feedback,
-            };
-          });
-          setEvents(notification_list);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
   }, [navigate]);
 
-  function createUrl(camType) {
+function getNotifications(listOfCameras){
+
+  axios
+  .get(`${localStorage.getItem("cfUrl")}notifications`, null)
+  .then(async function (response) {
+    console.log(response);
+
+    if (response == null) {
+      console.log("No events found!");
+    } else {
+      const notification_list = updateCameraNameInNotificatios(
+        response.data,
+        listOfCameras
+      );
+      setEvents(notification_list);
+    }
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+}
+
+  function updateCameraNameInNotificatios(notificationList, listOfCameras) {
+    let notification_list = notificationList.map((notification) => {
+      let cameraname = "Generic";
+
+      if (listOfCameras !== null) {
+        const camera = listOfCameras.find(
+          (c) => c.mac === notification.camera_id
+        );
+        cameraname = camera ? camera.name : cameraname;
+      }
+
+      return {
+        clip_id: notification.clip_id,
+        camera_id: notification.camera_id,
+        cameraname: cameraname,
+        sent_date: moment(notification.timestamp).format(
+          "MM/DD/yyyy, h:mm:ss A"
+        ),
+        severity: notification.severity,
+        user_feedback: notification.user_feedback,
+      };
+    });
+    
+    notification_list = notification_list.sort(
+      (a, b) => a.sent_date - b.sent_date
+    );
+
+    return notification_list;
+  }
+
+  function createUrl(macOfCamera) {
     return (
-      localStorage.getItem("cfUrl") + "media/live/" + camType + "/output.m3u8"
+      localStorage.getItem("cfUrl") + "media/live/" + macOfCamera + "/output.m3u8"
     );
   }
 
   function navNoti(id) {
     const selNoti = events.find((i) => i.clip_id === id);
 
-    const url = `${localStorage.getItem("cfUrl")}/notifications/get_video/${
+    const url = `${localStorage.getItem("cfUrl")}notifications/get_video/${
       selNoti.clip_id
     }`;
 
@@ -92,6 +113,7 @@ export default function Home() {
       state: {
         id: id,
         url: url,
+        cameraname: selNoti.cameraname,
       },
     });
   }
@@ -206,14 +228,14 @@ export default function Home() {
                   onClick={() =>
                     navigate("/live", {
                       state: {
-                        url: createUrl(camera.uuid),
+                        url: createUrl(camera.mac),
                         camType: camera.name,
                       },
                     })
                   }
                 >
                   <ReactPlayer
-                    url={createUrl(camera.uuid)}
+                    url={createUrl(camera.mac)}
                     width="100%"
                     height="auto"
                     playing={true}
