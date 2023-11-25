@@ -67,7 +67,7 @@ export default function Events() {
         if (response == null || response.data.length === 0) {
           console.log("No events found!");
         } else {
-          let notification_list = updateCameraNameInNotificatios(response.data);
+          let notification_list = updateCameraNameInNotifications(response.data);
 
           const notificationUnreadCount = notification_list.filter(
             (n) => n.user_feedback === null
@@ -101,7 +101,7 @@ export default function Events() {
   }, [navigate, state, setMainVideo]);
 
 
-  function updateCameraNameInNotificatios(notifications){
+  function updateCameraNameInNotifications(notifications){
 
     let notification_list = notifications.map((notification) => {
       let cameraname = "Generic";
