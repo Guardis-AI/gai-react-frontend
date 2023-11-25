@@ -5,9 +5,9 @@ import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
 
 export default function VideoList(props) {
-  function updatePlayer(date, camType) {
-    props.setMainVideo(date, camType.uuid);
-    props.setCurrCamera(camType);
+  function updatePlayer(camera) {
+    props.setMainVideo(camera);
+    props.setCurrCamera(camera);
   }
 
   return (
@@ -47,9 +47,9 @@ export default function VideoList(props) {
                     {camera.name}
                   </h1>
                 )}
-            <div onClick={() => updatePlayer(props.date, camera)}>            
+            <div onClick={() => updatePlayer(camera)}>            
               <ReactPlayer
-                url={props.createUrl(props.date, camera.uuid)}
+                url={props.createUrl(camera.mac)}
                 width="100%"
                 height="auto"
                 playing={true}
