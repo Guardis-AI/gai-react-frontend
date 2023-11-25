@@ -14,8 +14,8 @@ export default function Playback() {
   const [currCamera, setCurrCamera] = useState({ namr: "" });
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
-  const setMainVideo = useCallback((camera) => {
-    const streamUrl = createUrl(camera.mac);
+  const setMainVideo = useCallback((camera, date = null) => {   
+    const streamUrl = createUrl(camera.mac,date);
     setCurrVidUrl(streamUrl);
   }, []);
 
@@ -47,11 +47,11 @@ export default function Playback() {
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, selectedDate, setMainVideo]);
+  }, [navigate,  setMainVideo]);
 
-  function createUrl(macOfCamera) {
-   
-    const yyyyMMdd = moment(selectedDate).format(
+  function createUrl(macOfCamera, date = null) {
+    date = date? date:selectedDate;
+    const yyyyMMdd = moment(date).format(
       "yyyyMMDD"
     );
 
@@ -131,6 +131,11 @@ export default function Playback() {
     setCameraList(updatedCamera);
   };
 
+ const handleDateChange = async(date) => {
+  await setSelectedDate(date);
+   setMainVideo(currCamera,date);
+ };
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
@@ -142,7 +147,7 @@ export default function Playback() {
               <DatePicker
                 className="text-black"
                 selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
+                onChange={(date) => handleDateChange(date)}
               />
             </div>
           </div>
