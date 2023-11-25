@@ -53,7 +53,7 @@ function getNotifications(listOfCameras){
     if (response == null) {
       console.log("No events found!");
     } else {
-      const notification_list = updateCameraNameInNotificatios(
+      const notification_list = updateCameraNameInNotificatinos(
         response.data,
         listOfCameras
       );
@@ -66,7 +66,7 @@ function getNotifications(listOfCameras){
 
 }
 
-  function updateCameraNameInNotificatios(notificationList, listOfCameras) {
+  function updateCameraNameInNotifications(notificationList, listOfCameras) {
     let notification_list = notificationList.map((notification) => {
       let cameraname = "Generic";
 
