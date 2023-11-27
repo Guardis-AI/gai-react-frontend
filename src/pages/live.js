@@ -40,7 +40,7 @@ export default function Live() {
             setCurrVidUrl(state.url);
             setCurrCamera(state);
           } else {            
-            setMainVideo(null, camera_list[0]);
+            setMainVideo(camera_list[0]);
           }
         }
       })
