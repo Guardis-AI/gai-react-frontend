@@ -42,30 +42,16 @@ export default function Home() {
       });
   }, [navigate]);
 
-function getNotifications(listOfCameras){
+  function getNotifications(listOfCameras) {
+    axios
+      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
+      .then(async function (response) {
+        console.log(response);
 
-  axios
-  .get(`${localStorage.getItem("cfUrl")}notifications`, null)
-  .then(async function (response) {
-    console.log(response);
-
-    if (response == null) {
-      console.log("No events found!");
-    } else {
-      const notification_list = updateCameraNameInNotifications(
-        response.data,
-        listOfCameras
-      );
-      setEvents(notification_list);
-    }
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
         if (response == null) {
           console.log("No events found!");
         } else {
-          const notification_list = updateCameraNameInNotificatios(
+          const notification_list = updateCameraNameInNotifications(
             response.data,
             listOfCameras
           );
