@@ -156,13 +156,25 @@ export default function Playback() {
             url={currVidUrl}
             width="100%"
             controls
+            playing={true}
+            volume={0}
             config={{
               file: {
                 hlsOptions: {
                   maxBufferLength: 10, // or 15 or 20 based on tests
-                  maxMaxBufferLength: 30,
+                  maxMaxBufferLength: 30,                 
+                  maxBufferSize:90,
+                  maxBufferHole:2.5,
+                  highBufferWatchdogPeriod:10,
+                  maxFragLookUpTolerance :2.5,
+                  enableWorker:true,
+                  lowLatencyMode:true,
+                  backBufferLength:90
                 },
               },
+            }}
+            onError={(...args) => {              
+              console.log(`There is a error with the video: ${JSON.stringify(args[1])}`);
             }}
           />
         </div>
