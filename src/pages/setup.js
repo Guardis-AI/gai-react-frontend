@@ -152,252 +152,258 @@ export default function Setup() {
   };
 
   return (
-    <div className="py-3 px-8 h-full overflow-auto">
-      <div className="flex flex-row space-x-4">
-        <div className="flex grow flex-col">
-          <h1 className="font-semibold text-3xl">Users</h1>
-          <span className="text-gray-600">
-            {userData?.length === 1 ? "1 User" : userData?.length + " Users"}
-          </span>
+    <div>
+      <div className="py-3 px-8 h-full overflow-auto">
+        <div className="flex flex-row space-x-2 md:space-x-4 flex-wrap space-y-2 max-w-full">
+          <div className="flex grow flex-col">
+            <h1 className="font-semibold text-3xl">Users</h1>
+            <span className="text-gray-600">
+              {userData?.length === 1 ? "1 User" : userData?.length + " Users"}
+            </span>
+          </div>
+          <input
+            className="border-solid border-2 border-gray rounded-full py-2 px-8"
+            type="text"
+            placeholder="Search User..."
+            onChange={handleChange}
+            value={searchInput}
+          />
+          <button
+            type="button"
+            className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
+            onClick={openUserModal}
+          >
+            Add User
+          </button>
+          <button
+            type="button"
+            className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
+            onClick={openDeviceModal}
+          >
+            Add Device
+          </button>
+          <ScanModalButton />
         </div>
-        <input
-          className="border-solid border-2 border-gray rounded-full px-8"
-          type="text"
-          placeholder="Search User..."
-          onChange={handleChange}
-          value={searchInput}
-        />
-        <button
-          className="px-8 bg-[#26272f] rounded-full text-white font-semibold"
-          onClick={openUserModal}
+
+        {/* User Modal */}
+        <Modal
+          isOpen={userModalIsOpen}
+          // onAfterOpen={afterOpenModal}
+          onRequestClose={closeUserModal}
+          contentLabel="Add User Modal"
+          className="bg-[#4f5263] w-full h-full md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
+          style={customStyles}
         >
-          Add User
-        </button>
-        <button
-          className="px-8 bg-[#26272f] rounded-full text-white font-semibold"
-          onClick={openDeviceModal}
+          <div className="flex bg-[#26272f] justify-between py-2 px-4">
+            <h2 className="font-semibold text-xl">Add User</h2>
+            <button onClick={closeUserModal} className="font-semibold text-xl">
+              X
+            </button>
+          </div>
+          <form
+            className="flex flex-col space-y-3 px-5 py-2 pb-4"
+            onSubmit={onUserSubmit}
+          >
+            <label className="flex flex-col w-3/5">
+              Username
+              <input
+                type="text"
+                name="username"
+                value={userFormData.username}
+                onChange={handleUserFormChange}
+                className="text-black"
+              />
+            </label>
+            <label className="flex flex-col w-3/5">
+              User Role
+              <input
+                type="text"
+                name="urole"
+                value={userFormData.urole}
+                onChange={handleUserFormChange}
+                className="text-black"
+              />
+            </label>
+            <label className="flex flex-col w-3/5">
+              Password
+              <input
+                type="password"
+                name="password"
+                value={userFormData.password}
+                onChange={handleUserFormChange}
+                className="text-black"
+              />
+            </label>
+            <label className="flex flex-col w-3/5">
+              Password (Confirm)
+              <input
+                type="password"
+                name="passwordConfirm"
+                value={userFormData.passwordConfirm}
+                onChange={handleUserFormChange}
+                className="text-black"
+              />
+            </label>
+            <label className="flex flex-col w-3/5">
+              CF-Url
+              <input
+                type="text"
+                name="cfurl"
+                value={userFormData.cfurl}
+                onChange={handleUserFormChange}
+                className="text-black"
+              />
+            </label>
+            <label className="flex flex-col w-3/5">
+              Unit Name
+              <input
+                type="text"
+                name="p_edgeunit"
+                value={userFormData.p_edgeunit}
+                onChange={handleUserFormChange}
+                className="text-black"
+              />
+            </label>
+            <div className="flex space-x-2">
+              <label className="flex flex-col w-3/5">
+                Start Date
+                <input
+                  type="date"
+                  name="start_date"
+                  value={userFormData.start_date}
+                  onChange={handleUserFormChange}
+                  className="text-black"
+                />
+              </label>
+              <label className="flex flex-col w-3/5">
+                End Date
+                <input
+                  type="date"
+                  name="end_date"
+                  value={userFormData.end_date}
+                  onChange={handleUserFormChange}
+                  className="text-black"
+                />
+              </label>
+            </div>
+            <button
+              type="submit"
+              className="bg-[#26272f] rounded-full text-white font-semibold"
+            >
+              Save
+            </button>
+          </form>
+        </Modal>
+
+        {/* Device Modal */}
+        <Modal
+          isOpen={deviceModalIsOpen}
+          onRequestClose={closeDeviceModal}
+          contentLabel="Add Device Modal"
+          className="bg-[#4f5263] w-full h-full md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
+          style={customStyles}
         >
-          Add Device
-        </button>
-        <ScanModalButton />
+          <div className="flex bg-[#26272f] justify-between py-2 px-4">
+            <h2 className="font-semibold text-xl">Add Device</h2>
+            <button
+              onClick={closeDeviceModal}
+              className="font-semibold text-xl"
+            >
+              X
+            </button>
+          </div>
+          <form
+            className="flex flex-col space-y-3 px-5 py-2 pb-4"
+            onSubmit={onDeviceSubmit}
+          >
+            <div className="flex space-x-2">
+              <label className="flex flex-col w-3/5">
+                User
+                <input
+                  type="text"
+                  name="user_id"
+                  value={deviceFormData.user_id}
+                  onChange={handleDeviceFormChange}
+                  className="text-black"
+                />
+              </label>
+              <label className="flex flex-col w-3/5">
+                IP Address
+                <input
+                  type="text"
+                  name="p_IP_Address"
+                  value={deviceFormData.p_IP_Address}
+                  onChange={handleDeviceFormChange}
+                  className="text-black"
+                />
+              </label>
+            </div>
+            <label className="flex flex-col w-3/5">
+              URL
+              <input
+                type="text"
+                name="p_url"
+                value={deviceFormData.p_url}
+                onChange={handleDeviceFormChange}
+                className="text-black"
+              />
+            </label>
+            <div className="flex space-x-2">
+              <label className="flex flex-col w-3/5">
+                Camera Type
+                <input
+                  type="text"
+                  name="p_Camera_Type"
+                  value={deviceFormData.p_Camera_Type}
+                  onChange={handleDeviceFormChange}
+                  className="text-black"
+                />
+              </label>
+              <label className="flex flex-col w-3/5">
+                Port
+                <input
+                  type="text"
+                  name="p_port"
+                  value={deviceFormData.p_port}
+                  onChange={handleDeviceFormChange}
+                  className="text-black"
+                />
+              </label>
+            </div>
+            <div className="flex space-x-2">
+              <label className="flex flex-col w-3/5">
+                Start Date
+                <input
+                  type="date"
+                  name="start_date"
+                  value={deviceFormData.start_date}
+                  onChange={handleDeviceFormChange}
+                  className="text-black"
+                />
+              </label>
+              <label className="flex flex-col w-3/5">
+                End Date
+                <input
+                  type="date"
+                  name="end_date"
+                  value={deviceFormData.end_date}
+                  onChange={handleDeviceFormChange}
+                  className="text-black"
+                />
+              </label>
+            </div>
+            <button
+              type="submit"
+              className="bg-[#26272f] rounded-full text-white font-semibold"
+            >
+              Save
+            </button>
+          </form>
+        </Modal>
       </div>
-
-      {/* User Modal */}
-      <Modal
-        isOpen={userModalIsOpen}
-        // onAfterOpen={afterOpenModal}
-        onRequestClose={closeUserModal}
-        contentLabel="Add User Modal"
-        className="bg-[#4f5263] w-2/5 h-11/12 overflow-auto text-white rounded-xl"
-        style={customStyles}
-      >
-        <div className="flex bg-[#26272f] justify-between py-2 px-4">
-          <h2 className="font-semibold text-xl">Add User</h2>
-          <button onClick={closeUserModal} className="font-semibold text-xl">
-            X
-          </button>
-        </div>
-        <form
-          className="flex flex-col space-y-3 px-5 py-2 pb-4"
-          onSubmit={onUserSubmit}
-        >
-          <label className="flex flex-col w-3/5">
-            Username
-            <input
-              type="text"
-              name="username"
-              value={userFormData.username}
-              onChange={handleUserFormChange}
-              className="text-black"
-            />
-          </label>
-          <label className="flex flex-col w-3/5">
-            User Role
-            <input
-              type="text"
-              name="urole"
-              value={userFormData.urole}
-              onChange={handleUserFormChange}
-              className="text-black"
-            />
-          </label>
-          <label className="flex flex-col w-3/5">
-            Password
-            <input
-              type="password"
-              name="password"
-              value={userFormData.password}
-              onChange={handleUserFormChange}
-              className="text-black"
-            />
-          </label>
-          <label className="flex flex-col w-3/5">
-            Password (Confirm)
-            <input
-              type="password"
-              name="passwordConfirm"
-              value={userFormData.passwordConfirm}
-              onChange={handleUserFormChange}
-              className="text-black"
-            />
-          </label>
-          <label className="flex flex-col w-3/5">
-            CF-Url
-            <input
-              type="text"
-              name="cfurl"
-              value={userFormData.cfurl}
-              onChange={handleUserFormChange}
-              className="text-black"
-            />
-          </label>
-          <label className="flex flex-col w-3/5">
-            Unit Name
-            <input
-              type="text"
-              name="p_edgeunit"
-              value={userFormData.p_edgeunit}
-              onChange={handleUserFormChange}
-              className="text-black"
-            />
-          </label>
-          <div className="flex space-x-2">
-            <label className="flex flex-col w-3/5">
-              Start Date
-              <input
-                type="date"
-                name="start_date"
-                value={userFormData.start_date}
-                onChange={handleUserFormChange}
-                className="text-black"
-              />
-            </label>
-            <label className="flex flex-col w-3/5">
-              End Date
-              <input
-                type="date"
-                name="end_date"
-                value={userFormData.end_date}
-                onChange={handleUserFormChange}
-                className="text-black"
-              />
-            </label>
-          </div>
-          <button
-            type="submit"
-            className="bg-[#26272f] rounded-full text-white font-semibold"
-          >
-            Save
-          </button>
-        </form>
-      </Modal>
-
-      {/* Device Modal */}
-      <Modal
-        isOpen={deviceModalIsOpen}
-        onRequestClose={closeDeviceModal}
-        contentLabel="Add Device Modal"
-        className="bg-[#4f5263] w-2/5 h-11/12 overflow-auto text-white rounded-xl"
-        style={customStyles}
-      >
-        <div className="flex bg-[#26272f] justify-between py-2 px-4">
-          <h2 className="font-semibold text-xl">Add Device</h2>
-          <button onClick={closeDeviceModal} className="font-semibold text-xl">
-            X
-          </button>
-        </div>
-        <form
-          className="flex flex-col space-y-3 px-5 py-2 pb-4"
-          onSubmit={onDeviceSubmit}
-        >
-          <div className="flex space-x-2">
-            <label className="flex flex-col w-3/5">
-              User
-              <input
-                type="text"
-                name="user_id"
-                value={deviceFormData.user_id}
-                onChange={handleDeviceFormChange}
-                className="text-black"
-              />
-            </label>
-            <label className="flex flex-col w-3/5">
-              IP Address
-              <input
-                type="text"
-                name="p_IP_Address"
-                value={deviceFormData.p_IP_Address}
-                onChange={handleDeviceFormChange}
-                className="text-black"
-              />
-            </label>
-          </div>
-          <label className="flex flex-col w-3/5">
-            URL
-            <input
-              type="text"
-              name="p_url"
-              value={deviceFormData.p_url}
-              onChange={handleDeviceFormChange}
-              className="text-black"
-            />
-          </label>
-          <div className="flex space-x-2">
-            <label className="flex flex-col w-3/5">
-              Camera Type
-              <input
-                type="text"
-                name="p_Camera_Type"
-                value={deviceFormData.p_Camera_Type}
-                onChange={handleDeviceFormChange}
-                className="text-black"
-              />
-            </label>
-            <label className="flex flex-col w-3/5">
-              Port
-              <input
-                type="text"
-                name="p_port"
-                value={deviceFormData.p_port}
-                onChange={handleDeviceFormChange}
-                className="text-black"
-              />
-            </label>
-          </div>
-          <div className="flex space-x-2">
-            <label className="flex flex-col w-3/5">
-              Start Date
-              <input
-                type="date"
-                name="start_date"
-                value={deviceFormData.start_date}
-                onChange={handleDeviceFormChange}
-                className="text-black"
-              />
-            </label>
-            <label className="flex flex-col w-3/5">
-              End Date
-              <input
-                type="date"
-                name="end_date"
-                value={deviceFormData.end_date}
-                onChange={handleDeviceFormChange}
-                className="text-black"
-              />
-            </label>
-          </div>
-          <button
-            type="submit"
-            className="bg-[#26272f] rounded-full text-white font-semibold"
-          >
-            Save
-          </button>
-        </form>
-      </Modal>
-
       {/* <div className="drop-shadow"> */}
-      <div>
-        <table className="table-fixed border flex flex-col text-left mt-2 border-b-0 drop-shadow-none">
+      <div className="flex w-full overflow-auto px-1">
+        <table className="table-fixed border flex flex-col md:w-full text-left mt-2 border-b-0 drop-shadow-none">
           <thead>
             <tr className="font-bold p-2 border-b flex !drop-shadow-none">
               <th className="w-1/6">User Id</th>

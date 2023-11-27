@@ -33,38 +33,35 @@ export default function Home() {
             };
           });
 
-          setCameraList(camera_list);      
-          getNotifications(camera_list);   
+          setCameraList(camera_list);
+          getNotifications(camera_list);
         }
       })
       .catch(function (error) {
         console.log(error);
       });
-
   }, [navigate]);
 
-function getNotifications(listOfCameras){
+  function getNotifications(listOfCameras) {
+    axios
+      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
+      .then(async function (response) {
+        console.log(response);
 
-  axios
-  .get(`${localStorage.getItem("cfUrl")}notifications`, null)
-  .then(async function (response) {
-    console.log(response);
-
-    if (response == null) {
-      console.log("No events found!");
-    } else {
-      const notification_list = updateCameraNameInNotificatios(
-        response.data,
-        listOfCameras
-      );
-      setEvents(notification_list);
-    }
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
-
-}
+        if (response == null) {
+          console.log("No events found!");
+        } else {
+          const notification_list = updateCameraNameInNotificatios(
+            response.data,
+            listOfCameras
+          );
+          setEvents(notification_list);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
 
   function updateCameraNameInNotificatios(notificationList, listOfCameras) {
     let notification_list = notificationList.map((notification) => {
@@ -88,7 +85,7 @@ function getNotifications(listOfCameras){
         user_feedback: notification.user_feedback,
       };
     });
-    
+
     notification_list = notification_list.sort(
       (a, b) => a.sent_date - b.sent_date
     );
@@ -98,7 +95,10 @@ function getNotifications(listOfCameras){
 
   function createUrl(macOfCamera) {
     return (
-      localStorage.getItem("cfUrl") + "media/live/" + macOfCamera + "/output.m3u8"
+      localStorage.getItem("cfUrl") +
+      "media/live/" +
+      macOfCamera +
+      "/output.m3u8"
     );
   }
 
@@ -186,8 +186,7 @@ function getNotifications(listOfCameras){
 
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
-      <div className="xl:grow w-5/6 px-6 pr-8">
-        <h2 className="font-semibold text-3xl mb-2">Live Feeds</h2>
+      <div className="xl:grow w-full md:w-5/6 px-6 pr-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 md:gap-2">
           {cameraList?.map((camera, index) => {
             return (
