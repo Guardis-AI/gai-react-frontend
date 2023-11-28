@@ -7,30 +7,38 @@ const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Setup() {
   const navigate = useNavigate();
-  // const userColumns = [
-  //   "user_id",
-  //   "user_name",
-  //   "edgeunit",
-  //   "user_st_date",
-  //   "tot_devices",
-  //   "action",
-  // ];
-  // const deviceColumns = [
-  //   "device_id",
-  //   "p_url",
-  //   "p_port",
-  //   "p_Camera_Type",
-  //   "dev_st_date",
-  //   "p_IP_Address",
-  //   "edit",
-  // ];
-
   const [userData, setUserData] = useState(null);
   const [searchInput, setSearchInput] = useState("");
+  const [cameraList, setCameraList] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
+
+    axios
+      .get(localStorage.getItem("cfUrl") + "camera/credentials")
+      .then(function (response) {
+        const camera_list = response.data.map((camera) => {
+          return {
+            uuid: camera.uuid,
+            name: camera.name,
+            mac: camera.mac,
+            ip: camera.ip,
+            port: camera.port,
+            vendorName: camera.vendor_name,
+            url: camera.uri,
+          };
+        });
+
+        if (response === null) {
+          console.log("No camera found!");
+        } else {
+          setCameraList(camera_list);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
 
     var userId = localStorage.getItem("userId");
     axios
@@ -401,7 +409,6 @@ export default function Setup() {
           </form>
         </Modal>
       </div>
-      {/* <div className="drop-shadow"> */}
       <div className="flex w-full overflow-auto px-1">
         <table className="table-fixed border flex flex-col md:w-full text-left mt-2 border-b-0 drop-shadow-none">
           <thead>
@@ -433,44 +440,39 @@ export default function Setup() {
                       <table className="table-fixed border flex flex-col text-left mt-2 w-full text-xs border-black border-b-0">
                         <thead className="font-bold  border-b flex border-black ">
                           <tr className="flex w-full p-2">
-                            {/* {deviceColumns.map((column) => {
-                            return <th className="w-1/12">{column}</th>;
-                          })} */}
-                            <th className="w-1/12">Device ID</th>
+                            <th className="w-2/12">Device ID</th>
                             <th className="w-1/2">URL</th>
                             <th className="w-1/12 pl-2">Port</th>
-                            <th className="w-1/12">Camera Type</th>
-                            <th className="w-1/12">Start Date</th>
+                            <th className="w-1/12">Camera Name</th>
+                            <th className="w-1/12">Mac Address</th>
                             <th className="w-1/12">IP Address</th>
-                            <th className="w-1/12">Edit</th>
+                            <th className="w-2/12">Vendor</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {user.user_devices?.map((device, i) => {
+                          {cameraList?.map((camera, i) => {
                             return (
                               <tr
                                 className="border-b p-2 flex border-black"
                                 key={i}
                               >
-                                <td className="w-1/12">{device.device_id}</td>
+                                <td className="w-2/12">{camera.uuid}</td>
                                 <td className="w-1/2 overflow-auto">
-                                  {device.url}
+                                  {camera.url}
                                 </td>
                                 <td className="w-1/12 overflow-auto pl-2">
-                                  {device.port}
+                                  {camera.port}
                                 </td>
                                 <td className="w-1/12 overflow-auto">
-                                  {device.camera_type}
+                                  {camera.name}
                                 </td>
                                 <td className="w-1/12 overflow-auto">
-                                  {device.dev_st_date}
+                                  {camera.mac}
                                 </td>
                                 <td className="w-1/12 overflow-auto">
-                                  {device.ip_address}
+                                  {camera.ip}
                                 </td>
-                                <td className="w-1/12">
-                                  <button>Edit</button>
-                                </td>
+                                <td className="w-2/12">{camera.vendorName}</td>
                               </tr>
                             );
                           })}
