@@ -326,12 +326,14 @@ export default function ScanModalButton() {
                           onChange={(e) => onPasswordChange(e, i)}
                         />
                         <button
+                          type="button"
                           className="bg-[#26272f] rounded-full text-white font-semibold px-2 h-7"
                           onClick={() => onValidate(i)}
                         >
                           Validate
                         </button>
                         <button
+                          type="button"
                           className="bg-[#26272f] rounded-full text-white font-semibold px-2 h-7"
                           onClick={() => onDelete(i)}
                         >
@@ -394,7 +396,8 @@ export default function ScanModalButton() {
   return (
     <React.Fragment>
       <button
-        className="px-8 bg-[#26272f] rounded-full text-white font-semibold"
+        type="button"
+        className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
         onClick={onScan}
       >
         Scan Devices
@@ -403,12 +406,16 @@ export default function ScanModalButton() {
         isOpen={scanModalIsOpen}
         onRequestClose={onFinish}
         contentLabel="Scan Device Modal"
-        className="bg-[#4f5263] w-4/5 h-11/12 overflow-auto text-white rounded-xl"
+        className="bg-[#4f5263] w-full h-full md:w-4/5 md:h-11/12 overflow-auto text-white rounded-xl"
         style={customStyles}
       >
         <div className="flex bg-[#26272f] justify-between py-2 px-4">
           <h2 className="font-semibold text-xl">Scanned Devices</h2>
-          <button onClick={closeScanModal} className="font-semibold text-xl">
+          <button
+            type="button"
+            onClick={closeScanModal}
+            className="font-semibold text-xl"
+          >
             X
           </button>
         </div>

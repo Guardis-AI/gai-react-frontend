@@ -7,13 +7,13 @@ import { useState } from "react";
 import logoG from "../../assets/images/logoG.png";
 import { Fragment } from "react";
 
-export default function Navbar() {
+export function Navbar() {
   const [open, setopen] = useState(true);
   const toggleOpen = () => {
     setopen(!open);
   };
 
-  let path = useLocation();
+  const path = useLocation();
   if (path.pathname === "/log-in" || path.pathname === "/sign-out") {
     return null;
   }
@@ -47,30 +47,35 @@ export default function Navbar() {
           return (
             <Fragment key={item.id}>
               <div className="grow" />
-              <NavLink
-                key={item.id}
-                className={
-                  styles.sideitem +
-                  (item.text === window.location.href ? "active" : "")
-                }
-                to={item.link}
-              >
+              <NavLink key={item.id} className={styles.sideitem} to={item.link}>
                 {item.icon}
                 <span className={styles.linkText}>{item.text}</span>
               </NavLink>
             </Fragment>
           );
         return (
-          <NavLink
-            key={item.id}
-            className={
-              styles.sideitem +
-              (item.text === window.location.href ? "active" : "")
-            }
-            to={item.link}
-          >
+          <NavLink key={item.id} className={styles.sideitem} to={item.link}>
             {item.icon}
             <span className={styles.linkText}>{item.text}</span>
+          </NavLink>
+        );
+      })}
+    </div>
+  );
+}
+
+export function MobileNavbar() {
+  const path = useLocation();
+  if (path.pathname === "/log-in" || path.pathname === "/sign-out") {
+    return null;
+  }
+
+  return (
+    <div className="sticky inset-x-0 bottom-0 flex bg-[#26272f] px-2 justify-around">
+      {navData.map((item, i) => {
+        return (
+          <NavLink key={item.id} className={styles.sideitem} to={item.link}>
+            {item.icon}
           </NavLink>
         );
       })}

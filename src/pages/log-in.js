@@ -132,8 +132,7 @@ export default function LogIn() {
 
         <div className="flex flex-col bg-white h-5/6 md:h-3/5 w-5/12 place-content-center place-items-center min-h-[300px]">
           <div className="md:hidden flex w-full p-3 pb-0 justify-center items-center">
-            <img className="w-7/12" src={logoG} alt="Projecttitle" />
-            <h2 className="md:hidden text-black text-3xl">LOGIN</h2>
+            <img className="w-11/12" src={logoG} alt="Projecttitle" />
           </div>
 
           <form

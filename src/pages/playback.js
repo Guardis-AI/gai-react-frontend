@@ -1,21 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import ReactPlayer from "react-player";
 import VideoList from "../components/VideoList";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// const baseUrlApi = process.env.REACT_APP_BASE_URL;
+import moment from "moment";
 
 export default function Playback() {
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [cameraList, setCameraList] = useState(null);
   const [currCamera, setCurrCamera] = useState({ namr: "" });
   const [currVidUrl, setCurrVidUrl] = useState(null);
 
-  const setMainVideo = useCallback((date, camType) => {
-    const streamUrl = createUrl(date, camType);
+  const selectedDateRef = useRef(new Date());
+
+  const setMainVideo = useCallback((camera) => {
+    const streamUrl = createUrl(camera.mac);
     setCurrVidUrl(streamUrl);
   }, []);
 
@@ -40,33 +41,22 @@ export default function Playback() {
           });
 
           setCameraList(camera_list);
-          // this.isloading = true;
-          setMainVideo(selectedDate, camera_list[0].uuid);
+          setMainVideo(camera_list[0]);
           setCurrCamera(camera_list[0]);
         }
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, selectedDate, setMainVideo]);
+  }, [navigate, setMainVideo]);
 
-  function createUrl(date, camType) {
-    // Format date
-    const y = date.getFullYear();
-    const m = date.getMonth() + 1;
-    const d = date.getDate();
-    const mm = m < 10 ? "0" + m : m;
-    const dd = d < 10 ? "0" + d : d;
-    const yyyyMMdd = "" + y + mm + dd;
+  function createUrl(macOfCamera) {
+    const yyyyMMdd = moment(selectedDateRef.current).format("yyyyMMDD");
 
-    return (
-      localStorage.getItem("cfUrl") +
-      "media/" +
-      camType +
-      "/" +
-      yyyyMMdd +
-      "/output.m3u8"
-    );
+    const videoUrl = `${localStorage.getItem(
+      "cfUrl"
+    )}media/${macOfCamera}/${yyyyMMdd}/output.m3u8`;
+    return videoUrl;
   }
 
   function removeCamera(cameraToRemove) {
@@ -131,14 +121,19 @@ export default function Playback() {
     setCameraList(updatedCamera);
   };
 
-  const handleEditMode = (index, value) => {    
+  const handleEditMode = (index, value) => {
     const updatedCamera = [...cameraList];
     updatedCamera[index].editMode = value;
 
-    if(!value){
+    if (!value) {
       updatedCamera[index].name = updatedCamera[index].originalname;
     }
     setCameraList(updatedCamera);
+  };
+
+  const handleDateChange = async (date) => {
+    selectedDateRef.current = date;
+    setMainVideo(currCamera);
   };
 
   return (
@@ -151,8 +146,8 @@ export default function Playback() {
               <span>Selected date: </span>
               <DatePicker
                 className="text-black"
-                selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
+                selected={selectedDateRef.current}
+                onChange={(date) => handleDateChange(date)}
               />
             </div>
           </div>
@@ -160,15 +155,26 @@ export default function Playback() {
             id="main"
             url={currVidUrl}
             width="100%"
-            // height="100%"
             controls
+            playing={true}
+            volume={0}
             config={{
               file: {
                 hlsOptions: {
                   maxBufferLength: 10, // or 15 or 20 based on tests
-                  maxMaxBufferLength: 30,
+                  maxMaxBufferLength: 30,                 
+                  maxBufferSize:90,
+                  maxBufferHole:2.5,
+                  highBufferWatchdogPeriod:10,
+                  maxFragLookUpTolerance :2.5,
+                  enableWorker:true,
+                  lowLatencyMode:true,
+                  backBufferLength:90
                 },
               },
+            }}
+            onError={(...args) => {              
+              console.log(`There is a error with the video: ${JSON.stringify(args[1])}`);
             }}
           />
         </div>
@@ -178,7 +184,6 @@ export default function Playback() {
         createUrl={createUrl}
         setMainVideo={setMainVideo}
         setCurrCamera={setCurrCamera}
-        date={selectedDate}
         removeCamera={removeCamera}
         handleChange={handleChange}
         handleEditMode={handleEditMode}
