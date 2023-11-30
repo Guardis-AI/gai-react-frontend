@@ -6,12 +6,18 @@ import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import Slider from '@mui/material/Slider';
+import SyncAltRoundedIcon from '@mui/icons-material/SyncAltRounded';
 
 export default function Playback() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
   const [currCamera, setCurrCamera] = useState({ namr: "" });
   const [currVidUrl, setCurrVidUrl] = useState(null);
+  const [value, setValue] = useState([0, 70]);
+  const [maxVideoTime, setMaxVideoTime] = useState(60);
+  const [minVideoTime, setMinVideoTime] = useState(0);
+
 
   const selectedDateRef = useRef(new Date());
 
@@ -136,6 +142,45 @@ export default function Playback() {
     setMainVideo(currCamera);
   };
 
+  const handleChange2 = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  const marks = [
+    {
+      value: 0,
+      label: '00:00',
+    },
+    {
+      value: 10,
+      label: '00:10',
+    },
+    {
+      value: 20,
+      label: '00:20',
+    },
+    {
+      value: 30,
+      label: '00:30',
+    },
+    {
+      value: 40,
+      label: '00:40',
+    },
+    {
+      value: 50,
+      label: '00:50',
+    },
+    {
+      value: 60,
+      label: '00:60',
+    }
+  ];
+
+    function valuetext(value) {
+      return `${value}°C`;
+    }
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
@@ -162,19 +207,64 @@ export default function Playback() {
               file: {
                 hlsOptions: {
                   maxBufferLength: 10, // or 15 or 20 based on tests
-                  maxMaxBufferLength: 30,                 
-                  maxBufferSize:90,
-                  maxBufferHole:2.5,
-                  highBufferWatchdogPeriod:10,
-                  maxFragLookUpTolerance :2.5,
-                  enableWorker:true,
-                  lowLatencyMode:true,
-                  backBufferLength:90
+                  maxMaxBufferLength: 30,
+                  maxBufferSize: 90,
+                  maxBufferHole: 2.5,
+                  highBufferWatchdogPeriod: 10,
+                  maxFragLookUpTolerance: 2.5,
+                  enableWorker: true,
+                  lowLatencyMode: true,
+                  backBufferLength: 90,
                 },
               },
             }}
-            onError={(...args) => {              
-              console.log(`There is a error with the video: ${JSON.stringify(args[1])}`);
+            onError={(...args) => {
+              console.log(
+                `There is a error with the video: ${JSON.stringify(args[1])}`
+              );
+            }}
+          />
+        </div>
+        <div className="w-5/6 self-center flex  bg-gray-800  rounded-t-lg">
+          <div className="flex-1 p-4">
+            <div className="text-white text-left">
+              <h6>
+                {" "}
+                {moment(new Date(selectedDateRef.current)).format("llll")}
+              </h6>
+            </div>
+          </div>
+          <div className="p-2">
+            <SyncAltRoundedIcon className="text-white" fontSize="large" />
+          </div>
+          <div className="flex-1 p-4">
+            <div className="text-white text-right">
+              <h6>
+                {" "}
+                {moment(new Date(selectedDateRef.current)).format("llll")}
+              </h6>
+            </div>
+          </div>
+        </div>
+        <div className="w-5/6 self-center flex bg-slate-200 pl-5 pr-5 rounded-b-lg ">
+          <Slider
+            getAriaLabel={() => "Video Time Selection"}
+            defaultValue={0}           
+            step={10}
+            //  marks={marks}            
+            min={minVideoTime}
+            max={maxVideoTime}
+            marks={marks}
+            value={value}
+            onChange={handleChange2}
+            valueLabelDisplay="auto"
+            color="success"
+            valueLabelFormat={(value) => {
+              const minutes = Math.floor(value / 60);
+              const seconds = value % 60;
+              return `${minutes.toString().padStart(2, "0")}:${seconds
+                .toString()
+                .padStart(2, "0")}`;
             }}
           />
         </div>
