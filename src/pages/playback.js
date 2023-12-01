@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  createRef,
+} from "react";
 import ReactPlayer from "react-player";
 import VideoList from "../components/VideoList";
 import DatePicker from "react-datepicker";
@@ -6,8 +12,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import Slider from '@mui/material/Slider';
-import SyncAltRoundedIcon from '@mui/icons-material/SyncAltRounded';
+import Slider from "@mui/material/Slider";
+import SyncAltRoundedIcon from "@mui/icons-material/SyncAltRounded";
 
 export default function Playback() {
   const navigate = useNavigate();
@@ -17,9 +23,11 @@ export default function Playback() {
   const [value, setValue] = useState([0, 70]);
   const [maxVideoTime, setMaxVideoTime] = useState(60);
   const [minVideoTime, setMinVideoTime] = useState(0);
-
+  const [marks, setMarks] = useState([]);
+  const step = 30;
 
   const selectedDateRef = useRef(new Date());
+  const currentVideoPlayer = createRef();
 
   const setMainVideo = useCallback((camera) => {
     const streamUrl = createUrl(camera.mac);
@@ -146,40 +154,22 @@ export default function Playback() {
     setValue(newValue);
   };
 
-  const marks = [
-    {
-      value: 0,
-      label: '00:00',
-    },
-    {
-      value: 10,
-      label: '00:10',
-    },
-    {
-      value: 20,
-      label: '00:20',
-    },
-    {
-      value: 30,
-      label: '00:30',
-    },
-    {
-      value: 40,
-      label: '00:40',
-    },
-    {
-      value: 50,
-      label: '00:50',
-    },
-    {
-      value: 60,
-      label: '00:60',
-    }
-  ];
+  const generateTimeLabel = (timeSpan) => {
+    let marks = [{ value: 0, label: "0:00" }];
 
-    function valuetext(value) {
-      return `${value}°C`;
+    for (let i = step; i < timeSpan; ) {
+      const minutes = Math.floor(i / 60);
+      const seconds = i % 60;
+      const label = `${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+
+      marks.push({ value: i, label: label });
+      i = i + step;
     }
+
+    setMarks(marks);
+  };
 
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
@@ -197,6 +187,25 @@ export default function Playback() {
             </div>
           </div>
           <ReactPlayer
+            ref={currentVideoPlayer}
+            onStart={() => {
+              var videoDuration = currentVideoPlayer.current.getDuration();
+              const date = new Date(videoDuration * 1000);
+
+              const hours = date.getUTCHours();
+              const minutes = date.getUTCMinutes();
+              const seconds = date.getUTCSeconds();
+
+              const formattedTimeString = `${hours
+                .toString()
+                .padStart(2, "0")}:${minutes
+                .toString()
+                .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+              console.log(formattedTimeString);
+              generateTimeLabel(videoDuration / 60);
+              setMaxVideoTime(videoDuration / 60);
+            }}
             id="main"
             url={currVidUrl}
             width="100%"
@@ -225,11 +234,10 @@ export default function Playback() {
             }}
           />
         </div>
-        <div className="w-5/6 self-center flex  bg-gray-800  rounded-t-lg">
+        <div className="w-5/6 self-center flex  bg-gray-800 ">
           <div className="flex-1 p-4">
             <div className="text-white text-left">
               <h6>
-                {" "}
                 {moment(new Date(selectedDateRef.current)).format("llll")}
               </h6>
             </div>
@@ -240,7 +248,6 @@ export default function Playback() {
           <div className="flex-1 p-4">
             <div className="text-white text-right">
               <h6>
-                {" "}
                 {moment(new Date(selectedDateRef.current)).format("llll")}
               </h6>
             </div>
@@ -249,9 +256,8 @@ export default function Playback() {
         <div className="w-5/6 self-center flex bg-slate-200 pl-5 pr-5 rounded-b-lg ">
           <Slider
             getAriaLabel={() => "Video Time Selection"}
-            defaultValue={0}           
-            step={10}
-            //  marks={marks}            
+            defaultValue={0}
+            step={step}
             min={minVideoTime}
             max={maxVideoTime}
             marks={marks}
