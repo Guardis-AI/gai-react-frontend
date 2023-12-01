@@ -150,7 +150,7 @@ export default function Playback() {
     setMainVideo(currCamera);
   };
 
-  const handleChange2 = (event, newValue) => {
+  const handleTimeChange = (event, newValue) => {
     setValue(newValue);
   };
 
@@ -190,21 +190,10 @@ export default function Playback() {
             ref={currentVideoPlayer}
             onStart={() => {
               var videoDuration = currentVideoPlayer.current.getDuration();
-              const date = new Date(videoDuration * 1000);
-
-              const hours = date.getUTCHours();
-              const minutes = date.getUTCMinutes();
-              const seconds = date.getUTCSeconds();
-
-              const formattedTimeString = `${hours
-                .toString()
-                .padStart(2, "0")}:${minutes
-                .toString()
-                .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-
-              console.log(formattedTimeString);
-              generateTimeLabel(videoDuration / 60);
-              setMaxVideoTime(videoDuration / 60);
+              const totalMinutes = Math.round((videoDuration / 60));
+              generateTimeLabel(totalMinutes);
+              setMaxVideoTime(totalMinutes);
+              setValue([0,totalMinutes]);
             }}
             id="main"
             url={currVidUrl}
@@ -262,7 +251,7 @@ export default function Playback() {
             max={maxVideoTime}
             marks={marks}
             value={value}
-            onChange={handleChange2}
+            onChange={handleTimeChange}
             valueLabelDisplay="auto"
             color="success"
             valueLabelFormat={(value) => {
