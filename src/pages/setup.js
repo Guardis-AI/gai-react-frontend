@@ -3,6 +3,7 @@ import Modal from "react-modal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ScanModalButton from "../components/ScanModalButton";
+import { async } from "q";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Setup() {
@@ -15,30 +16,7 @@ export default function Setup() {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-    axios
-      .get(localStorage.getItem("cfUrl") + "camera/credentials")
-      .then(function (response) {
-        const camera_list = response.data.map((camera) => {
-          return {
-            uuid: camera.uuid,
-            name: camera.name,
-            mac: camera.mac,
-            ip: camera.ip,
-            port: camera.port,
-            vendorName: camera.vendor_name,
-            url: camera.uri,
-          };
-        });
-
-        if (response === null) {
-          console.log("No camera found!");
-        } else {
-          setCameraList(camera_list);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+      getCamerasDetails();
 
     var userId = localStorage.getItem("userId");
     axios
@@ -115,16 +93,13 @@ export default function Setup() {
     setDeviceModalIsOpen(false);
   }
   const [deviceFormData, setDeviceFormData] = useState({
-    user_id: "",
-    p_IP_Address: "",
-    p_url: "",
-    p_Camera_Type: "",
-    p_port: "",
-    start_date: "",
-    end_date: "",
-    p_send_notification: false,
-    login_user_id: localStorage.getItem("userId"),
-    p_Camdevice_id: [""],
+    name: "",
+    ip: "",
+    port: "",
+    mac: "",
+    username: "",
+    password: "",
+    vendor_name: "",
   });
   function handleDeviceFormChange(e) {
     setDeviceFormData({
@@ -132,18 +107,22 @@ export default function Setup() {
       [e.target.name]: e.target.value,
     });
   }
-  function onDeviceSubmit() {
-    let devobj = deviceFormData;
-    devobj.p_username = localStorage.getItem("userName");
-    devobj.p_device_type = "";
-    devobj.p_device_token = "";
-    devobj.p_logindevice_id = "";
-    console.log("submitting add Device form: ");
-    console.log(devobj);
+  function  onDeviceSubmit(e) {
+    e.preventDefault();
+    let devobj = deviceFormData;    
     axios
-      .post(`${baseUrlApi}/api/user/insuserdevice`, devobj)
+      .post(`${localStorage.getItem("cfUrl")}camera/credentials`, {
+        name: devobj.name,
+        ip: devobj.ip,
+        port: devobj.port,
+        mac: devobj.mac,
+        username: devobj.username,
+        password: devobj.password,
+        vendor_name: devobj.vendor_name,
+      })
       .then(function (response) {
         console.log(response);
+         restartServices();   
       })
       .catch(function (error) {
         console.log(error);
@@ -158,6 +137,46 @@ export default function Setup() {
       transform: "translate(-50%, -50%)",
     },
   };
+
+ const restartServices=() =>{
+    axios
+      .post(localStorage.getItem("cfUrl") + "services/restart", null)
+      .then(function (response) {
+        console.log("services/restart:", response.data);
+        getCamerasDetails();
+        closeDeviceModal();
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  const getCamerasDetails = () =>{
+    axios
+    .get(localStorage.getItem("cfUrl") + "camera/credentials")
+    .then(function (response) {
+      const camera_list = response.data.map((camera) => {
+        return {
+          uuid: camera.uuid,
+          name: camera.name,
+          mac: camera.mac,
+          ip: camera.ip,
+          port: camera.port,
+          vendorName: camera.vendor_name,
+          url: camera.uri,
+        };
+      });
+
+      if (response === null) {
+        console.log("No camera found!");
+      } else {
+        setCameraList(camera_list);
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
 
   return (
     <div>
@@ -177,7 +196,7 @@ export default function Setup() {
             value={searchInput}
           />
           <button
-            type="button"
+            type="button" style={{display:"none"}}
             className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
             onClick={openUserModal}
           >
@@ -199,7 +218,7 @@ export default function Setup() {
           // onAfterOpen={afterOpenModal}
           onRequestClose={closeUserModal}
           contentLabel="Add User Modal"
-          className="bg-[#4f5263] w-full h-full md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
+          className="bg-[#4f5263] w-full  md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
           style={customStyles}
         >
           <div className="flex bg-[#26272f] justify-between py-2 px-4">
@@ -308,7 +327,7 @@ export default function Setup() {
           isOpen={deviceModalIsOpen}
           onRequestClose={closeDeviceModal}
           contentLabel="Add Device Modal"
-          className="bg-[#4f5263] w-full h-full md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
+          className="bg-[#4f5263] w-full md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
           style={customStyles}
         >
           <div className="flex bg-[#26272f] justify-between py-2 px-4">
@@ -322,95 +341,98 @@ export default function Setup() {
           </div>
           <form
             className="flex flex-col space-y-3 px-5 py-2 pb-4"
-            onSubmit={onDeviceSubmit}
+            onSubmit={(e)=>onDeviceSubmit(e)}
           >
             <div className="flex space-x-2">
               <label className="flex flex-col w-3/5">
-                User
+                User Name
                 <input
                   type="text"
-                  name="user_id"
-                  value={deviceFormData.user_id}
+                  name="username"
+                  value={deviceFormData.username}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
               <label className="flex flex-col w-3/5">
-                IP Address
+                Password
                 <input
-                  type="text"
-                  name="p_IP_Address"
-                  value={deviceFormData.p_IP_Address}
+                  type="password"
+                  name="password"
+                  value={deviceFormData.password}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
             </div>
+            <div className="flex space-x-2">
             <label className="flex flex-col w-3/5">
-              URL
+              Port
               <input
                 type="text"
-                name="p_url"
-                value={deviceFormData.p_url}
+                name="port"
+                value={deviceFormData.port}
                 onChange={handleDeviceFormChange}
                 className="text-black"
               />
             </label>
+            <label className="flex flex-col w-3/5">
+              Mac Address
+              <input
+                type="text"
+                name="mac"
+                value={deviceFormData.mac}
+                onChange={handleDeviceFormChange}
+                className="text-black"
+              />
+            </label>
+            </div>
             <div className="flex space-x-2">
               <label className="flex flex-col w-3/5">
-                Camera Type
+                Camera Name
                 <input
                   type="text"
-                  name="p_Camera_Type"
-                  value={deviceFormData.p_Camera_Type}
+                  name="name"
+                  value={deviceFormData.name}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
               <label className="flex flex-col w-3/5">
-                Port
+               Vendor Name
                 <input
                   type="text"
-                  name="p_port"
-                  value={deviceFormData.p_port}
+                  name="vendor_name"
+                  value={deviceFormData.vendor_name}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex space-x-2">             
               <label className="flex flex-col w-3/5">
-                Start Date
+                IP Address
                 <input
-                  type="date"
-                  name="start_date"
-                  value={deviceFormData.start_date}
-                  onChange={handleDeviceFormChange}
-                  className="text-black"
-                />
-              </label>
-              <label className="flex flex-col w-3/5">
-                End Date
-                <input
-                  type="date"
-                  name="end_date"
-                  value={deviceFormData.end_date}
+                  type="text"
+                  name="ip"
+                  value={deviceFormData.ip}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
             </div>
+            <div className="flex space-x-2">        
             <button
               type="submit"
-              className="bg-[#26272f] rounded-full text-white font-semibold"
-            >
+              className="w-1/6 bg-[#26272f] rounded-full text-white font-semibold ml-auto "   >
               Save
             </button>
+            </div>
           </form>
         </Modal>
       </div>
       <div className="flex w-full overflow-auto px-1">
-        <table className="table-fixed border flex flex-col md:w-full text-left mt-2 border-b-0 drop-shadow-none">
+        <table className="table-fixed border flex flex-col md:w-full right-5 mt-2 border-b-0 drop-shadow-none">
           <thead>
             <tr className="font-bold p-2 border-b flex !drop-shadow-none">
               <th className="w-1/6">User Id</th>

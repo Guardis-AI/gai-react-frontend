@@ -406,7 +406,7 @@ export default function ScanModalButton() {
         isOpen={scanModalIsOpen}
         onRequestClose={onFinish}
         contentLabel="Scan Device Modal"
-        className="bg-[#4f5263] w-full h-full md:w-4/5 md:h-11/12 overflow-auto text-white rounded-xl"
+        className="bg-[#4f5263] w-full md:w-4/5 md:h-11/12 overflow-auto text-white rounded-xl"
         style={customStyles}
       >
         <div className="flex bg-[#26272f] justify-between py-2 px-4">
