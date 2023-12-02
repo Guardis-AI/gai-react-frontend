@@ -24,8 +24,10 @@ export default function Playback() {
   const [maxVideoTime, setMaxVideoTime] = useState(60);
   const [minVideoTime, setMinVideoTime] = useState(0);
   const [marks, setMarks] = useState([]);
-  const step = 30;
+  //const [step, setStep] = useState(30);
+  //let step = 5;
 
+  const step = useRef(30);
   const selectedDateRef = useRef(new Date());
   const currentVideoPlayer = createRef();
 
@@ -157,7 +159,7 @@ export default function Playback() {
   const generateTimeLabel = (timeSpan) => {
     let marks = [{ value: 0, label: "0:00" }];
 
-    for (let i = step; i < timeSpan; ) {
+    for (let i = step.current; i < timeSpan; ) {
       const minutes = Math.floor(i / 60);
       const seconds = i % 60;
       const label = `${minutes.toString().padStart(2, "0")}:${seconds
@@ -165,7 +167,7 @@ export default function Playback() {
         .padStart(2, "0")}`;
 
       marks.push({ value: i, label: label });
-      i = i + step;
+      i = i + step.current;
     }
 
     setMarks(marks);
@@ -190,10 +192,21 @@ export default function Playback() {
             ref={currentVideoPlayer}
             onStart={() => {
               var videoDuration = currentVideoPlayer.current.getDuration();
-              const totalMinutes = Math.round((videoDuration / 60));
+              const totalMinutes = Math.round(videoDuration / 60);
+
+              if (totalMinutes <= 60) {
+                step.current = 5;
+              } else {
+                if (totalMinutes <= 300) {
+                  step.current = 15;
+                }else{
+                  step.current = 30;
+                }
+              }
+
               generateTimeLabel(totalMinutes);
               setMaxVideoTime(totalMinutes);
-              setValue([0,totalMinutes]);
+              setValue([0, totalMinutes]);
             }}
             id="main"
             url={currVidUrl}
@@ -246,7 +259,7 @@ export default function Playback() {
           <Slider
             getAriaLabel={() => "Video Time Selection"}
             defaultValue={0}
-            step={step}
+            step={step.current}
             min={minVideoTime}
             max={maxVideoTime}
             marks={marks}
