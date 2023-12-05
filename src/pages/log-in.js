@@ -82,20 +82,47 @@ export default function LogIn() {
       [e.target.name]: e.target.value,
     });
   }
+  
   function onSignUp(e) {
     e.preventDefault();
     console.log("submitting sign up form: ");
     console.log(signUpFormData);
-    axios
-      .post(`${baseUrlApi}/api/user/insuser`, signUpFormData)
+
+    if (isValidCrfUrl(signUpFormData.cfurl)) {
+      //createNewUser(signUpFormData);
+    }
+  }
+
+  const isValidCrfUrl = async (url) => {
+    let result = false;
+
+    const response = axios
+      .get(`${url}camera/ping`)
       .then(function (response) {
         console.log(response);
-        logIn(signUpFormData.username, signUpFormData.password);
+        return response.data == 'PONG!'
+      })
+      .catch(function (error) {
+        console.log(error);
+        return false;
+      });
+
+      result = await response;
+    return result;
+  };
+
+  const createNewUser = (user) => {
+    axios
+      .post(`${baseUrlApi}/api/user/insuser`, user)
+      .then(function (response) {
+        console.log(response);
+        logIn(user.username, user.password);
       })
       .catch(function (error) {
         console.log(error);
       });
-  }
+  };
+
   const customStyles = {
     content: {
       position: "absolute",
@@ -107,10 +134,7 @@ export default function LogIn() {
 
   return (
     <div className="flex h-full w-full bg-[#e0e2da] place-content-center place-items-center overflow-hidden">
-      <div
-        className="flex w-3/5 h-5/6 md:h-3/5 min-w-[760px] min-h-[400px] place-content-center place-items-center"
-        // style={{ minHeight: "250px !important" }}
-      >
+      <div className="flex w-3/5 h-5/6 md:h-3/5 min-w-[760px] min-h-[400px] place-content-center place-items-center">
         <div className="hidden md:block w-1/6 h-3/5 min-h-[300px] bg-white">
           <img className="pt-5" src={logoG} alt="Projecttitle" />
         </div>
@@ -122,8 +146,6 @@ export default function LogIn() {
               backgroundRepeat: "no-repeat",
               backgroundSize: "contain",
               backgroundPosition: "center",
-              //   backgroundPositionX: "41px",
-              //   backgroundPositionY: "29px",
             }}
           >
             <h2 className="text-white text-3xl">LOGIN</h2>
@@ -139,13 +161,9 @@ export default function LogIn() {
             className="p-3 pb-5 space-y-3"
             onSubmit={(e) => handleSubmit(e)}
           >
-            {/* <fuse-alert className="mt-8 -mb-4">
-                  {{ alert.message }}
-                </fuse-alert> */}
             <div>
               <label className="text-xs">Username</label>
               <div className="flex place-items-center border-solid border-2 rounded border-gray-200 pr-1">
-                {/* <mat-form-field className="w-60 text-[#0B3960] font-weight-20"> */}
                 <img
                   src={Username1}
                   className="p-2"
@@ -160,17 +178,12 @@ export default function LogIn() {
                   onChange={(e) => setUsername(e.target.value)}
                   value={username}
                 />
-
-                {/* <mat-error>Username is required</mat-error> */}
-                {/* <mat-error>Please enter a valid username</mat-error> */}
-                {/* </mat-form-field> */}
               </div>
             </div>
 
             <div>
               <label className="text-xs">Password</label>
               <div className="flex place-items-center border-solid border-2 rounded border-gray-200 pr-1">
-                {/* <mat-form-field className="w-60 text-[#0B3960]"> */}
                 <img
                   src={Passwords1}
                   className="p-2"
@@ -188,12 +201,7 @@ export default function LogIn() {
                 <button
                   style={{ minHeight: "30px !important", height: "35px" }}
                   type="button"
-                >
-                  {/* <mat-icon className="icon-size-5"></mat-icon> */}
-                  {/* <mat-icon className="icon-size-5"></mat-icon> */}
-                </button>
-                {/* <mat-error> Password is required </mat-error> */}
-                {/* </mat-form-field> */}
+                ></button>
               </div>
             </div>
 
@@ -223,11 +231,8 @@ export default function LogIn() {
           </form>
         </div>
       </div>
-
-      {/* Sign Up Modal */}
       <Modal
         isOpen={signUpModalIsOpen}
-        // onAfterOpen={afterOpenModal}
         onRequestClose={closeSignUpModal}
         contentLabel="Sign Up Modal"
         className="bg-[#4f5263] w-2/5 h-11/12 overflow-auto text-white rounded-xl"
@@ -254,7 +259,7 @@ export default function LogIn() {
               className="text-black"
             />
           </label>
-          <label className="flex flex-col w-3/5">
+         { /*<label className="flex flex-col w-3/5">
             User Role
             <input
               type="text"
@@ -263,7 +268,7 @@ export default function LogIn() {
               onChange={handleSignUpFormChange}
               className="text-black"
             />
-          </label>
+          </label> */ }
           <label className="flex flex-col w-3/5">
             Password
             <input
