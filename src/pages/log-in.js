@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Login from "../assets/images/login/Login.png";
@@ -6,12 +6,14 @@ import logoG from "../assets/images/login/logoG.png";
 import Username1 from "../assets/images/logo/Username1.png";
 import Passwords1 from "../assets/images/logo/Passwords1.png";
 import Modal from "react-modal";
+import ErrorMessageModal from "../components/ErrorMessageModal";
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function LogIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState("");
+  let errorMessageModal = useRef();
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -49,7 +51,8 @@ export default function LogIn() {
           // Set the authenticated flag to true
           navigate("/");
         } else {
-          alert("Invalid login");
+          openErrorModal("Invalid login");
+          
         }
       })
       .catch(function (error) {
@@ -59,12 +62,15 @@ export default function LogIn() {
 
   // Sign Up Modal
   const [signUpModalIsOpen, setSignUpModalIsOpen] = useState(false);
+  
   function openSignUpModal() {
     setSignUpModalIsOpen(true);
   }
+
   function closeSignUpModal() {
     setSignUpModalIsOpen(false);
   }
+
   const [signUpFormData, setSignUpFormData] = useState({
     user_id: "",
     username: "",
@@ -76,20 +82,24 @@ export default function LogIn() {
     start_date: new Date(),
     end_date: "",
   });
+
   function handleSignUpFormChange(e) {
     setSignUpFormData({
       ...signUpFormData,
       [e.target.name]: e.target.value,
     });
   }
+
   
-  function onSignUp(e) {
+  async function  onSignUp(e) {
     e.preventDefault();
     console.log("submitting sign up form: ");
     console.log(signUpFormData);
 
-    if (isValidCrfUrl(signUpFormData.cfurl)) {
-      //createNewUser(signUpFormData);
+    if (await isValidCrfUrl(signUpFormData.cfurl)) {
+      createNewUser(signUpFormData);
+    }else{      
+      openErrorModal(`The url ${signUpFormData.cfurl} is invalid`);
     }
   }
 
@@ -122,6 +132,13 @@ export default function LogIn() {
         console.log(error);
       });
   };
+
+  function openErrorModal(message){
+    if (errorMessageModal.current) {    
+      setErrorMessage(message);
+      errorMessageModal.current.openModal();
+    }
+  }
 
   const customStyles = {
     content: {
@@ -317,6 +334,11 @@ export default function LogIn() {
           </button>
         </form>
       </Modal>
+      <ErrorMessageModal 
+      ref={errorMessageModal} 
+      Title={"There is a error!"}
+      Message ={errorMessage}
+        />
     </div>
   );
 }
