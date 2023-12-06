@@ -21,7 +21,7 @@ export default function Events() {
   const setMainVideo = useCallback(
     (id, notifs) => {
       let selNoti;
-      
+
       if (notifs) {
         selNoti = notifs.find((i) => i.clip_id === id);
       } else {
@@ -34,21 +34,20 @@ export default function Events() {
       setCurrVidUrl(streamUrl);
       setCurrNoti(selNoti);
     },
-    [events, state]
+    [events]
   );
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-    if (cameraList === null || cameraList.length == 0) {
+    if (cameraList === null || cameraList.length === 0) {
       axios
         .get(localStorage.getItem("cfUrl") + "camera/credentials")
         .then(function (response) {
           if (response == null) {
             console.log("No devices found!");
           } else {
-            
             const camera_list = response.data.map((camera) => {
               return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
             });
@@ -67,7 +66,9 @@ export default function Events() {
         if (response == null || response.data.length === 0) {
           console.log("No events found!");
         } else {
-          let notification_list = updateCameraNameInNotifications(response.data);
+          let notification_list = updateCameraNameInNotifications(
+            response.data
+          );
 
           const notificationUnreadCount = notification_list.filter(
             (n) => n.user_feedback === null
@@ -100,16 +101,12 @@ export default function Events() {
       });
   }, [navigate, state, setMainVideo]);
 
-
-  function updateCameraNameInNotifications(notifications){
-
+  function updateCameraNameInNotifications(notifications) {
     let notification_list = notifications.map((notification) => {
       let cameraname = "Generic";
 
       if (cameraList !== null) {
-        const camera = cameraList.find(
-          (c) => c.mac === notification.camera_id
-        );
+        const camera = cameraList.find((c) => c.mac === notification.camera_id);
         cameraname = camera ? camera.name : cameraname;
       }
 
@@ -124,14 +121,13 @@ export default function Events() {
         user_feedback: notification.user_feedback,
       };
     });
-   
+
     notification_list = notification_list.sort(
       (a, b) => a.sent_date - b.sent_date
     );
 
     return notification_list;
   }
-
 
   function saveUserFeedback(notification, wasgood) {
     axios
@@ -156,7 +152,7 @@ export default function Events() {
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <div className="w-5/6 self-center">
-          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
+          <div className="flex flex-wrap justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
             <h6>{currNoti?.cameraname}</h6>
             <h6>{currNoti?.sent_date}</h6>
           </div>

@@ -140,7 +140,7 @@ export default function Playback() {
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <div className="w-5/6 self-center flex flex-col py-3">
-          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
+          <div className="flex flex-wrap justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
             <h6>{currCamera.name}</h6>
             <div>
               <span>Selected date: </span>
@@ -162,19 +162,21 @@ export default function Playback() {
               file: {
                 hlsOptions: {
                   maxBufferLength: 10, // or 15 or 20 based on tests
-                  maxMaxBufferLength: 30,                 
-                  maxBufferSize:90,
-                  maxBufferHole:2.5,
-                  highBufferWatchdogPeriod:10,
-                  maxFragLookUpTolerance :2.5,
-                  enableWorker:true,
-                  lowLatencyMode:true,
-                  backBufferLength:90
+                  maxMaxBufferLength: 30,
+                  maxBufferSize: 90,
+                  maxBufferHole: 2.5,
+                  highBufferWatchdogPeriod: 10,
+                  maxFragLookUpTolerance: 2.5,
+                  enableWorker: true,
+                  lowLatencyMode: true,
+                  backBufferLength: 90,
                 },
               },
             }}
-            onError={(...args) => {              
-              console.log(`There is a error with the video: ${JSON.stringify(args[1])}`);
+            onError={(...args) => {
+              console.log(
+                `There is a error with the video: ${JSON.stringify(args[1])}`
+              );
             }}
           />
         </div>
