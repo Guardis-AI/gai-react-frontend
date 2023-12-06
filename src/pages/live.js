@@ -55,30 +55,6 @@ export default function Live() {
     );
   }
 
-  function removeCamera(cameraToRemove) {
-    axios
-      .delete(localStorage.getItem("cfUrl") + "camera/credentials", {
-        data: {
-          uuid: cameraToRemove.uuid,
-          mac: cameraToRemove.mac,
-        },
-      })
-      .then(function (response) {
-        if (response == null) {
-          console.log("No camera found!");
-        } else {
-          const newCameraList = cameraList.filter((camera) => {
-            return camera.uuid !== cameraToRemove.uuid;
-          });
-
-          setCameraList(newCameraList);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  }
-
   function renameCamera(index) {
     const cameras = [...cameraList];
     const camera = cameras[index];
@@ -156,8 +132,7 @@ export default function Live() {
         cameraList={cameraList}
         createUrl={createUrl}
         setMainVideo={setMainVideo}
-        setCurrCamera={setCurrCamera}       
-        removeCamera={removeCamera}
+        setCurrCamera={setCurrCamera}               
         handleChange={handleChange}
         handleEditMode={handleEditMode}
         renameCamera={renameCamera}
