@@ -3,7 +3,6 @@ import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
-import RemoveIcon from "@mui/icons-material/Delete";
 import moment from "moment";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
@@ -118,30 +117,6 @@ export default function Home() {
     });
   }
 
-  function removeCamera(cameraToRemove) {
-    axios
-      .delete(localStorage.getItem("cfUrl") + "camera/credentials", {
-        data: {
-          uuid: cameraToRemove.uuid,
-          mac: cameraToRemove.mac,
-        },
-      })
-      .then(function (response) {
-        if (response == null) {
-          console.log("No camera found!");
-        } else {
-          const newCameraList = cameraList.filter((camera) => {
-            return camera.uuid !== cameraToRemove.uuid;
-          });
-
-          setCameraList(newCameraList);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  }
-
   function renameCamera(index) {
     const cameras = [...cameraList];
     const camera = cameras[index];
@@ -248,16 +223,7 @@ export default function Home() {
                       },
                     }}
                   />
-                </div>
-                <div className="text-right">
-                  <button
-                    type="button"
-                    className="pt-1 bg-[#26272f] rounded-full text-white font-semibold "
-                    onClick={() => removeCamera(camera)}
-                  >
-                    <RemoveIcon />
-                  </button>
-                </div>
+                </div>             
               </div>
             );
           })}
