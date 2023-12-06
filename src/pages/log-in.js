@@ -336,7 +336,7 @@ export default function LogIn() {
       </Modal>
       <ErrorMessageModal 
       ref={errorMessageModal} 
-      Title={"There is a error!"}
+      Title={"Oops, That Didn't Work"}
       Message ={errorMessage}
         />
     </div>

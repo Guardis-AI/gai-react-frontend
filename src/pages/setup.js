@@ -1,17 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ScanModalButton from "../components/ScanModalButton";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import ErrorMessageModal from "../components/ErrorMessageModal";
+import WarningMessageModal from "../components/WarningMessageModal";
+import SaveIcon from "@mui/icons-material/SaveOutlined";
+import CancelIcon from "@mui/icons-material/CancelOutlined";
 
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Setup() {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
-  const [searchInput, setSearchInput] = useState("");
   const [cameraList, setCameraList] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [warningMessage, setWarningMessage] = useState("");
+  const [cameraToRemove, setCameraToRemove] = useState({});
+  let errorMessageModal = useRef();
+  let warningMessageModal = useRef();
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -19,42 +26,19 @@ export default function Setup() {
 
     getCamerasDetails();
 
-    var userId = localStorage.getItem("userId");
-    axios
-      .post(`${baseUrlApi}/api/user/getuserdetails`, {
-        user_id: userId,
-        login_user_id: "",
-        p_device_type: "",
-        p_device_token: "",
-        p_logindevice_id: "",
-      })
-      .then(function (response) {
-        response = response.data.gai_get_user_details;
-        if (response === null) {
-          console.log("No user found!");
-        } else {
-          setUserData(response);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
     Modal.setAppElement("body");
   }, [navigate]);
-
-  const handleChange = (e) => {
-    e.preventDefault();
-    setSearchInput(e.target.value);
-  };
 
   // User Modal
   const [userModalIsOpen, setUserModalIsOpen] = useState(false);
   function openUserModal() {
     setUserModalIsOpen(true);
   }
+
   function closeUserModal() {
     setUserModalIsOpen(false);
   }
+
   const [userFormData, setUserFormData] = useState({
     user_id: "",
     username: "",
@@ -66,12 +50,14 @@ export default function Setup() {
     start_date: "",
     end_date: "",
   });
+
   function handleUserFormChange(e) {
     setUserFormData({
       ...userFormData,
       [e.target.name]: e.target.value,
     });
   }
+
   function onUserSubmit() {
     console.log("submitting add User form: ");
     console.log(userFormData);
@@ -87,12 +73,15 @@ export default function Setup() {
 
   // Device Modal
   const [deviceModalIsOpen, setDeviceModalIsOpen] = useState(false);
+
   function openDeviceModal() {
     setDeviceModalIsOpen(true);
   }
+
   function closeDeviceModal() {
     setDeviceModalIsOpen(false);
   }
+
   const [deviceFormData, setDeviceFormData] = useState({
     name: "",
     ip: "",
@@ -102,12 +91,14 @@ export default function Setup() {
     password: "",
     vendor_name: "",
   });
+
   function handleDeviceFormChange(e) {
     setDeviceFormData({
       ...deviceFormData,
       [e.target.name]: e.target.value,
     });
   }
+
   function onDeviceSubmit(e) {
     e.preventDefault();
     let devobj = deviceFormData;
@@ -127,6 +118,7 @@ export default function Setup() {
       })
       .catch(function (error) {
         console.log(error);
+        openErrorModal(error.response.data);
       });
   }
 
@@ -165,6 +157,7 @@ export default function Setup() {
             port: camera.port,
             vendorName: camera.vendor_name,
             url: camera.uri,
+            editMode: false,
           };
         });
 
@@ -179,10 +172,15 @@ export default function Setup() {
       });
   };
 
+  const handledRemoveCameraclick = (camera) => {
+    setCameraToRemove(camera);
+
+    openWarningModal(`Do you want to Remove the camera: ${camera.name}`);
+  };
+
   const removeCamera = (cameraToRemove) => {
-    
     axios
-      .delete(localStorage.getItem("cfUrl") + "camera/credentials", {
+      .delete(`${localStorage.getItem("cfUrl")}camera/credentials`, {
         data: {
           uuid: cameraToRemove.uuid,
           mac: cameraToRemove.mac,
@@ -201,15 +199,82 @@ export default function Setup() {
       })
       .catch(function (error) {
         console.log(error);
+        let message = error.response ? error.response.data : error.message;
+        openErrorModal(message);
       });
-  }
+  };
+
+  const openErrorModal = (message) => {
+    if (errorMessageModal.current) {
+      setErrorMessage(message);
+      errorMessageModal.current.openModal();
+    }
+  };
+
+  const openWarningModal = (message) => {
+    setWarningMessage(message);
+    if (warningMessageModal.current) {
+      warningMessageModal.current.openModal();
+    }
+  };
+
+  const warningModalResult = (result) => {
+    if (result) {
+      removeCamera(cameraToRemove);
+    }
+  };
+
+  const handleEditMode = (index, value) => {
+    const updatedCamera = [...cameraList];
+    updatedCamera[index].editMode = value;
+    setCameraList(updatedCamera);
+  };
+
+  const handleChange = (index, value) => {
+    const updatedCamera = [...cameraList];
+    updatedCamera[index].name = value;
+    setCameraList(updatedCamera);
+  };
+
+  const renameCamera = (index) => {
+    const cameras = [...cameraList];
+    const camera = cameras[index];
+
+    axios
+      .put(localStorage.getItem("cfUrl") + "camera/credentials", {
+        mac: camera.mac,
+        name: camera.name,
+        uuid: camera.uuid,
+      })
+      .then(function (response) {
+        if (response == null) {
+          console.log("No devices found!");
+        } else {
+          const camera_list = response.data.map((camera) => {
+            return {
+              uuid: camera.uuid,
+              name: camera.name,
+              mac: camera.mac,
+              ip: camera.ip,
+              port: camera.port,
+              vendorName: camera.vendor_name,
+              url: camera.uri,
+              editMode: false,
+            };
+          });
+          setCameraList(camera_list);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   return (
     <div>
       <div className="py-3 px-8 h-full overflow-auto">
         <div className="flex flex-row space-x-2 md:space-x-4 flex-wrap space-y-2 max-w-full">
-          <div className="flex grow flex-col">           
-          </div>      
+          <div className="flex grow flex-col"></div>
           <button
             type="button"
             style={{ display: "none" }}
@@ -448,35 +513,67 @@ export default function Setup() {
           </form>
         </Modal>
       </div>
-      <div className="flex w-full overflow-auto px-1">
-        <table className="table-fixed border flex flex-col text-left mt-2 w-full text-xs border-black border-b-0">
-          <thead className="font-bold  border-b flex border-black ">
-            <tr className="flex w-full p-2">
+      <div className="flex w-full overflow-auto px-1 px-4 py-4">
+        <table className="table-fixed border flex flex-col text-left mt-2 w-full text-xs border-black border-b-0 table-auto rounded">
+          <thead className="font-bold  border-b flex border-black  bg-[#26272f]">
+            <tr className="flex w-full p-2 text-white ">
               <th className="w-1/2">URL</th>
-              <th className="w-1/12 pl-2">Port</th>
-              <th className="w-1/12">Camera Name</th>
-              <th className="w-1/12">Mac Address</th>
-              <th className="w-1/12">IP Address</th>
+              <th className="w-1/12 pl-5">Port</th>
+              <th className="w-3/12">Camera Name</th>
+              <th className="w-2/12">Mac Address</th>
+              <th className="w-2/12">IP Address</th>
               <th className="w-2/12">Vendor</th>
-              <th className="w-1/12"></th>
+              <th className="w-1/12">Remove</th>
             </tr>
           </thead>
           <tbody>
             {cameraList?.map((camera, i) => {
               return (
                 <React.Fragment key={i}>
-                  <tr className="border-b p-2 flex border-black" key={i}>
+                  <tr
+                    key={i}
+                    className={`${
+                      i % 2 === 0 ? "bg-gray-200" : "bg-white"
+                    } border-b p-2 flex border-black`}
+                  >
                     <td className="w-1/2 overflow-auto">{camera.url}</td>
-                    <td className="w-1/12 overflow-auto pl-2">{camera.port}</td>
-                    <td className="w-1/12 overflow-auto">{camera.name}</td>
-                    <td className="w-1/12 overflow-auto">{camera.mac}</td>
-                    <td className="w-1/12 overflow-auto">{camera.ip}</td>
+                    <td className="w-1/12 overflow-auto pl-5">{camera.port}</td>
+                    <td className="w-3/12 overflow-auto">
+                      {camera.editMode ? (
+                        <div>
+                          <input
+                            type="text"
+                            className="border-solid border-1 border-gray rounded mb-2 pl-1"
+                            defaultValue={camera.name}
+                            onChange={(e) => handleChange(i, e.target.value)}
+                          ></input>
+                          <button
+                            className="ml-1 mb-2 border-solid border-1 border-gray rounded "
+                            onClick={() => renameCamera(i)}
+                          >
+                            <SaveIcon />
+                          </button>
+                          <button
+                            className="ml-1 mb-2 border-solid border-1 border-gray rounded "
+                            onClick={() => handleEditMode(i, false)}
+                          >
+                            <CancelIcon />
+                          </button>
+                        </div>
+                      ) : (
+                        <span onClick={() => handleEditMode(i, true)}>
+                          {camera.name}
+                        </span>
+                      )}
+                    </td>
+                    <td className="w-2/12 overflow-auto">{camera.mac}</td>
+                    <td className="w-2/12 overflow-auto">{camera.ip}</td>
                     <td className="w-2/12">{camera.vendorName}</td>
                     <td className="w-1/12">
                       <button
                         type="button"
-                        className="bg-transparent hover:bg-[#4f5263] font-semibold hover:text-white py-2 px-2 border border-[#4f5263] hover:border-transparent rounded"
-                        onClick={() => removeCamera(camera)}
+                        className="ml-4  bg-transparent hover:bg-[#4f5263] font-semibold hover:text-white py-2 px-2 border border-[#4f5263] hover:border-transparent rounded"
+                        onClick={() => handledRemoveCameraclick(camera)}
                       >
                         <TrashIcon
                           className="h-4 w-4 text-black-600"
@@ -489,8 +586,20 @@ export default function Setup() {
               );
             })}
           </tbody>
-        </table>       
+        </table>
       </div>
+      <WarningMessageModal
+        ref={warningMessageModal}
+        Title={"Caution!"}
+        Message={warningMessage}
+        WarningResultCallback={warningModalResult}
+      />
+
+      <ErrorMessageModal
+        ref={errorMessageModal}
+        Title={"Oops! Something Went Wrong!"}
+        Message={errorMessage}
+      />
     </div>
   );
 }
