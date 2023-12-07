@@ -7,6 +7,9 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import moment from "moment";
 import UserFeedbackModal from "../components/UserFeedbackModal";
+import ErrorMessageModal from "../components/ErrorMessageModal";
+import Popover from '@mui/material/Popover';
+import Typography from '@mui/material/Typography';
 
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
@@ -18,13 +21,19 @@ export default function Events() {
   const [currVidUrl, setCurrVidUrl] = useState(null);
   const [cameraList, setCameraList] = useState(null);
   const { state } = useLocation();
-  
+  const [errorMessage, setErrorMessage] = useState("");
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
   let userFeedbackModal = useRef();
+  let errorMessageModal = useRef(); 
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popover' : undefined;
 
   const setMainVideo = useCallback(
     (id, notifs) => {
       let selNoti;
-      
+
       if (notifs) {
         selNoti = notifs.find((i) => i.clip_id === id);
       } else {
@@ -44,14 +53,13 @@ export default function Events() {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-    if (cameraList === null || cameraList.length == 0) {
+    if (cameraList === null || cameraList.length === 0) {
       axios
         .get(localStorage.getItem("cfUrl") + "camera/credentials")
         .then(function (response) {
           if (response == null) {
             console.log("No devices found!");
           } else {
-            
             const camera_list = response.data.map((camera) => {
               return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
             });
@@ -70,15 +78,17 @@ export default function Events() {
         if (response == null || response.data.length === 0) {
           console.log("No events found!");
         } else {
-          let notification_list = updateCameraNameInNotifications(response.data);
+          let notification_list = updateCameraNameInNotifications(
+            response.data
+          );
 
-          const notificationUnreadCount = notification_list.filter(
+          const notificationsUnread = notification_list.filter(
             (n) => n.user_feedback === null
-          ).length;
+          );
 
           setTimeout(function () {
-            setUnreadCount(notificationUnreadCount);
-            setEvents(notification_list);
+            setUnreadCount(notificationsUnread.length);
+            setEvents(notificationsUnread);
           }, 5000);
 
           if (state) {
@@ -103,16 +113,12 @@ export default function Events() {
       });
   }, [navigate, state, setMainVideo]);
 
-
-  function updateCameraNameInNotifications(notifications){
-
+  const updateCameraNameInNotifications = (notifications) => {
     let notification_list = notifications.map((notification) => {
       let cameraname = "Generic";
 
       if (cameraList !== null) {
-        const camera = cameraList.find(
-          (c) => c.mac === notification.camera_id
-        );
+        const camera = cameraList.find((c) => c.mac === notification.camera_id);
         cameraname = camera ? camera.name : cameraname;
       }
 
@@ -125,66 +131,143 @@ export default function Events() {
         ),
         severity: notification.severity,
         user_feedback: notification.user_feedback,
+        notification_type: notification.notification_type,
       };
     });
-   
-    notification_list = notification_list.sort(
-      (a, b) => a.sent_date - b.sent_date
-    );
+
+    if (currNoti && currNoti.cameraname === "Generic") {
+      const notification = notification_list.find(
+        (n) => n.clip_id == currNoti.clip_id
+      );
+      setCurrNoti(notification);
+    }
 
     return notification_list;
-  }
+  };
 
-
-  function saveUserFeedback(notification, wasgood) {
+  const saveUserFeedback = (notification, wasgood) => {
     axios
       .put(
         `${localStorage.getItem("cfUrl")}notifications/${notification.clip_id}`,
         {
           clip_id: notification.clip_id,
           camera_id: notification.camera_id,
-          severity: notification.severity,
           user_feedback: wasgood,
+          notification_type: notification.notification_type,
+          severity: notification.severity,
         }
       )
       .then(function (response) {
-        console.log("No devices found!");
+        const notification_list = events.filter(
+          (n) => n.camera_id !== response.data.camera_id
+        );
+        setEvents(notification_list);
+        setMainVideo(notification_list[0].clip_id, notification_list);
+        setAnchorEl(null);
       })
       .catch(function (error) {
+        openErrorModal(error.message);
         console.log(error);
       });
-  }
+  };
 
-  function openFeedbackModal(){
-    if (userFeedbackModal.current) {    
-      userFeedbackModal.current.openModal();
+  const openFeedbackModal = (currNoti) => {
+    if (userFeedbackModal.current) {
+      userFeedbackModal.current.openModal(currNoti);
     }
+  };
+
+  const handleSaveFeedbackCallback = (result, event) => {
+    if (result) {
+      saveUserFeedback(event, false);
+    }
+  };
+
+  const openErrorModal = (message) => {
+    if (errorMessageModal.current) {
+      setErrorMessage(message);
+      errorMessageModal.current.openModal();
+    }
+  };
+
+  const handleSaveUserFeedbackClick = (event,notification, wasgood) => {
+    setAnchorEl(event.currentTarget);
+    saveUserFeedback(notification, wasgood);   
+  };
+
+  const getSeveritiesLabel = (value)=>{
+
+    const severities = [
+      { label: "Information", value: "INFORMATION" },
+      { label: "Information", value: "INFO" },
+      { label: "Warning", value: "WARNING" },
+      { label: "Critical", value: "CRITICAL" },
+    ];
+       
+    const severity = severities.find(
+      (option) => option.value === value
+    );
+
+    return severity? severity.label:value;
   }
 
+  const getNotificationTypesLabel = (value)=>{
+
+    const notificationTypes = [
+      { label: "Item Picking", value: "item_picking" },
+      { label: "Bagging", value: "bagging" },
+      { label: "Pocketing", value: "pocketing" },
+      { label: "Enter Store", value: "enter_store" },
+      { label: "Leave Store", value: "leave_store" },
+      { label: "Pay Or Checkout", value: "pay/checkout" },
+      { label: "Normal", value: "normal" },
+      { label: "Shoplift", value: "shoplift" },
+    ];
+
+    const notificationType = notificationTypes.find(
+      (option) => option.value === value
+    );
+
+    return notificationType? notificationType.label:value;
+  }
+  
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <div className="w-5/6 self-center">
-          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
-            <h6>{currNoti?.cameraname}</h6>
-            <h6>{currNoti?.sent_date}</h6>
+          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white ">
+            <p><strong>Camera:</strong>&nbsp;{currNoti?.cameraname}</p>
+            <p><strong>Type:</strong>&nbsp;{getNotificationTypesLabel(currNoti?.notification_type)}</p>
+            <p><strong>Severity:</strong>&nbsp;{getSeveritiesLabel(currNoti?.severity)}</p>
+            <p><strong>Date:</strong>&nbsp;{currNoti?.sent_date}</p>
           </div>
-          <ReactPlayer
-            url={currVidUrl}
-            width="100%"
-            // height="100%"
-            controls
-          />
+          <ReactPlayer url={currVidUrl} width="100%" controls />
           <div className="flex mt-2 space-x-2 justify-end">
             <button
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
-              onClick={() => saveUserFeedback(currNoti, true)}
+              onClick={(e) => handleSaveUserFeedbackClick(e,currNoti, true)}
             >
               <ThumbUpIcon />
             </button>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}     
+              aria-haspopup="true"        
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+            >
+              <Typography sx={{ p: 1 }}>Done!</Typography>
+            </Popover>
             <button
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
-              onClick= {()=>openFeedbackModal()}//{() => saveUserFeedback(currNoti, false)}
+              onClick={() => openFeedbackModal(currNoti)}
             >
               <ThumbDownIcon />
             </button>
@@ -194,9 +277,18 @@ export default function Events() {
       <EventList
         unreadCount={unreadCount}
         events={events}
-        setMainVideo={setMainVideo}s
+        setMainVideo={setMainVideo}
       />
-      <UserFeedbackModal ref={userFeedbackModal}  />
+      <UserFeedbackModal
+        ref={userFeedbackModal}
+        SaveFeedbackCallback={handleSaveFeedbackCallback}
+      />
+      <ErrorMessageModal
+        id="a"
+        ref={errorMessageModal}
+        Title={"Oops! Something Went Wrong!"}
+        Message={errorMessage}
+      />
     </div>
   );
 }

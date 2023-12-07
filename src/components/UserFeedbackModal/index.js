@@ -5,54 +5,62 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { Dialog, Transition, Combobox,Listbox } from "@headlessui/react";
-import {
-  CheckIcon,
-  ChevronUpDownIcon,
-  HandThumbUpIcon,
-} from "@heroicons/react/24/outline";
+import { Dialog, Transition } from "@headlessui/react";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
 const UserFeedbackModal = forwardRef((props, ref) => {
-  let [isOpen, setIsOpen] = useState(false);
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [event, setEvent] = useState({ notification_type: "" });
   const cancelButtonRef = useRef(null);
 
-  const people = [
-    { id: 1, name: "Wade Cooper" },
-    { id: 2, name: "Arlene Mccoy" },
-    { id: 3, name: "Devon Webb" },
-    { id: 4, name: "Tom Cook" },
-    { id: 5, name: "Tanya Fox" },
-    { id: 6, name: "Hellen Schmidt" },
+  const notificationTypes = [
+    { label: "Item Picking", value: "item_picking" },
+    { label: "Bagging", value: "bagging" },
+    { label: "Pocketing", value: "pocketing" },
+    { label: "Enter Store", value: "enter_store" },
+    { label: "Leave Store", value: "leave_store" },
+    { label: "Pay Or Checkout", value: "pay/checkout" },
+    { label: "Normal", value: "normal" },
+    { label: "Shoplift", value: "shoplift" },
   ];
 
-  const [selected, setSelected] = useState(people[0]);
-  const [query, setQuery] = useState("");
+  const severities = [
+    { label: "Information", value: "INFORMATION" },
+    { label: "Warning", value: "WARNING" },
+    { label: "Critical", value: "CRITICAL" },
+  ];
 
-  const filteredPeople =
-    query === ""
-      ? people
-      : people.filter((person) =>
-          person.name
-            .toLowerCase()
-            .replace(/\s+/g, "")
-            .includes(query.toLowerCase().replace(/\s+/g, ""))
-        );
-
-        function classNames(...classes) {
-          return classes.filter(Boolean).join(' ')
-        }
-  const closeModal = () => {
+  const closeModal = (result) => {
     setIsOpen(false);
+    props.SaveFeedbackCallback(result, event);
   };
 
-  const openModal = () => {
+  const openModal = (event) => {
+    setEvent(event);
     setIsOpen(true);
   };
 
   useImperativeHandle(ref, () => ({
     openModal,
   }));
+
+  const handleNotificationTypeSelectChange = (e) => {
+    const selectedOption = notificationTypes.find(
+      (option) => option.value === e.target.value
+    );
+    event.notification_type = selectedOption.value;
+
+    setEvent(event);
+  };
+
+  const handleSeveritySelectChange = (e) => {
+    const selectedOption = severities.find(
+      (option) => option.value === e.target.value
+    );
+    event.severity = selectedOption.value;
+
+    setEvent(event);
+  };
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -89,8 +97,8 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                 <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 sm:mx-0 sm:h-10 sm:w-10">
-                      <HandThumbUpIcon
-                        className="h-6 w-6 text-black-600"
+                      <InformationCircleIcon
+                        className="h-6 w-6 text-red-600"
                         aria-hidden="true"
                       />
                     </div>
@@ -106,90 +114,40 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                           What did you see in the event?
                         </p>
                         <div className="relative mt-1">
-                        <select id="notificationType" className="border-none rounded-xl w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900" >
-                          <option >Item Picking</option>
-                          <option>Bagging</option>
-                          <option>Pocketing</option>
-                          <option>Enter Store</option>
-                          <option>Leave Store</option>
-                          <option>Leave Store</option>
-                          <option>Pay Or Checkout</option>
-                          <option>Normal</option>                        
-                        </select>
-                        </div>                       
-                        
+                          <select
+                            id="notificationType"
+                            className="border-none rounded-xl w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
+                            value={event.notification_type}
+                            onChange={handleNotificationTypeSelectChange}
+                          >
+                            <option value="" disabled>
+                              Select an option
+                            </option>
+                            {notificationTypes.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
                         <p className="text-sm text-gray-500">
                           How do you classify the event?
                         </p>
-                        {/* <Listbox value={selected} onChange={setSelected}>
-      {({ open }) => (
-        <>
-          <Listbox.Label className="block text-sm font-medium leading-6 text-gray-900">Assigned to</Listbox.Label>
-          <div className="relative mt-2">
-            <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
-              <span className="flex items-center">
-                <img src={selected.avatar} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
-                <span className="ml-3 block truncate">{selected.name}</span>
-              </span>
-              <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </span>
-            </Listbox.Button>
-
-            <Transition
-              show={open}
-              as={Fragment}
-              leave="transition ease-in duration-100"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full  rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                {people.map((person) => (
-                  <Listbox.Option
-                    key={person.id}
-                    className={({ active }) =>
-                      classNames(
-                        active ? 'bg-indigo-600 text-white' : 'text-gray-900',
-                        'relative cursor-default select-none py-2 pl-3 pr-9'
-                      )
-                    }
-                    value={person}
-                  >
-                    {({ selected, active }) => (
-                      <>
-                        <div className="flex items-center">
-                          <img src={person.avatar} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
-                          <span
-                            className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
-                          >
-                            {person.name}
-                          </span>
-                        </div>
-
-                        {selected ? (
-                          <span
-                            className={classNames(
-                              active ? 'text-white' : 'text-indigo-600',
-                              'absolute inset-y-0 right-0 flex items-center pr-4'
-                            )}
-                          >
-                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                          </span>
-                        ) : null}
-                      </>
-                    )}
-                  </Listbox.Option>
-                ))}
-              </Listbox.Options>
-            </Transition>
-          </div>
-        </>
-      )}
-    </Listbox> */}
-                        <select id="severity" className=" w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900">
-                          <option>Information</option>
-                          <option>Warning</option>
-                          <option>Critical</option>                                
+                        <select
+                          id="severity"
+                          className=" w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
+                          value={event.severity}
+                          onChange={handleSeveritySelectChange}
+                        >
+                          <option value="" disabled>
+                            Select an option
+                          </option>
+                          {severities.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -199,9 +157,9 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                   <button
                     type="button"
                     className="inline-flex w-full justify-center rounded-md bg-[#26272f] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#4f5263] sm:ml-3 sm:w-auto"
-                    onClick={() => closeModal(false)}
+                    onClick={() => closeModal(true)}
                   >
-                    Save
+                    OK
                   </button>
                   <button
                     type="button"
