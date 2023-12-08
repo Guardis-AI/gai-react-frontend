@@ -10,7 +10,8 @@ import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
 const UserFeedbackModal = forwardRef((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [event, setEvent] = useState({ notification_type: "" });
+  const [notificationType, setNotificationType] = useState();
+  const [severity, setSeverity] = useState();
   const cancelButtonRef = useRef(null);
 
   let notificationTypes = [
@@ -26,7 +27,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     { label: "Mishandling Documents", value: "mishandling_documents" },
     { label: "Cash Threft", value: "cash_threft" },
     { label: "Activity After Hours", value: "activity_after_hours" },
-    { label: "Idle", value: "Idle" },
+    { label: "Idle", value: "idle" },
   ];
 
   const severities = [
@@ -35,17 +36,18 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     { label: "Warning", value: "WARNING" },
   ];
 
-  notificationTypes = notificationTypes.sort(
-    (a, b) => a.label.localeCompare(b.label)
+  notificationTypes = notificationTypes.sort((a, b) =>
+    a.label.localeCompare(b.label)
   );
 
   const closeModal = (result) => {
     setIsOpen(false);
-    props.SaveFeedbackCallback(result, event);
+    props.SaveFeedbackCallback(result, notificationType, severity);
   };
 
   const openModal = (event) => {
-    setEvent(event);
+    setNotificationType(event.notification_type);
+    setSeverity(event.severity);
     setIsOpen(true);
   };
 
@@ -57,18 +59,17 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     const selectedOption = notificationTypes.find(
       (option) => option.value === e.target.value
     );
-    event.notification_type = selectedOption.value;
 
-    setEvent(event);
+    setNotificationType(selectedOption.value);
   };
 
   const handleSeveritySelectChange = (e) => {
+    e.preventDefault();
     const selectedOption = severities.find(
       (option) => option.value === e.target.value
     );
-    event.severity = selectedOption.value;
 
-    setEvent(event);
+    setSeverity(selectedOption.value);
   };
 
   return (
@@ -126,14 +127,14 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                           <select
                             id="notificationType"
                             className="border-none rounded-xl w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
-                            value={event.notification_type}
+                            value={notificationType}
                             onChange={handleNotificationTypeSelectChange}
                           >
                             <option value="" disabled>
                               Select an option
                             </option>
-                            {notificationTypes.map((option) => (
-                              <option key={option.value} value={option.value}>
+                            {notificationTypes.map((option, i) => (
+                              <option key={i} value={option.value}>
                                 {option.label}
                               </option>
                             ))}
@@ -146,7 +147,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                         <select
                           id="severity"
                           className=" w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
-                          value={event.severity}
+                          value={severity}
                           onChange={handleSeveritySelectChange}
                         >
                           <option value="" disabled>

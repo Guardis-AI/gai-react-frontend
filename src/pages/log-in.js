@@ -51,8 +51,7 @@ export default function LogIn() {
           // Set the authenticated flag to true
           navigate("/");
         } else {
-          openErrorModal("Invalid login");
-          
+          openErrorModal("Invalid login");          
         }
       })
       .catch(function (error) {
@@ -88,8 +87,7 @@ export default function LogIn() {
       ...signUpFormData,
       [e.target.name]: e.target.value,
     });
-  }
-
+  };
   
   async function  onSignUp(e) {
     e.preventDefault();
@@ -125,11 +123,17 @@ export default function LogIn() {
     axios
       .post(`${baseUrlApi}/api/user/insuser`, user)
       .then(function (response) {
-        console.log(response);
-        logIn(user.username, user.password);
+
+        if (response.data?.gai_ins_user?.message === "\"The username already exist!\"") {
+          openErrorModal("The username already exist!");
+        } else {
+          console.log(response);
+          logIn(user.username, user.password);
+        }
       })
       .catch(function (error) {
         console.log(error);
+        openErrorModal(error.message);
       });
   };
 
