@@ -13,22 +13,31 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   const [event, setEvent] = useState({ notification_type: "" });
   const cancelButtonRef = useRef(null);
 
-  const notificationTypes = [
+  let notificationTypes = [
     { label: "Item Picking", value: "item_picking" },
     { label: "Bagging", value: "bagging" },
     { label: "Pocketing", value: "pocketing" },
     { label: "Enter Store", value: "enter_store" },
     { label: "Leave Store", value: "leave_store" },
-    { label: "Pay Or Checkout", value: "pay/checkout" },
+    { label: "Pay Or Checkout", value: "pay_checkout" },
     { label: "Normal", value: "normal" },
     { label: "Shoplift", value: "shoplift" },
+    { label: "Phone Engagement", value: "phone_engagement" },
+    { label: "Mishandling Documents", value: "mishandling_documents" },
+    { label: "Cash Threft", value: "cash_threft" },
+    { label: "Activity After Hours", value: "activity_after_hours" },
+    { label: "Idle", value: "Idle" },
   ];
 
   const severities = [
+    { label: "Critical", value: "CRITICAL" },
     { label: "Information", value: "INFORMATION" },
     { label: "Warning", value: "WARNING" },
-    { label: "Critical", value: "CRITICAL" },
   ];
+
+  notificationTypes = notificationTypes.sort(
+    (a, b) => a.label.localeCompare(b.label)
+  );
 
   const closeModal = (result) => {
     setIsOpen(false);

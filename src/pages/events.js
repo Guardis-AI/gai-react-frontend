@@ -8,10 +8,10 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import moment from "moment";
 import UserFeedbackModal from "../components/UserFeedbackModal";
 import ErrorMessageModal from "../components/ErrorMessageModal";
-import Popover from '@mui/material/Popover';
-import Typography from '@mui/material/Typography';
-
-const baseUrlApi = process.env.REACT_APP_BASE_URL;
+import Popover from "@mui/material/Popover";
+import Typography from "@mui/material/Typography";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import WarningMessageModal from "../components/WarningMessageModal";
 
 export default function Events() {
   const navigate = useNavigate();
@@ -23,12 +23,14 @@ export default function Events() {
   const { state } = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [warningMessage, setWarningMessage] = useState("");
 
   let userFeedbackModal = useRef();
-  let errorMessageModal = useRef(); 
+  let errorMessageModal = useRef();
+  let warningMessageModal = useRef();
 
   const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
+  const id = open ? "simple-popover" : undefined;
 
   const setMainVideo = useCallback(
     (id, notifs) => {
@@ -171,6 +173,25 @@ export default function Events() {
       });
   };
 
+  const deleteNotification = (notification) => {
+    axios
+      .delete(
+        `${localStorage.getItem("cfUrl")}notifications/${notification.clip_id}`,null
+      )
+      .then(function (response) {
+        const notification_list = events.filter(
+          (n) => n.camera_id !== response.data.camera_id
+        );
+        setEvents(notification_list);
+        setMainVideo(notification_list[0].clip_id, notification_list);
+        setAnchorEl(null);
+      })
+      .catch(function (error) {
+        openErrorModal(error.message);
+        console.log(error);
+      });
+  };
+
   const openFeedbackModal = (currNoti) => {
     if (userFeedbackModal.current) {
       userFeedbackModal.current.openModal(currNoti);
@@ -190,29 +211,25 @@ export default function Events() {
     }
   };
 
-  const handleSaveUserFeedbackClick = (event,notification, wasgood) => {
+  const handleSaveUserFeedbackClick = (event, notification, wasgood) => {
     setAnchorEl(event.currentTarget);
-    saveUserFeedback(notification, wasgood);   
+    saveUserFeedback(notification, wasgood);
   };
 
-  const getSeveritiesLabel = (value)=>{
-
+  const getSeveritiesLabel = (value) => {
     const severities = [
       { label: "Information", value: "INFORMATION" },
       { label: "Information", value: "INFO" },
       { label: "Warning", value: "WARNING" },
       { label: "Critical", value: "CRITICAL" },
     ];
-       
-    const severity = severities.find(
-      (option) => option.value === value
-    );
 
-    return severity? severity.label:value;
-  }
+    const severity = severities.find((option) => option.value === value);
 
-  const getNotificationTypesLabel = (value)=>{
+    return severity ? severity.label : value;
+  };
 
+  const getNotificationTypesLabel = (value) => {
     const notificationTypes = [
       { label: "Item Picking", value: "item_picking" },
       { label: "Bagging", value: "bagging" },
@@ -222,38 +239,80 @@ export default function Events() {
       { label: "Pay Or Checkout", value: "pay/checkout" },
       { label: "Normal", value: "normal" },
       { label: "Shoplift", value: "shoplift" },
+      { label: "Phone Engagement", value: "phone_engagement" },
+      { label: "Mishandling Documents", value: "mishandling_documents" },
+      { label: "Cash Threft", value: "cash_threft" },
+      { label: "Activity After Hours", value: "activity_after_hours" },
+      { label: "Idle", value: "Idle" },
     ];
 
     const notificationType = notificationTypes.find(
       (option) => option.value === value
     );
 
-    return notificationType? notificationType.label:value;
-  }
-  
+    return notificationType ? notificationType.label : value;
+  };
+
+  const warningModalResult = (result) => {
+    if (result) {
+      deleteNotification(currNoti);
+    }
+  };
+
+  const openWarningModal = (message) => {
+    setWarningMessage(message);
+    if (warningMessageModal.current) {
+      warningMessageModal.current.openModal();
+    }
+  };
+
+  const handleRemoveNotificationkClick = (event) => {
+    openWarningModal(`Are you sure you want to delete this notification?`);
+  };
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
         <div className="w-5/6 self-center">
           <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white ">
-            <p><strong>Camera:</strong>&nbsp;{currNoti?.cameraname}</p>
-            <p><strong>Type:</strong>&nbsp;{getNotificationTypesLabel(currNoti?.notification_type)}</p>
-            <p><strong>Severity:</strong>&nbsp;{getSeveritiesLabel(currNoti?.severity)}</p>
-            <p><strong>Date:</strong>&nbsp;{currNoti?.sent_date}</p>
+            <p>
+              <strong>Camera:</strong>&nbsp;{currNoti?.cameraname}
+            </p>
+            <p>
+              <strong>Type:</strong>&nbsp;
+              {getNotificationTypesLabel(currNoti?.notification_type)}
+            </p>
+            <p>
+              <strong>Severity:</strong>&nbsp;
+              {getSeveritiesLabel(currNoti?.severity)}
+            </p>
+            <p>
+              <strong>Date:</strong>&nbsp;{currNoti?.sent_date}
+            </p>
           </div>
           <ReactPlayer url={currVidUrl} width="100%" controls />
-          <div className="flex mt-2 space-x-2 justify-end">
+          <div className="flex mt-2 space-x-2 justify-center">
             <button
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
-              onClick={(e) => handleSaveUserFeedbackClick(e,currNoti, true)}
+              onClick={(e) => handleRemoveNotificationkClick(e, currNoti)}
+            >
+              <DeleteForeverIcon 
+                          className="h-6 w-6 text-black-600"
+                          aria-hidden="true"
+                        ></DeleteForeverIcon>
+            </button>
+
+            <button
+              className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
+              onClick={(e) => handleSaveUserFeedbackClick(e, currNoti, true)}
             >
               <ThumbUpIcon />
             </button>
             <Popover
               id={id}
               open={open}
-              anchorEl={anchorEl}     
-              aria-haspopup="true"        
+              anchorEl={anchorEl}
+              aria-haspopup="true"
               anchorOrigin={{
                 vertical: "bottom",
                 horizontal: "left",
@@ -288,6 +347,13 @@ export default function Events() {
         ref={errorMessageModal}
         Title={"Oops! Something Went Wrong!"}
         Message={errorMessage}
+      />
+
+      <WarningMessageModal
+        ref={warningMessageModal}
+        Title={"Caution!"}
+        Message={warningMessage}
+        WarningResultCallback={warningModalResult}
       />
     </div>
   );

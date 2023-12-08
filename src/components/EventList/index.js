@@ -16,8 +16,13 @@ const notificationTypes = [
   { label: "Enter Store", value: "enter_store" },
   { label: "Leave Store", value: "leave_store" },
   { label: "Pay Or Checkout", value: "pay/checkout" },
-  { label: "Normal", value: "normal" },
+  { label: "Normal Activity", value: "normal_activity" },
   { label: "Shoplift", value: "shoplift" },
+  { label: "Phone Engagement", value: "phone_engagement" },
+  { label: "Mishandling Documents", value: "mishandling_documents" },
+  { label: "Cash Threft", value: "cash_threft" },
+  { label: "Activity After Hours", value: "activity_after_hours" },
+  { label: "Idle", value: "Idle" },
 ];
 
 const severities = [
