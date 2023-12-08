@@ -254,13 +254,14 @@ export default function Events() {
       { label: "Enter Store", value: "enter_store" },
       { label: "Leave Store", value: "leave_store" },
       { label: "Pay Or Checkout", value: "pay/checkout" },
-      { label: "Normal", value: "normal" },
+      { label: "No Action", value: "no_actiion" },
       { label: "Shoplift", value: "shoplift" },
       { label: "Phone Engagement", value: "phone_engagement" },
       { label: "Mishandling Documents", value: "mishandling_documents" },
-      { label: "Cash Threft", value: "cash_threft" },
+      { label: "Cash Threft", value: "cash_theft" },
       { label: "Activity After Hours", value: "activity_after_hours" },
       { label: "Idle", value: "Idle" },
+      { label: "Money Handling", value: "money_handling" },
     ];
 
     const notificationType = notificationTypes.find(
