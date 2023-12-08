@@ -82,6 +82,7 @@ export default function Home() {
         ),
         severity: notification.severity,
         user_feedback: notification.user_feedback,
+        notification_type: notification.notification_type,
       };
     });
 

@@ -10,7 +10,7 @@ import UserFeedbackModal from "../components/UserFeedbackModal";
 import ErrorMessageModal from "../components/ErrorMessageModal";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningMessageModal from "../components/WarningMessageModal";
 
 export default function Events() {
@@ -19,7 +19,6 @@ export default function Events() {
   const [events, setEvents] = useState(null);
   const [currNoti, setCurrNoti] = useState(null);
   const [currVidUrl, setCurrVidUrl] = useState(null);
-  const [cameraList, setCameraList] = useState(null);
   const { state } = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -28,6 +27,8 @@ export default function Events() {
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
+  let frequencyToGetNotice = useRef(0);
+  let cameraList = useRef(null);
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -51,27 +52,33 @@ export default function Events() {
     [events, state]
   );
 
+  const getCamerasDetails = async ()=>{
+   const request =  axios
+    .get(localStorage.getItem("cfUrl") + "camera/credentials")
+    .then(function (response) {
+      if (response == null) {
+        console.log("No cameras found!");
+      } else {
+        const camera_list = response.data.map((camera) => {
+          return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
+        });
+
+        cameraList.current =camera_list;
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+    await request;    
+  }
+
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-    if (cameraList === null || cameraList.length === 0) {
-      axios
-        .get(localStorage.getItem("cfUrl") + "camera/credentials")
-        .then(function (response) {
-          if (response == null) {
-            console.log("No devices found!");
-          } else {
-            const camera_list = response.data.map((camera) => {
-              return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
-            });
-
-            setCameraList(camera_list);
-          }
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+    if (cameraList.current === null || cameraList.current.length === 0) {
+      getCamerasDetails();
     }
 
     axios
@@ -88,10 +95,16 @@ export default function Events() {
             (n) => n.user_feedback === null
           );
 
-          setTimeout(function () {
+          if (frequencyToGetNotice.current === 0) {
             setUnreadCount(notificationsUnread.length);
             setEvents(notificationsUnread);
-          }, 5000);
+            frequencyToGetNotice.current = 60000;
+          } else {
+            setTimeout(function () {
+              setUnreadCount(notificationsUnread.length);
+              setEvents(notificationsUnread);
+            }, frequencyToGetNotice.current);
+          }
 
           if (state) {
             if (!currVidUrl) {
@@ -116,11 +129,12 @@ export default function Events() {
   }, [navigate, state, setMainVideo]);
 
   const updateCameraNameInNotifications = (notifications) => {
+    
     let notification_list = notifications.map((notification) => {
       let cameraname = "Generic";
 
-      if (cameraList !== null) {
-        const camera = cameraList.find((c) => c.mac === notification.camera_id);
+      if (cameraList.current !== null) {
+        const camera = cameraList.current.find((c) => c.mac === notification.camera_id);
         cameraname = camera ? camera.name : cameraname;
       }
 
@@ -176,7 +190,8 @@ export default function Events() {
   const deleteNotification = (notification) => {
     axios
       .delete(
-        `${localStorage.getItem("cfUrl")}notifications/${notification.clip_id}`,null
+        `${localStorage.getItem("cfUrl")}notifications/${notification.clip_id}`,
+        null
       )
       .then(function (response) {
         const notification_list = events.filter(
@@ -198,9 +213,11 @@ export default function Events() {
     }
   };
 
-  const handleSaveFeedbackCallback = (result, event) => {
+  const handleSaveFeedbackCallback = (result, notificationType, severity) => {
     if (result) {
-      saveUserFeedback(event, false);
+      currNoti.notification_type = notificationType;
+      currNoti.severity = severity;
+      saveUserFeedback(currNoti, false);
     }
   };
 
@@ -237,13 +254,14 @@ export default function Events() {
       { label: "Enter Store", value: "enter_store" },
       { label: "Leave Store", value: "leave_store" },
       { label: "Pay Or Checkout", value: "pay/checkout" },
-      { label: "Normal", value: "normal" },
+      { label: "No Action", value: "no_actiion" },
       { label: "Shoplift", value: "shoplift" },
       { label: "Phone Engagement", value: "phone_engagement" },
       { label: "Mishandling Documents", value: "mishandling_documents" },
-      { label: "Cash Threft", value: "cash_threft" },
+      { label: "Cash Threft", value: "cash_theft" },
       { label: "Activity After Hours", value: "activity_after_hours" },
       { label: "Idle", value: "Idle" },
+      { label: "Money Handling", value: "money_handling" },
     ];
 
     const notificationType = notificationTypes.find(
@@ -296,10 +314,10 @@ export default function Events() {
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={(e) => handleRemoveNotificationkClick(e, currNoti)}
             >
-              <DeleteForeverIcon 
-                          className="h-6 w-6 text-black-600"
-                          aria-hidden="true"
-                        ></DeleteForeverIcon>
+              <DeleteForeverIcon
+                className="h-6 w-6 text-black-600"
+                aria-hidden="true"
+              ></DeleteForeverIcon>
             </button>
 
             <button
