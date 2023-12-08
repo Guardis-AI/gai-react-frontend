@@ -25,7 +25,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     { label: "Shoplift", value: "shoplift" },
     { label: "Phone Engagement", value: "phone_engagement" },
     { label: "Mishandling Documents", value: "mishandling_documents" },
-    { label: "Cash Threft", value: "cash_theft" },
+    { label: "Cash Theft", value: "cash_theft" },
     { label: "Activity After Hours", value: "activity_after_hours" },
     { label: "Idle", value: "idle" },
     { label: "Money Handling", value: "money_handling" },
