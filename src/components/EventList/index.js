@@ -9,6 +9,30 @@ const darkTheme = createTheme({
   },
 });
 
+const notificationTypes = [
+  { label: "Item Picking", value: "item_picking" },
+  { label: "Bagging", value: "bagging" },
+  { label: "Pocketing", value: "pocketing" },
+  { label: "Enter Store", value: "enter_store" },
+  { label: "Leave Store", value: "leave_store" },
+  { label: "Pay Or Checkout", value: "pay/checkout" },
+  { label: "No Action", value: "no_actiion" },
+  { label: "Shoplift", value: "shoplift" },
+  { label: "Phone Engagement", value: "phone_engagement" },
+  { label: "Mishandling Documents", value: "mishandling_documents" },
+  { label: "Cash theft", value: "cash_theft" },
+  { label: "Activity After Hours", value: "activity_after_hours" },
+  { label: "Idle", value: "Idle" },
+  { label: "Money Handling", value: "money_handling" },
+];
+
+const severities = [
+  { label: "Information", value: "INFORMATION" },
+  { label: "Information", value: "INFO" },
+  { label: "Warning", value: "WARNING" },
+  { label: "Critical", value: "CRITICAL" },
+];
+
 export default function EventList(props) {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -24,6 +48,22 @@ export default function EventList(props) {
     if (startCheck && endCheck) {
       return event;
     }
+  }
+
+  const getSeveritiesLabel = (value)=>{
+    const severity = severities.find(
+      (option) => option.value === value
+    );
+
+    return severity? severity.label:value;
+  }
+
+  const getNotificationTypesLabel = (value)=>{
+    const notificationType = notificationTypes.find(
+      (option) => option.value === value
+    );
+
+    return notificationType? notificationType.label:value;
   }
 
   return (
@@ -70,9 +110,11 @@ export default function EventList(props) {
                 className="self-center ml-2 mr-4"
                 fontSize="large"
               />
-              <div className="space-y-3">
-                <h1>{event.cameraname}</h1>
-                <h1>{event.sent_date}</h1>
+              <div className="space-y-3 text-sm">
+                <p><strong>Camera:</strong> {event.cameraname} <br/>
+                <strong>Date:</strong> {event.sent_date}<br/>
+                <strong>Type:</strong> {getNotificationTypesLabel(event.notification_type)}<br/>
+                <strong>Severity:</strong> { getSeveritiesLabel(event.severity)}</p>                
               </div>             
             </div>
           );

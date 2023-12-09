@@ -1,6 +1,5 @@
 import React from "react";
 import ReactPlayer from "react-player";
-import RemoveIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
 
@@ -63,16 +62,6 @@ export default function VideoList(props) {
                   },
                 }}
               />
-
-              <div className="text-right">
-                <button
-                  type="button"
-                  className="pt-1 bg-[#26272f] rounded-full text-white font-semibold "
-                  onClick={() => props.removeCamera(camera)}
-                >
-                  <RemoveIcon />
-                </button>
-              </div>
             </div>
           </div>
         );
