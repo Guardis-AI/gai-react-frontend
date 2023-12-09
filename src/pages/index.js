@@ -6,12 +6,14 @@ import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
+
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
   const [events, setEvents] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -50,10 +52,15 @@ export default function Home() {
         if (response == null) {
           console.log("No events found!");
         } else {
-          const notification_list = updateCameraNameInNotifications(
-            response.data,
+          
+          let notification_list =  response.data.slice(0, 1000);
+         
+          notification_list = updateCameraNameInNotifications(
+            notification_list,
             listOfCameras
           );
+         
+          setUnreadCount(response.data.length);
           setEvents(notification_list);
         }
       })
@@ -230,7 +237,7 @@ export default function Home() {
           })}
         </div>
       </div>
-      <EventList events={events} setMainVideo={navNoti} unreadCount={events?.length} />
+      <EventList events={events} setMainVideo={navNoti} unreadCount={unreadCount} />
     </div>
   );
 }
