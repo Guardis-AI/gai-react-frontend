@@ -230,7 +230,7 @@ export default function Home() {
           })}
         </div>
       </div>
-      <EventList events={events} setMainVideo={navNoti} />
+      <EventList events={events} setMainVideo={navNoti} unreadCount={events?.length} />
     </div>
   );
 }
