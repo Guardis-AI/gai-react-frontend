@@ -52,26 +52,26 @@ export default function Events() {
     [events]
   );
 
-  const getCamerasDetails = async ()=>{
-   const request =  axios
-    .get(localStorage.getItem("cfUrl") + "camera/credentials")
-    .then(function (response) {
-      if (response == null) {
-        console.log("No cameras found!");
-      } else {
-        const camera_list = response.data.map((camera) => {
-          return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
-        });
+  const getCamerasDetails = async () => {
+    const request = axios
+      .get(localStorage.getItem("cfUrl") + "camera/credentials")
+      .then(function (response) {
+        if (response == null) {
+          console.log("No cameras found!");
+        } else {
+          const camera_list = response.data.map((camera) => {
+            return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
+          });
 
-        cameraList.current =camera_list;
-      }
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+          cameraList.current = camera_list;
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
 
-    await request;    
-  }
+    await request;
+  };
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -129,12 +129,13 @@ export default function Events() {
   }, [navigate, state, setMainVideo]);
 
   const updateCameraNameInNotifications = (notifications) => {
-    
     let notification_list = notifications.map((notification) => {
       let cameraname = "Generic";
 
       if (cameraList.current !== null) {
-        const camera = cameraList.current.find((c) => c.mac === notification.camera_id);
+        const camera = cameraList.current.find(
+          (c) => c.mac === notification.camera_id
+        );
         cameraname = camera ? camera.name : cameraname;
       }
 
@@ -287,8 +288,8 @@ export default function Events() {
   };
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
-      <div className="xl:grow pr-2 flex flex-col">
+    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
+      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white">
         <div className="w-5/6 self-center">
           <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white ">
             <p>

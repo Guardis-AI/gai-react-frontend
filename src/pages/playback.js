@@ -137,8 +137,8 @@ export default function Playback() {
   };
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
-      <div className="xl:grow pr-2 flex flex-col">
+    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
+      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white">
         <div className="w-5/6 self-center flex flex-col py-3">
           <div className="flex flex-wrap justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
             <h6>{currCamera.name}</h6>
