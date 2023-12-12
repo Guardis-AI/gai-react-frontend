@@ -8,6 +8,10 @@ import ErrorMessageModal from "../components/ErrorMessageModal";
 import WarningMessageModal from "../components/WarningMessageModal";
 import SaveIcon from "@mui/icons-material/SaveOutlined";
 import CancelIcon from "@mui/icons-material/CancelOutlined";
+import InfoOutlined from "@mui/icons-material/InfoRounded";
+import InfoSharpIcon from "@mui/icons-material/InfoSharp";
+import Popover from "@mui/material/Popover";
+import Typography from "@mui/material/Typography";
 
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
@@ -17,6 +21,9 @@ export default function Setup() {
   const [errorMessage, setErrorMessage] = useState("");
   const [warningMessage, setWarningMessage] = useState("");
   const [cameraToRemove, setCameraToRemove] = useState({});
+  const [popoverMessage, setPopoverMessage] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
 
@@ -270,6 +277,17 @@ export default function Setup() {
       });
   };
 
+  const handlePopoverOpen = (event, message) => {
+    setPopoverMessage(message);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = (timeToBeDisplay = 0) => {
+    setTimeout(() => {
+      setAnchorEl(null);
+    }, timeToBeDisplay);
+  };
+
   return (
     <div>
       <div className="py-3 px-8 h-full overflow-auto">
@@ -285,7 +303,7 @@ export default function Setup() {
           </button>
           <button
             type="button"
-            className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
+            className="py-2 px-8 bg-[#30ac64] rounded-full text-white font-semibold"
             onClick={openDeviceModal}
           >
             Add Device
@@ -491,21 +509,32 @@ export default function Setup() {
               </label>
             </div>
             <div className="flex space-x-2">
-              <label className="flex flex-col w-3/5">
+              <label className="flex flex-col w-11/12">
                 IP Address
-                <input
-                  type="text"
-                  name="ip"
-                  value={deviceFormData.ip}
-                  onChange={handleDeviceFormChange}
-                  className="text-black"
-                />
+                <div className="flex space-x-1">
+                  <input
+                    type="text"
+                    name="ip"
+                    value={deviceFormData.ip}
+                    onChange={handleDeviceFormChange}
+                    className="text-black"
+                  />
+                  <span>
+                    <InfoOutlined
+                      className="bg-[#26272f] rounded-xl"
+                      onMouseEnter={(e) =>
+                        handlePopoverOpen(e, "IP address of the camera!")
+                      }
+                      onMouseLeave={() => handlePopoverClose(5000)}
+                    />
+                  </span>
+                  </div>
               </label>
             </div>
             <div className="flex space-x-2">
               <button
                 type="submit"
-                className="w-1/6 bg-[#26272f] rounded-full text-white font-semibold ml-auto "
+                className="w-1/6 py-2 px-2 bg-[#30ac64] rounded-full text-white font-semibold ml-auto "
               >
                 Save
               </button>
@@ -517,12 +546,87 @@ export default function Setup() {
         <table className="table-fixed border flex flex-col text-left mt-2 w-full text-xs border-black border-b-0 table-auto rounded">
           <thead className="font-bold  border-b flex border-black  bg-[#26272f]">
             <tr className="flex w-full p-2 text-white ">
-              <th className="w-1/2">URL</th>
-              <th className="w-1/12 pl-5">Port</th>
-              <th className="w-3/12">Camera Name</th>
-              <th className="w-2/12">Mac Address</th>
-              <th className="w-2/12">IP Address</th>
-              <th className="w-2/12">Vendor</th>
+              <th className="w-1/2">
+                URL
+                <span className="pl-1">
+                  <InfoOutlined
+                    sx={{ fontSize: 15 }}
+                    className="bg-[#26272f] rounded-xl mb-1"
+                    onMouseEnter={(e) =>
+                      handlePopoverOpen(
+                        e,
+                        "The url of where the unit is located!"
+                      )
+                    }
+                    onMouseLeave={() => handlePopoverClose(5000)}
+                  />
+                </span>
+              </th>
+              <th className="w-1/12 pl-5">
+                Port
+                <span>
+                  <InfoOutlined
+                    sx={{ fontSize: 15 }}
+                    className="bg-[#26272f] rounded-xl mb-1"
+                    onMouseEnter={(e) =>
+                      handlePopoverOpen(e, "Port of the camera")
+                    }
+                    onMouseLeave={() => handlePopoverClose(5000)}
+                  />
+                </span>
+              </th>
+              <th className="w-3/12">
+                Camera Name{" "}
+                <span>
+                  <InfoOutlined
+                    sx={{ fontSize: 15 }}
+                    className="bg-[#26272f] rounded-xl mb-1"
+                    onMouseEnter={(e) =>
+                      handlePopoverOpen(e, "Name of the camera!")
+                    }
+                    onMouseLeave={() => handlePopoverClose(5000)}
+                  />
+                </span>
+              </th>
+              <th className="w-2/12">
+                Mac Address{" "}
+                <span>
+                  <InfoOutlined
+                    sx={{ fontSize: 15 }}
+                    className="bg-[#26272f] rounded-xl mb-1"
+                    onMouseEnter={(e) =>
+                      handlePopoverOpen(e, "Mac Address of the camera!")
+                    }
+                    onMouseLeave={() => handlePopoverClose(5000)}
+                  />
+                </span>
+              </th>
+              <th className="w-2/12">
+                IP Address
+                <span>
+                  <InfoOutlined
+                    sx={{ fontSize: 15 }}
+                    className="bg-[#26272f] rounded-xl mb-1"
+                    onMouseEnter={(e) =>
+                      handlePopoverOpen(e, "IP address of the camera!")
+                    }
+                    onMouseLeave={() => handlePopoverClose(5000)}
+                  />
+                </span>
+              </th>
+              <th className="w-2/12">
+                Vendor
+                <span>
+                  <InfoOutlined
+                    sx={{ fontSize: 15 }}
+                    className="bg-[#26272f] rounded-xl mb-1"
+                    onMouseEnter={(e) =>
+                      handlePopoverOpen(e, "the brand of the camera!")
+                    }
+                    onMouseLeave={() => handlePopoverClose(5000)}
+                  />
+                </span>
+              </th>
               <th className="w-1/12">Remove</th>
             </tr>
           </thead>
@@ -600,6 +704,27 @@ export default function Setup() {
         Title={"Oops! Something Went Wrong!"}
         Message={errorMessage}
       />
+
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={() => handlePopoverClose(0)}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+      >
+        <Typography sx={{ p: 0.5, fontSize: 11 }}>
+          <InfoSharpIcon
+            sx={{ fontSize: 15, color: "#30ac64" }}
+          ></InfoSharpIcon>{" "}
+          {popoverMessage}
+        </Typography>
+      </Popover>
     </div>
   );
 }
