@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import axios from "axios";
@@ -12,6 +12,7 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningMessageModal from "../components/WarningMessageModal";
+import UpdateIcon from "@mui/icons-material/Update";
 
 export default function Events() {
   const navigate = useNavigate();
@@ -23,55 +24,17 @@ export default function Events() {
   const [errorMessage, setErrorMessage] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [warningMessage, setWarningMessage] = useState("");
+  const [eventsFromSever, setEventsFromSever] = useState(null);
+  const [currentEventsLoded, setCurrentEventsLoded] = useState(100);
 
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
-  let frequencyToGetNotice = useRef(0);
+  // let frequencyToGetNotice = useRef(0);
   let cameraList = useRef(null);
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
-
-  const setMainVideo = useCallback(
-    (id, notifs) => {
-      let selNoti;
-
-      if (notifs) {
-        selNoti = notifs.find((i) => i.clip_id === id);
-      } else {
-        selNoti = events.find((i) => i.clip_id === id);
-      }
-
-      const streamUrl = `${localStorage.getItem(
-        "cfUrl"
-      )}notifications/get_video/${selNoti.clip_id}`;
-      setCurrVidUrl(streamUrl);
-      setCurrNoti(selNoti);
-    },
-    [events, state]
-  );
-
-  const getCamerasDetails = async ()=>{
-   const request =  axios
-    .get(localStorage.getItem("cfUrl") + "camera/credentials")
-    .then(function (response) {
-      if (response == null) {
-        console.log("No cameras found!");
-      } else {
-        const camera_list = response.data.map((camera) => {
-          return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
-        });
-
-        cameraList.current =camera_list;
-      }
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-
-    await request;    
-  }
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -81,60 +44,139 @@ export default function Events() {
       getCamerasDetails();
     }
 
-    axios
-      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
-      .then(async function (response) {
-        if (response == null || response.data.length === 0) {
-          console.log("No events found!");
+    getNotifications();
+  }, [navigate, state]);
+
+  const getCamerasDetails = async () => {
+    const request = axios
+      .get(localStorage.getItem("cfUrl") + "camera/credentials")
+      .then(function (response) {
+        if (response == null) {
+          console.log("No cameras found!");
         } else {
-          let notification_list = updateCameraNameInNotifications(
-            response.data
-          );
+          const camera_list = response.data.map((camera) => {
+            return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
+          });
 
-          const notificationsUnread = notification_list.filter(
-            (n) => n.user_feedback === null
-          );
-
-          if (frequencyToGetNotice.current === 0) {
-            setUnreadCount(notificationsUnread.length);
-            setEvents(notificationsUnread);
-            frequencyToGetNotice.current = 60000;
-          } else {
-            setTimeout(function () {
-              setUnreadCount(notificationsUnread.length);
-              setEvents(notificationsUnread);
-            }, frequencyToGetNotice.current);
-          }
-
-          if (state) {
-            if (!currVidUrl) {
-              const selNoti = notification_list.find(
-                (i) => i.clip_id === state.id
-              );
-
-              selNoti.cameraname = state.cameraname;
-              setCurrVidUrl(state.url);
-              setCurrNoti(selNoti);
-            }
-          } else {
-            if (!currVidUrl) {
-              setMainVideo(notification_list[0].clip_id, notification_list);
-            }
-          }
+          return camera_list;
         }
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, state, setMainVideo]);
+
+    cameraList.current = await request;
+  };
+
+  const setMainVideo = (clip_id, notifications) => {
+    let selNoti;
+
+    if (notifications) {
+      selNoti = notifications.find((i) => i.clip_id === clip_id);
+    } else {
+      selNoti = events.find((i) => i.clip_id === clip_id);
+    }
+
+    const streamUrl = `${localStorage.getItem(
+      "cfUrl"
+    )}notifications/get_video/${selNoti.clip_id}`;
+
+    setCurrVidUrl(streamUrl);
+    setCurrNoti(selNoti);
+  };
+
+  const getNotificationsFromServer = async () => {
+    const request = axios
+      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
+      .then(function (response) {
+        if (response == null || response.data.length === 0) {
+          console.log("No events found!");
+          return null;
+        } else {
+          let notification_list = response.data.filter(
+            (n) => n.user_feedback === null
+          );
+
+          notification_list =
+            updateCameraNameInNotifications(notification_list);
+
+          return notification_list;
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    const notificationList = await request;
+
+    return notificationList;
+  }
+
+  const getNotifications = async () => {   
+
+    const notificationList = await getNotificationsFromServer();
+
+    setUnreadCount(notificationList.length);
+    setEventsFromSever(notificationList);
+    setEvents(notificationList.slice(0, currentEventsLoded));
+
+    if (state) {
+      if (!currVidUrl) {
+        const selNoti = notificationList.find((i) => i.clip_id === state.id);
+
+        selNoti.cameraname = state.cameraname;
+        setCurrVidUrl(state.url);
+        setCurrNoti(selNoti);
+      }
+    } else {
+      if (!currVidUrl) {
+        setMainVideo(notificationList[0].clip_id, notificationList);
+      }
+    }
+  };
+
+  const loadMoreEvents = async() => {
+    
+    if (currentEventsLoded >= eventsFromSever.length) {
+      const notificationsList = await getNotificationsFromServer();
+      let notificationsListDifference = eventsFromSever.filter(
+        (event) => {
+          return !notificationsList.find((not) => not.clip_id === event.clip_id);
+        }
+      );
+
+      if (notificationsListDifference.length) {
+        setEventsFromSever((events) => [
+          ...events,
+          ...notificationsListDifference,
+        ]);
+        setUnreadCount(
+          currentEventsLoded + notificationsListDifference.length
+        );
+
+        if(notificationsListDifference.length > 100){
+          notificationsListDifference = notificationsListDifference.slice(100);
+        }
+
+        setEvents((prevEvents) => [...prevEvents, ...notificationsListDifference]);
+      }
+    } else {
+      const nextEnd = currentEventsLoded + 100;
+      const nextEvents = eventsFromSever.slice(currentEventsLoded, nextEnd);
+
+      setCurrentEventsLoded(nextEnd);
+      setEvents((prevEvents) => [...prevEvents, ...nextEvents]);
+    }
+  };
 
   const updateCameraNameInNotifications = (notifications) => {
-    
     let notification_list = notifications.map((notification) => {
       let cameraname = "Generic";
 
       if (cameraList.current !== null) {
-        const camera = cameraList.current.find((c) => c.mac === notification.camera_id);
+        const camera = cameraList.current.find(
+          (c) => c.mac === notification.camera_id
+        );
         cameraname = camera ? camera.name : cameraname;
       }
 
@@ -153,7 +195,7 @@ export default function Events() {
 
     if (currNoti && currNoti.cameraname === "Generic") {
       const notification = notification_list.find(
-        (n) => n.clip_id == currNoti.clip_id
+        (n) => n.clip_id === currNoti.clip_id
       );
       setCurrNoti(notification);
     }
@@ -174,10 +216,18 @@ export default function Events() {
         }
       )
       .then(function (response) {
+        
         const notification_list = events.filter(
-          (n) => n.camera_id !== response.data.camera_id
+          (n) => n.clip_id !== response.data.clip_id
         );
         setEvents(notification_list);
+
+        const events_from_sever = eventsFromSever.filter(
+          (n) => n.clip_id !== response.data.clip_id
+        );
+        setEventsFromSever(events_from_sever);
+       
+        setUnreadCount(events_from_sever.length);
         setMainVideo(notification_list[0].clip_id, notification_list);
         setAnchorEl(null);
       })
@@ -195,9 +245,16 @@ export default function Events() {
       )
       .then(function (response) {
         const notification_list = events.filter(
-          (n) => n.camera_id !== response.data.camera_id
+          (n) => n.clip_id !== response.data.clip_id
         );
         setEvents(notification_list);
+
+        const events_from_sever = eventsFromSever.filter(
+          (n) => n.clip_id !== response.data.clip_id
+        );
+        setEventsFromSever(events_from_sever);
+
+        setUnreadCount(events_from_sever.length);
         setMainVideo(notification_list[0].clip_id, notification_list);
         setAnchorEl(null);
       })
@@ -348,6 +405,12 @@ export default function Events() {
             >
               <ThumbDownIcon />
             </button>
+            <button
+              className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
+              onClick={() => loadMoreEvents()}
+            >
+              <UpdateIcon />
+            </button>
           </div>
         </div>
       </div>
@@ -366,7 +429,6 @@ export default function Events() {
         Title={"Oops! Something Went Wrong!"}
         Message={errorMessage}
       />
-
       <WarningMessageModal
         ref={warningMessageModal}
         Title={"Caution!"}
