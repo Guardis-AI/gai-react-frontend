@@ -13,19 +13,20 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import Slider from "@mui/material/Slider";
-import SyncAltRoundedIcon from "@mui/icons-material/SyncAltRounded";
+import PauseCircleRounded from "@mui/icons-material/PauseCircleRounded";
+import PlayCircleRoundedIcon from "@mui/icons-material/PlayCircleRounded";
 
 export default function Playback() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
   const [currCamera, setCurrCamera] = useState({ namr: "" });
   const [currVidUrl, setCurrVidUrl] = useState(null);
-  const [value, setValue] = useState([0, 70]);
+  const [timeRange, setTimeRange] = useState([0, 70]);
   const [maxVideoTime, setMaxVideoTime] = useState(60);
   const [minVideoTime, setMinVideoTime] = useState(0);
   const [marks, setMarks] = useState([]);
-  //const [step, setStep] = useState(30);
-  //let step = 5;
+  const [play, setPlay] = useState(true);
+  const [currenTime, setCurrenTime] = useState(0);
 
   const step = useRef(30);
   const selectedDateRef = useRef(new Date());
@@ -153,7 +154,11 @@ export default function Playback() {
   };
 
   const handleTimeChange = (event, newValue) => {
-    setValue(newValue);
+    setTimeRange(newValue);
+
+    const startTime = newValue[0];
+    currentVideoPlayer.current.seekTo(startTime * 60, "seconds");
+    setPlay(true);
   };
 
   const generateTimeLabel = (timeSpan) => {
@@ -171,6 +176,25 @@ export default function Playback() {
     }
 
     setMarks(marks);
+  };
+
+  const handleProgress = (progress) => {
+    const endTime = timeRange[1];
+
+    if (progress.playedSeconds >= endTime * 60) {
+      setPlay(false);
+    }
+
+    setCurrenTime(progress.playedSeconds);
+  };
+
+  const valueLabelFormat = (value) => {
+    const minutes = Math.floor(value / 60);
+    let seconds = value % 60;
+
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   return (
@@ -199,20 +223,25 @@ export default function Playback() {
               } else {
                 if (totalMinutes <= 300) {
                   step.current = 15;
-                }else{
-                  step.current = 30;
+                } else {
+                  if (totalMinutes <= 600) {
+                    step.current = 30;
+                  } else {
+                    step.current = 60;
+                  }
                 }
               }
 
               generateTimeLabel(totalMinutes);
               setMaxVideoTime(totalMinutes);
-              setValue([0, totalMinutes]);
+              setTimeRange([0, totalMinutes]);
             }}
+            onProgress={handleProgress}
             id="main"
             url={currVidUrl}
             width="100%"
-            controls
-            playing={true}
+            // controls
+            playing={play}
             volume={0}
             config={{
               file: {
@@ -240,40 +269,77 @@ export default function Playback() {
           <div className="flex-1 p-4">
             <div className="text-white text-left">
               <h6>
-                {moment(new Date(selectedDateRef.current)).format("llll")}
+                <strong>Start Play:</strong>{" "}
+                {moment(new Date(selectedDateRef.current)).format(
+                  "ddd, MMM DD, YYYY"
+                )}{" "}
+                &nbsp; {valueLabelFormat(timeRange[0])}
               </h6>
             </div>
           </div>
-          <div className="p-2">
-            <SyncAltRoundedIcon className="text-white" fontSize="large" />
+         
+          <div className="p-4 text-white flex-1 self-center">
+            <h6>
+              {!play ? (
+                <button onClick={() => setPlay(true)}>
+                  <PlayCircleRoundedIcon fontSize="large"></PlayCircleRoundedIcon>
+                </button>
+              ) : (
+                <button onClick={() => setPlay(false)}>
+                  <PauseCircleRounded fontSize="large"></PauseCircleRounded>
+                </button>
+              )}
+             
+              &nbsp;{" "}
+              {moment(new Date(0, 0, 0, 0, 0, currenTime)).format("HH:mm:ss", {
+                trim: false,
+              })}
+              /{" "}
+              {moment(new Date(0, 0, 0, 0, 0, timeRange[1] * 60)).format(
+                "HH:mm:ss",
+                { trim: false }
+              )}
+&nbsp;
+&nbsp;
+              <strong>Total Time:</strong> {moment(new Date(0, 0, 0, 0, 0, (timeRange[1]-timeRange[0]) * 60)).format(
+                "HH:mm:ss",
+                { trim: false }
+              )} 
+            </h6>
           </div>
           <div className="flex-1 p-4">
             <div className="text-white text-right">
               <h6>
-                {moment(new Date(selectedDateRef.current)).format("llll")}
+                <strong>End Play:</strong>{" "}
+                {moment(new Date(selectedDateRef.current)).format(
+                  "ddd, MMM DD, YYYY"
+                )}{" "}
+                &nbsp; {valueLabelFormat(timeRange[1])}
               </h6>
             </div>
           </div>
         </div>
         <div className="w-5/6 self-center flex bg-slate-200 pl-5 pr-5 rounded-b-lg ">
           <Slider
+            sx={{
+              "& .css-yafthl-MuiSlider-markLabel": {
+                fontSize: "12px",
+              },
+              "& .css-1eoe787-MuiSlider-markLabel": {
+                fontSize: "12px",
+              },
+            }}
             getAriaLabel={() => "Video Time Selection"}
             defaultValue={0}
             step={step.current}
             min={minVideoTime}
             max={maxVideoTime}
             marks={marks}
-            value={value}
+            value={timeRange}
             onChange={handleTimeChange}
             valueLabelDisplay="auto"
             color="success"
-            valueLabelFormat={(value) => {
-              const minutes = Math.floor(value / 60);
-              const seconds = value % 60;
-              return `${minutes.toString().padStart(2, "0")}:${seconds
-                .toString()
-                .padStart(2, "0")}`;
-            }}
+            valueLabelFormat={(value) => valueLabelFormat(value)}
           />
         </div>
       </div>
