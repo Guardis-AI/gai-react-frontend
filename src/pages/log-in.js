@@ -349,7 +349,7 @@ export default function LogIn() {
                   onMouseEnter={(e) =>
                     handlePopoverOpen(
                       e,
-                      "The url of where the unit is located!"
+                      "Copy the code provided when you purchased your subscription. If a code was not provided, please contact customer support for assistance!"
                     )
                   }
                   onMouseLeave={() => handlePopoverClose(5000)}
@@ -374,7 +374,7 @@ export default function LogIn() {
                   onMouseEnter={(e) =>
                     handlePopoverOpen(
                       e,
-                      "Name of the device that handled the cameras!"
+                      "Please add in your site address or other identifying information here!"
                     )
                   }
                   onMouseLeave={() => handlePopoverClose(5000)}

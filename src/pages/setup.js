@@ -547,7 +547,7 @@ export default function Setup() {
           <thead className="font-bold  border-b flex border-black  bg-[#26272f]">
             <tr className="flex w-full p-2 text-white ">
               <th className="w-1/2">
-                URL
+                Cf-Url
                 <span className="pl-1">
                   <InfoOutlined
                     sx={{ fontSize: 15 }}
@@ -555,7 +555,7 @@ export default function Setup() {
                     onMouseEnter={(e) =>
                       handlePopoverOpen(
                         e,
-                        "The url of where the unit is located!"
+                        "Copy the code provided when you purchased your subscription. If a code was not provided, please contact customer support for assistance.!"
                       )
                     }
                     onMouseLeave={() => handlePopoverClose(5000)}

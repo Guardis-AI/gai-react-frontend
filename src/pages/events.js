@@ -30,7 +30,6 @@ export default function Events() {
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
-  // let frequencyToGetNotice = useRef(0);
   let cameraList = useRef(null);
 
   const open = Boolean(anchorEl);
