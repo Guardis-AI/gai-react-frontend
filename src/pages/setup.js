@@ -1,81 +1,44 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ScanModalButton from "../components/ScanModalButton";
+import { TrashIcon } from "@heroicons/react/24/outline";
+import ErrorMessageModal from "../components/ErrorMessageModal";
+import WarningMessageModal from "../components/WarningMessageModal";
+import SaveIcon from "@mui/icons-material/SaveOutlined";
+import CancelIcon from "@mui/icons-material/CancelOutlined";
+
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Setup() {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
-  const [searchInput, setSearchInput] = useState("");
   const [cameraList, setCameraList] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [warningMessage, setWarningMessage] = useState("");
+  const [cameraToRemove, setCameraToRemove] = useState({});
+  let errorMessageModal = useRef();
+  let warningMessageModal = useRef();
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-    axios
-      .get(localStorage.getItem("cfUrl") + "camera/credentials")
-      .then(function (response) {
-        const camera_list = response.data.map((camera) => {
-          return {
-            uuid: camera.uuid,
-            name: camera.name,
-            mac: camera.mac,
-            ip: camera.ip,
-            port: camera.port,
-            vendorName: camera.vendor_name,
-            url: camera.uri,
-          };
-        });
+    getCamerasDetails();
 
-        if (response === null) {
-          console.log("No camera found!");
-        } else {
-          setCameraList(camera_list);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-
-    var userId = localStorage.getItem("userId");
-    axios
-      .post(`${baseUrlApi}/api/user/getuserdetails`, {
-        user_id: userId,
-        login_user_id: "",
-        p_device_type: "",
-        p_device_token: "",
-        p_logindevice_id: "",
-      })
-      .then(function (response) {
-        response = response.data.gai_get_user_details;
-        if (response === null) {
-          console.log("No user found!");
-        } else {
-          setUserData(response);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
     Modal.setAppElement("body");
   }, [navigate]);
-
-  const handleChange = (e) => {
-    e.preventDefault();
-    setSearchInput(e.target.value);
-  };
 
   // User Modal
   const [userModalIsOpen, setUserModalIsOpen] = useState(false);
   function openUserModal() {
     setUserModalIsOpen(true);
   }
+
   function closeUserModal() {
     setUserModalIsOpen(false);
   }
+
   const [userFormData, setUserFormData] = useState({
     user_id: "",
     username: "",
@@ -87,12 +50,14 @@ export default function Setup() {
     start_date: "",
     end_date: "",
   });
+
   function handleUserFormChange(e) {
     setUserFormData({
       ...userFormData,
       [e.target.name]: e.target.value,
     });
   }
+
   function onUserSubmit() {
     console.log("submitting add User form: ");
     console.log(userFormData);
@@ -108,45 +73,52 @@ export default function Setup() {
 
   // Device Modal
   const [deviceModalIsOpen, setDeviceModalIsOpen] = useState(false);
+
   function openDeviceModal() {
     setDeviceModalIsOpen(true);
   }
+
   function closeDeviceModal() {
     setDeviceModalIsOpen(false);
   }
+
   const [deviceFormData, setDeviceFormData] = useState({
-    user_id: "",
-    p_IP_Address: "",
-    p_url: "",
-    p_Camera_Type: "",
-    p_port: "",
-    start_date: "",
-    end_date: "",
-    p_send_notification: false,
-    login_user_id: localStorage.getItem("userId"),
-    p_Camdevice_id: [""],
+    name: "",
+    ip: "",
+    port: "",
+    mac: "",
+    username: "",
+    password: "",
+    vendor_name: "",
   });
+
   function handleDeviceFormChange(e) {
     setDeviceFormData({
       ...deviceFormData,
       [e.target.name]: e.target.value,
     });
   }
-  function onDeviceSubmit() {
+
+  function onDeviceSubmit(e) {
+    e.preventDefault();
     let devobj = deviceFormData;
-    devobj.p_username = localStorage.getItem("userName");
-    devobj.p_device_type = "";
-    devobj.p_device_token = "";
-    devobj.p_logindevice_id = "";
-    console.log("submitting add Device form: ");
-    console.log(devobj);
     axios
-      .post(`${baseUrlApi}/api/user/insuserdevice`, devobj)
+      .post(`${localStorage.getItem("cfUrl")}camera/credentials`, {
+        name: devobj.name,
+        ip: devobj.ip,
+        port: devobj.port,
+        mac: devobj.mac,
+        username: devobj.username,
+        password: devobj.password,
+        vendor_name: devobj.vendor_name,
+      })
       .then(function (response) {
         console.log(response);
+        restartServices();
       })
       .catch(function (error) {
         console.log(error);
+        openErrorModal(error.response.data);
       });
   }
 
@@ -159,25 +131,153 @@ export default function Setup() {
     },
   };
 
+  const restartServices = () => {
+    axios
+      .post(localStorage.getItem("cfUrl") + "services/restart", null)
+      .then(function (response) {
+        console.log("services/restart:", response.data);
+        getCamerasDetails();
+        closeDeviceModal();
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  };
+
+  const getCamerasDetails = () => {
+    axios
+      .get(localStorage.getItem("cfUrl") + "camera/credentials")
+      .then(function (response) {
+        const camera_list = response.data.map((camera) => {
+          return {
+            uuid: camera.uuid,
+            name: camera.name,
+            mac: camera.mac,
+            ip: camera.ip,
+            port: camera.port,
+            vendorName: camera.vendor_name,
+            url: camera.uri,
+            editMode: false,
+          };
+        });
+
+        if (response === null) {
+          console.log("No camera found!");
+        } else {
+          setCameraList(camera_list);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  const handledRemoveCameraclick = (camera) => {
+    setCameraToRemove(camera);
+
+    openWarningModal(`Do you want to Remove the camera: ${camera.name}`);
+  };
+
+  const removeCamera = (cameraToRemove) => {
+    axios
+      .delete(`${localStorage.getItem("cfUrl")}camera/credentials`, {
+        data: {
+          uuid: cameraToRemove.uuid,
+          mac: cameraToRemove.mac,
+        },
+      })
+      .then(function (response) {
+        if (response == null) {
+          console.log("No camera found!");
+        } else {
+          const newCameraList = cameraList.filter((camera) => {
+            return camera.uuid !== cameraToRemove.uuid;
+          });
+
+          setCameraList(newCameraList);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+        let message = error.response ? error.response.data : error.message;
+        openErrorModal(message);
+      });
+  };
+
+  const openErrorModal = (message) => {
+    if (errorMessageModal.current) {
+      setErrorMessage(message);
+      errorMessageModal.current.openModal();
+    }
+  };
+
+  const openWarningModal = (message) => {
+    setWarningMessage(message);
+    if (warningMessageModal.current) {
+      warningMessageModal.current.openModal();
+    }
+  };
+
+  const warningModalResult = (result) => {
+    if (result) {
+      removeCamera(cameraToRemove);
+    }
+  };
+
+  const handleEditMode = (index, value) => {
+    const updatedCamera = [...cameraList];
+    updatedCamera[index].editMode = value;
+    setCameraList(updatedCamera);
+  };
+
+  const handleChange = (index, value) => {
+    const updatedCamera = [...cameraList];
+    updatedCamera[index].name = value;
+    setCameraList(updatedCamera);
+  };
+
+  const renameCamera = (index) => {
+    const cameras = [...cameraList];
+    const camera = cameras[index];
+
+    axios
+      .put(localStorage.getItem("cfUrl") + "camera/credentials", {
+        mac: camera.mac,
+        name: camera.name,
+        uuid: camera.uuid,
+      })
+      .then(function (response) {
+        if (response == null) {
+          console.log("No devices found!");
+        } else {
+          const camera_list = response.data.map((camera) => {
+            return {
+              uuid: camera.uuid,
+              name: camera.name,
+              mac: camera.mac,
+              ip: camera.ip,
+              port: camera.port,
+              vendorName: camera.vendor_name,
+              url: camera.uri,
+              editMode: false,
+            };
+          });
+          setCameraList(camera_list);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
   return (
     <div>
       <div className="py-3 px-8 h-full overflow-auto">
         <div className="flex flex-row space-x-2 md:space-x-4 flex-wrap space-y-2 max-w-full">
-          <div className="flex grow flex-col">
-            <h1 className="font-semibold text-3xl">Users</h1>
-            <span className="text-gray-600">
-              {userData?.length === 1 ? "1 User" : userData?.length + " Users"}
-            </span>
-          </div>
-          <input
-            className="border-solid border-2 border-gray rounded-full py-2 px-8"
-            type="text"
-            placeholder="Search User..."
-            onChange={handleChange}
-            value={searchInput}
-          />
+          <div className="flex grow flex-col"></div>
           <button
             type="button"
+            style={{ display: "none" }}
             className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
             onClick={openUserModal}
           >
@@ -199,7 +299,7 @@ export default function Setup() {
           // onAfterOpen={afterOpenModal}
           onRequestClose={closeUserModal}
           contentLabel="Add User Modal"
-          className="bg-[#4f5263] w-full h-full md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
+          className="bg-[#4f5263] w-full  md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
           style={customStyles}
         >
           <div className="flex bg-[#26272f] justify-between py-2 px-4">
@@ -308,7 +408,7 @@ export default function Setup() {
           isOpen={deviceModalIsOpen}
           onRequestClose={closeDeviceModal}
           contentLabel="Add Device Modal"
-          className="bg-[#4f5263] w-full h-full md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
+          className="bg-[#4f5263] w-full md:w-2/5 md:h-11/12 overflow-auto text-white rounded-xl"
           style={customStyles}
         >
           <div className="flex bg-[#26272f] justify-between py-2 px-4">
@@ -322,57 +422,47 @@ export default function Setup() {
           </div>
           <form
             className="flex flex-col space-y-3 px-5 py-2 pb-4"
-            onSubmit={onDeviceSubmit}
+            onSubmit={(e) => onDeviceSubmit(e)}
           >
             <div className="flex space-x-2">
               <label className="flex flex-col w-3/5">
-                User
+                User Name
                 <input
                   type="text"
-                  name="user_id"
-                  value={deviceFormData.user_id}
+                  name="username"
+                  value={deviceFormData.username}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
               <label className="flex flex-col w-3/5">
-                IP Address
+                Password
                 <input
-                  type="text"
-                  name="p_IP_Address"
-                  value={deviceFormData.p_IP_Address}
+                  type="password"
+                  name="password"
+                  value={deviceFormData.password}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
             </div>
-            <label className="flex flex-col w-3/5">
-              URL
-              <input
-                type="text"
-                name="p_url"
-                value={deviceFormData.p_url}
-                onChange={handleDeviceFormChange}
-                className="text-black"
-              />
-            </label>
             <div className="flex space-x-2">
-              <label className="flex flex-col w-3/5">
-                Camera Type
-                <input
-                  type="text"
-                  name="p_Camera_Type"
-                  value={deviceFormData.p_Camera_Type}
-                  onChange={handleDeviceFormChange}
-                  className="text-black"
-                />
-              </label>
               <label className="flex flex-col w-3/5">
                 Port
                 <input
                   type="text"
-                  name="p_port"
-                  value={deviceFormData.p_port}
+                  name="port"
+                  value={deviceFormData.port}
+                  onChange={handleDeviceFormChange}
+                  className="text-black"
+                />
+              </label>
+              <label className="flex flex-col w-3/5">
+                Mac Address
+                <input
+                  type="text"
+                  name="mac"
+                  value={deviceFormData.mac}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
@@ -380,104 +470,116 @@ export default function Setup() {
             </div>
             <div className="flex space-x-2">
               <label className="flex flex-col w-3/5">
-                Start Date
+                Camera Name
                 <input
-                  type="date"
-                  name="start_date"
-                  value={deviceFormData.start_date}
+                  type="text"
+                  name="name"
+                  value={deviceFormData.name}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
               <label className="flex flex-col w-3/5">
-                End Date
+                Vendor Name
                 <input
-                  type="date"
-                  name="end_date"
-                  value={deviceFormData.end_date}
+                  type="text"
+                  name="vendor_name"
+                  value={deviceFormData.vendor_name}
                   onChange={handleDeviceFormChange}
                   className="text-black"
                 />
               </label>
             </div>
-            <button
-              type="submit"
-              className="bg-[#26272f] rounded-full text-white font-semibold"
-            >
-              Save
-            </button>
+            <div className="flex space-x-2">
+              <label className="flex flex-col w-3/5">
+                IP Address
+                <input
+                  type="text"
+                  name="ip"
+                  value={deviceFormData.ip}
+                  onChange={handleDeviceFormChange}
+                  className="text-black"
+                />
+              </label>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                type="submit"
+                className="w-1/6 bg-[#26272f] rounded-full text-white font-semibold ml-auto "
+              >
+                Save
+              </button>
+            </div>
           </form>
         </Modal>
       </div>
-      <div className="flex w-full overflow-auto px-1">
-        <table className="table-fixed border flex flex-col md:w-full text-left mt-2 border-b-0 drop-shadow-none">
-          <thead>
-            <tr className="font-bold p-2 border-b flex !drop-shadow-none">
-              <th className="w-1/6">User Id</th>
-              <th className="w-1/6">User Name</th>
-              <th className="w-1/6">Edge Unit</th>
-              <th className="w-1/6">Start Date</th>
-              <th className="w-1/6">Total Devices</th>
-              <th className="w-1/6">Action</th>
+      <div className="flex w-full overflow-auto px-1 px-4 py-4">
+        <table className="table-fixed border flex flex-col text-left mt-2 w-full text-xs border-black border-b-0 table-auto rounded">
+          <thead className="font-bold  border-b flex border-black  bg-[#26272f]">
+            <tr className="flex w-full p-2 text-white ">
+              <th className="w-1/2">URL</th>
+              <th className="w-1/12 pl-5">Port</th>
+              <th className="w-3/12">Camera Name</th>
+              <th className="w-2/12">Mac Address</th>
+              <th className="w-2/12">IP Address</th>
+              <th className="w-2/12">Vendor</th>
+              <th className="w-1/12">Remove</th>
             </tr>
           </thead>
-          <tbody className="!drop-shadow-none">
-            {userData?.map((user, i) => {
+          <tbody>
+            {cameraList?.map((camera, i) => {
               return (
                 <React.Fragment key={i}>
-                  <tr className="border-b p-2 flex">
-                    <td className="w-1/6">{user.user_id}</td>
-                    <td className="w-1/6">{user.user_name}</td>
-                    <td className="w-1/6">{user.edgeunit}</td>
-                    <td className="w-1/6">{user.user_st_date}</td>
-                    <td className="w-1/6">{user.tot_devices}</td>
-                    <td className="w-1/6">
-                      <button>Edit</button>
+                  <tr
+                    key={i}
+                    className={`${
+                      i % 2 === 0 ? "bg-gray-200" : "bg-white"
+                    } border-b p-2 flex border-black`}
+                  >
+                    <td className="w-1/2 overflow-auto">{camera.url}</td>
+                    <td className="w-1/12 overflow-auto pl-5">{camera.port}</td>
+                    <td className="w-3/12 overflow-auto">
+                      {camera.editMode ? (
+                        <div>
+                          <input
+                            type="text"
+                            className="border-solid border-1 border-gray rounded mb-2 pl-1"
+                            defaultValue={camera.name}
+                            onChange={(e) => handleChange(i, e.target.value)}
+                          ></input>
+                          <button
+                            className="ml-1 mb-2 border-solid border-1 border-gray rounded "
+                            onClick={() => renameCamera(i)}
+                          >
+                            <SaveIcon />
+                          </button>
+                          <button
+                            className="ml-1 mb-2 border-solid border-1 border-gray rounded "
+                            onClick={() => handleEditMode(i, false)}
+                          >
+                            <CancelIcon />
+                          </button>
+                        </div>
+                      ) : (
+                        <span onClick={() => handleEditMode(i, true)}>
+                          {camera.name}
+                        </span>
+                      )}
                     </td>
-                  </tr>
-                  <tr className="border-b p-2 flex">
-                    <td className="flex w-full">
-                      <table className="table-fixed border flex flex-col text-left mt-2 w-full text-xs border-black border-b-0">
-                        <thead className="font-bold  border-b flex border-black ">
-                          <tr className="flex w-full p-2">
-                            <th className="w-2/12">Device ID</th>
-                            <th className="w-1/2">URL</th>
-                            <th className="w-1/12 pl-2">Port</th>
-                            <th className="w-1/12">Camera Name</th>
-                            <th className="w-1/12">Mac Address</th>
-                            <th className="w-1/12">IP Address</th>
-                            <th className="w-2/12">Vendor</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {cameraList?.map((camera, i) => {
-                            return (
-                              <tr
-                                className="border-b p-2 flex border-black"
-                                key={i}
-                              >
-                                <td className="w-2/12">{camera.uuid}</td>
-                                <td className="w-1/2 overflow-auto">
-                                  {camera.url}
-                                </td>
-                                <td className="w-1/12 overflow-auto pl-2">
-                                  {camera.port}
-                                </td>
-                                <td className="w-1/12 overflow-auto">
-                                  {camera.name}
-                                </td>
-                                <td className="w-1/12 overflow-auto">
-                                  {camera.mac}
-                                </td>
-                                <td className="w-1/12 overflow-auto">
-                                  {camera.ip}
-                                </td>
-                                <td className="w-2/12">{camera.vendorName}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                    <td className="w-2/12 overflow-auto">{camera.mac}</td>
+                    <td className="w-2/12 overflow-auto">{camera.ip}</td>
+                    <td className="w-2/12">{camera.vendorName}</td>
+                    <td className="w-1/12">
+                      <button
+                        type="button"
+                        className="ml-4  bg-transparent hover:bg-[#4f5263] font-semibold hover:text-white py-2 px-2 border border-[#4f5263] hover:border-transparent rounded"
+                        onClick={() => handledRemoveCameraclick(camera)}
+                      >
+                        <TrashIcon
+                          className="h-4 w-4 text-black-600"
+                          aria-hidden="true"
+                        ></TrashIcon>
+                      </button>
                     </td>
                   </tr>
                 </React.Fragment>
@@ -486,6 +588,18 @@ export default function Setup() {
           </tbody>
         </table>
       </div>
+      <WarningMessageModal
+        ref={warningMessageModal}
+        Title={"Caution!"}
+        Message={warningMessage}
+        WarningResultCallback={warningModalResult}
+      />
+
+      <ErrorMessageModal
+        ref={errorMessageModal}
+        Title={"Oops! Something Went Wrong!"}
+        Message={errorMessage}
+      />
     </div>
   );
 }

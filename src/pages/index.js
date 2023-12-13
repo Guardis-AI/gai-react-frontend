@@ -3,16 +3,17 @@ import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
-import RemoveIcon from "@mui/icons-material/Delete";
 import moment from "moment";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
+
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
   const [events, setEvents] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -51,10 +52,15 @@ export default function Home() {
         if (response == null) {
           console.log("No events found!");
         } else {
-          const notification_list = updateCameraNameInNotifications(
-            response.data,
+          
+          let notification_list =  response.data.slice(0, 1000);
+         
+          notification_list = updateCameraNameInNotifications(
+            notification_list,
             listOfCameras
           );
+         
+          setUnreadCount(response.data.length);
           setEvents(notification_list);
         }
       })
@@ -83,6 +89,7 @@ export default function Home() {
         ),
         severity: notification.severity,
         user_feedback: notification.user_feedback,
+        notification_type: notification.notification_type,
       };
     });
 
@@ -116,30 +123,6 @@ export default function Home() {
         cameraname: selNoti.cameraname,
       },
     });
-  }
-
-  function removeCamera(cameraToRemove) {
-    axios
-      .delete(localStorage.getItem("cfUrl") + "camera/credentials", {
-        data: {
-          uuid: cameraToRemove.uuid,
-          mac: cameraToRemove.mac,
-        },
-      })
-      .then(function (response) {
-        if (response == null) {
-          console.log("No camera found!");
-        } else {
-          const newCameraList = cameraList.filter((camera) => {
-            return camera.uuid !== cameraToRemove.uuid;
-          });
-
-          setCameraList(newCameraList);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
   }
 
   function renameCamera(index) {
@@ -248,22 +231,13 @@ export default function Home() {
                       },
                     }}
                   />
-                </div>
-                <div className="text-right">
-                  <button
-                    type="button"
-                    className="pt-1 bg-[#26272f] rounded-full text-white font-semibold "
-                    onClick={() => removeCamera(camera)}
-                  >
-                    <RemoveIcon />
-                  </button>
-                </div>
+                </div>             
               </div>
             );
           })}
         </div>
       </div>
-      <EventList events={events} setMainVideo={navNoti} />
+      <EventList events={events} setMainVideo={navNoti} unreadCount={unreadCount} />
     </div>
   );
 }
