@@ -110,10 +110,9 @@ export default function Events() {
     const notificationList = await request;
 
     return notificationList;
-  }
+  };
 
-  const getNotifications = async () => {   
-
+  const getNotifications = async () => {
     const notificationList = await getNotificationsFromServer();
 
     setUnreadCount(notificationList.length);
@@ -135,30 +134,28 @@ export default function Events() {
     }
   };
 
-  const loadMoreEvents = async() => {
-    
+  const loadMoreEvents = async () => {
     if (currentEventsLoded >= eventsFromSever.length) {
       const notificationsList = await getNotificationsFromServer();
-      let notificationsListDifference = eventsFromSever.filter(
-        (event) => {
-          return !notificationsList.find((not) => not.clip_id === event.clip_id);
-        }
-      );
+      let notificationsListDifference = eventsFromSever.filter((event) => {
+        return !notificationsList.find((not) => not.clip_id === event.clip_id);
+      });
 
       if (notificationsListDifference.length) {
         setEventsFromSever((events) => [
           ...events,
           ...notificationsListDifference,
         ]);
-        setUnreadCount(
-          currentEventsLoded + notificationsListDifference.length
-        );
+        setUnreadCount(currentEventsLoded + notificationsListDifference.length);
 
-        if(notificationsListDifference.length > 100){
+        if (notificationsListDifference.length > 100) {
           notificationsListDifference = notificationsListDifference.slice(100);
         }
 
-        setEvents((prevEvents) => [...prevEvents, ...notificationsListDifference]);
+        setEvents((prevEvents) => [
+          ...prevEvents,
+          ...notificationsListDifference,
+        ]);
       }
     } else {
       const nextEnd = currentEventsLoded + 100;
@@ -216,7 +213,6 @@ export default function Events() {
         }
       )
       .then(function (response) {
-        
         const notification_list = events.filter(
           (n) => n.clip_id !== response.data.clip_id
         );
@@ -226,7 +222,7 @@ export default function Events() {
           (n) => n.clip_id !== response.data.clip_id
         );
         setEventsFromSever(events_from_sever);
-       
+
         setUnreadCount(events_from_sever.length);
         setMainVideo(notification_list[0].clip_id, notification_list);
         setAnchorEl(null);
@@ -292,10 +288,10 @@ export default function Events() {
 
   const getSeveritiesLabel = (value) => {
     const severities = [
-      { label: "Information", value: "INFORMATION", color:"#FFC72C" },   
-    { label: "Information", value: "INFO",color:"#FFC72C" },
-    { label: "Warning", value: "WARNING", color:"#00FF00" },
-    { label: "Critical", value: "CRITICAL", color:"#FF0000" },
+      { label: "Information", value: "INFORMATION", color: "#2E8B57" },
+      { label: "Information", value: "INFO", color: "#2E8B57" },
+      { label: "Warning", value: "WARNING", color: "#FF7518" },
+      { label: "Critical", value: "CRITICAL", color: "#FF0000" },
     ];
 
     const severity = severities.find((option) => option.value === value);

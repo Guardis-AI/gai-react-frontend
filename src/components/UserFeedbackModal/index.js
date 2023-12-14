@@ -13,7 +13,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   const [notificationType, setNotificationType] = useState();
   const [severity, setSeverity] = useState();
   const cancelButtonRef = useRef(null);
-  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedColor, setSelectedColor] = useState("");
 
   let notificationTypes = [
     { label: "Item Picking", value: "item_picking" },
@@ -34,10 +34,10 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   ];
 
   const severities = [
-    { label: "Information", value: "INFORMATION", color:"#FFC72C" },   
-    { label: "Information", value: "INFO",color:"#FFC72C" },
-    { label: "Warning", value: "WARNING", color:"#00FF00" },
-    { label: "Critical", value: "CRITICAL", color:"#FF0000" },
+    { label: "Information", value: "INFORMATION", color: "#2E8B57" },
+    { label: "Information", value: "INFO", color: "#2E8B57" },
+    { label: "Warning", value: "WARNING", color: "#FF7518" },
+    { label: "Critical", value: "CRITICAL", color: "#FF0000" },
   ];
 
   notificationTypes = notificationTypes.sort((a, b) =>
@@ -159,14 +159,18 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                           id="severity"
                           className=" w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
                           value={severity}
-                          onChange={handleSeveritySelectChange}                          
+                          onChange={handleSeveritySelectChange}
                           style={{ color: selectedColor }}
                         >
                           <option value="" disabled>
                             Select an option
                           </option>
                           {severities.map((option) => (
-                            <option key={option.value} value={option.value} style={{ color: option.color }} >
+                            <option
+                              key={option.value}
+                              value={option.value}
+                              style={{ color: option.color }}
+                            >
                               {option.label}
                             </option>
                           ))}

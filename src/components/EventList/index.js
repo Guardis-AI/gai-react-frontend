@@ -29,10 +29,10 @@ const notificationTypes = [
 ];
 
 const severities = [
-  { label: "Information", value: "INFORMATION", color:"#FFC72C" },   
-    { label: "Information", value: "INFO",color:"#FFC72C" },
-    { label: "Warning", value: "WARNING", color:"#00FF00" },
-    { label: "Critical", value: "CRITICAL", color:"#FF0000" },
+  { label: "Information", value: "INFORMATION", color: "#2E8B57" },
+  { label: "Information", value: "INFO", color: "#2E8B57" },
+  { label: "Warning", value: "WARNING", color: "#FF7518" },
+  { label: "Critical", value: "CRITICAL", color: "#FF0000" },
 ];
 
 export default function EventList(props) {
