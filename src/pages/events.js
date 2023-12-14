@@ -210,6 +210,7 @@ export default function Events() {
           user_feedback: wasgood,
           notification_type: notification.notification_type,
           severity: notification.severity,
+          feedback_notification_type: notification.feedback_notification_type
         }
       )
       .then(function (response) {
@@ -268,7 +269,7 @@ export default function Events() {
 
   const handleSaveFeedbackCallback = (result, notificationType, severity) => {
     if (result) {
-      currNoti.notification_type = notificationType;
+      currNoti.feedback_notification_type = notificationType;
       currNoti.severity = severity;
       saveUserFeedback(currNoti, false);
     }
@@ -283,6 +284,7 @@ export default function Events() {
 
   const handleSaveUserFeedbackClick = (event, notification, wasgood) => {
     setAnchorEl(event.currentTarget);
+    notification.feedback_notification_type = currNoti.notification_type;
     saveUserFeedback(notification, wasgood);
   };
 
