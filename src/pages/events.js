@@ -292,10 +292,10 @@ export default function Events() {
 
   const getSeveritiesLabel = (value) => {
     const severities = [
-      { label: "Information", value: "INFORMATION" },
-      { label: "Information", value: "INFO" },
-      { label: "Warning", value: "WARNING" },
-      { label: "Critical", value: "CRITICAL" },
+      { label: "Information", value: "INFORMATION", color:"#FFC72C" },   
+    { label: "Information", value: "INFO",color:"#FFC72C" },
+    { label: "Warning", value: "WARNING", color:"#00FF00" },
+    { label: "Critical", value: "CRITICAL", color:"#FF0000" },
     ];
 
     const severity = severities.find((option) => option.value === value);
@@ -319,6 +319,7 @@ export default function Events() {
       { label: "Activity After Hours", value: "activity_after_hours" },
       { label: "Idle", value: "Idle" },
       { label: "Money Handling", value: "money_handling" },
+      { label: "Check/Document Handling", value: "Check_Document_Handling" },
     ];
 
     const notificationType = notificationTypes.find(

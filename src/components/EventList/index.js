@@ -25,13 +25,14 @@ const notificationTypes = [
   { label: "Activity After Hours", value: "activity_after_hours" },
   { label: "Idle", value: "Idle" },
   { label: "Money Handling", value: "money_handling" },
+  { label: "Check/Document Handling", value: "Check_Document_Handling" },
 ];
 
 const severities = [
-  { label: "Information", value: "INFORMATION" },
-  { label: "Information", value: "INFO" },
-  { label: "Warning", value: "WARNING" },
-  { label: "Critical", value: "CRITICAL" },
+  { label: "Information", value: "INFORMATION", color:"#FFC72C" },   
+    { label: "Information", value: "INFO",color:"#FFC72C" },
+    { label: "Warning", value: "WARNING", color:"#00FF00" },
+    { label: "Critical", value: "CRITICAL", color:"#FF0000" },
 ];
 
 export default function EventList(props) {
@@ -63,6 +64,12 @@ export default function EventList(props) {
     );
 
     return notificationType ? notificationType.label : value;
+  };
+
+  const getSeveritiesLabelColor = (value) => {
+    const severity = severities.find((option) => option.value === value);
+
+    return severity ? severity.color : '#FFFFFF';
   };
 
   return (
@@ -120,10 +127,10 @@ export default function EventList(props) {
                   <strong>Date:</strong> {event.sent_date}
                   <br />
                   <strong>Type:</strong>{" "}
-                  {getNotificationTypesLabel(event.notification_type)}
+                  <span> {getNotificationTypesLabel(event.notification_type)}</span>
                   <br />
                   <strong>Severity:</strong>{" "}
-                  {getSeveritiesLabel(event.severity)}
+                  <span style={{ color: getSeveritiesLabelColor(event.severity) }}>{getSeveritiesLabel(event.severity)}</span>
                 </p>
               </div>
             </div>
