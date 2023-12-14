@@ -206,10 +206,16 @@ export default function Playback() {
     const currentTime = currentVideoPlayer.current.getCurrentTime();
 
     // Set the new time
-    const newTime = Math.max(currentTime + speed, 0);
+    let newTime = Math.max(currentTime + speed, 0);
 
-    // Use seekTo to rewind the video
-    currentVideoPlayer.current.seekTo(newTime);
+    const endTime = timeRange[1]* 60;
+
+    newTime = newTime <=  endTime? newTime: endTime;
+
+    if (newTime > 0) {
+      // Use seekTo to rewind the video
+      currentVideoPlayer.current.seekTo(newTime);
+    }
   };
 
   return (
@@ -221,7 +227,7 @@ export default function Playback() {
             <div>
               <span>Selected date: </span>
               <DatePicker
-                className="text-black"
+                className="text-black px-2 rounded"
                 selected={selectedDateRef.current}
                 onChange={(date) => handleDateChange(date)}
               />
@@ -256,7 +262,7 @@ export default function Playback() {
             id="main"
             url={currVidUrl}
             width="100%"
-            controls
+            //controls
             playing={play}
             volume={0}
             playbackRate={playbackRate}
@@ -282,7 +288,7 @@ export default function Playback() {
             }}
           />
         </div>
-        <div className="w-5/6 self-center flex  bg-gray-800 ">
+        <div className="w-5/6 self-center flex  bg-gray-800 text-sm ">
           <div className="flex-1 p-4">
             <div className="text-white text-left">
               <h6>
@@ -310,10 +316,10 @@ export default function Playback() {
           <Slider
             sx={{
               "& .css-yafthl-MuiSlider-markLabel": {
-                fontSize: "12px",
+                fontSize: "9px",
               },
               "& .css-1eoe787-MuiSlider-markLabel": {
-                fontSize: "12px",
+                fontSize: "9px",
               },
             }}
             getAriaLabel={() => "Video Time Selection"}
@@ -330,39 +336,43 @@ export default function Playback() {
           />
         </div>
         <div className="w-5/6 self-center flex  bg-gray-800 ">
-          <div className="flex-1 p-4"></div>
-          <div className="p-4 text-white flex-1 self-center">
-            <h6 className="self-center">
-              <button onClick={() => setVideoSpeed(-10)}>
-                <FastRewindRoundedIcon fontSize="large"></FastRewindRoundedIcon>
-              </button>
-              &nbsp;
-              <button onClick={() => setPlaybackRate(0.5)}>
-                <SlowMotionVideoRoundedIcon fontSize="large"></SlowMotionVideoRoundedIcon>
-              </button>
-              &nbsp;
-              {!play ? (
-                <button onClick={() => setPlay(true)}>
-                  <PlayCircleRoundedIcon fontSize="large"></PlayCircleRoundedIcon>
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setPlay(false);
-                    setPlaybackRate(1);
-                  }}
-                >
-                  <PauseCircleRounded fontSize="large"></PauseCircleRounded>
-                </button>
-              )}
-              &nbsp;
-              <button onClick={() => setVideoSpeed(10)}>
-                <FastForwardRoundedIcon fontSize="large"></FastForwardRoundedIcon>
-              </button>
+          <div className="flex-1 p-4 text-white text-left text-sm">
+            <h6>
+              <strong>Total Time:</strong>{" "}
+              {moment(
+                new Date(0, 0, 0, 0, 0, (timeRange[1] - timeRange[0]) * 60)
+              ).format("HH:mm:ss", { trim: false })}
             </h6>
           </div>
-          <div className="flex-1 p-4">
-            <div className="text-white text-right">
+          <div className="inline-flex text-white">
+            <button onClick={() => setVideoSpeed(-10)}>
+              <FastRewindRoundedIcon fontSize="large"></FastRewindRoundedIcon>
+            </button>
+            &nbsp;
+            <button onClick={() => setPlaybackRate(0.5)}>
+              <SlowMotionVideoRoundedIcon fontSize="large"></SlowMotionVideoRoundedIcon>
+            </button>
+            &nbsp;
+            {!play ? (
+              <button onClick={() => setPlay(true)}>
+                <PlayCircleRoundedIcon fontSize="large"></PlayCircleRoundedIcon>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setPlay(false);
+                  setPlaybackRate(1);
+                }}
+              >
+                <PauseCircleRounded fontSize="large"></PauseCircleRounded>
+              </button>
+            )}
+            &nbsp;
+            <button onClick={() => setVideoSpeed(10)}>
+              <FastForwardRoundedIcon fontSize="large"></FastForwardRoundedIcon>
+            </button>
+          </div>
+          <div className="flex-1 p-4 text-white text-right text-sm">            
               <h6>
                 {moment(new Date(0, 0, 0, 0, 0, currenTime)).format(
                   "HH:mm:ss",
@@ -374,14 +384,8 @@ export default function Playback() {
                 {moment(new Date(0, 0, 0, 0, 0, timeRange[1] * 60)).format(
                   "HH:mm:ss",
                   { trim: false }
-                )}
-                &nbsp; &nbsp;
-                <strong>Total Time:</strong>{" "}
-                {moment(
-                  new Date(0, 0, 0, 0, 0, (timeRange[1] - timeRange[0]) * 60)
-                ).format("HH:mm:ss", { trim: false })}
-              </h6>
-            </div>
+                )}               
+              </h6>            
           </div>
         </div>
       </div>
