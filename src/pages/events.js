@@ -110,10 +110,9 @@ export default function Events() {
     const notificationList = await request;
 
     return notificationList;
-  }
+  };
 
-  const getNotifications = async () => {   
-
+  const getNotifications = async () => {
     const notificationList = await getNotificationsFromServer();
 
     setUnreadCount(notificationList.length);
@@ -135,30 +134,28 @@ export default function Events() {
     }
   };
 
-  const loadMoreEvents = async() => {
-    
+  const loadMoreEvents = async () => {
     if (currentEventsLoded >= eventsFromSever.length) {
       const notificationsList = await getNotificationsFromServer();
-      let notificationsListDifference = eventsFromSever.filter(
-        (event) => {
-          return !notificationsList.find((not) => not.clip_id === event.clip_id);
-        }
-      );
+      let notificationsListDifference = eventsFromSever.filter((event) => {
+        return !notificationsList.find((not) => not.clip_id === event.clip_id);
+      });
 
       if (notificationsListDifference.length) {
         setEventsFromSever((events) => [
           ...events,
           ...notificationsListDifference,
         ]);
-        setUnreadCount(
-          currentEventsLoded + notificationsListDifference.length
-        );
+        setUnreadCount(currentEventsLoded + notificationsListDifference.length);
 
-        if(notificationsListDifference.length > 100){
+        if (notificationsListDifference.length > 100) {
           notificationsListDifference = notificationsListDifference.slice(100);
         }
 
-        setEvents((prevEvents) => [...prevEvents, ...notificationsListDifference]);
+        setEvents((prevEvents) => [
+          ...prevEvents,
+          ...notificationsListDifference,
+        ]);
       }
     } else {
       const nextEnd = currentEventsLoded + 100;
@@ -213,10 +210,10 @@ export default function Events() {
           user_feedback: wasgood,
           notification_type: notification.notification_type,
           severity: notification.severity,
+          feedback_notification_type: notification.feedback_notification_type
         }
       )
       .then(function (response) {
-        
         const notification_list = events.filter(
           (n) => n.clip_id !== response.data.clip_id
         );
@@ -226,7 +223,7 @@ export default function Events() {
           (n) => n.clip_id !== response.data.clip_id
         );
         setEventsFromSever(events_from_sever);
-       
+
         setUnreadCount(events_from_sever.length);
         setMainVideo(notification_list[0].clip_id, notification_list);
         setAnchorEl(null);
@@ -272,7 +269,7 @@ export default function Events() {
 
   const handleSaveFeedbackCallback = (result, notificationType, severity) => {
     if (result) {
-      currNoti.notification_type = notificationType;
+      currNoti.feedback_notification_type = notificationType;
       currNoti.severity = severity;
       saveUserFeedback(currNoti, false);
     }
@@ -287,15 +284,16 @@ export default function Events() {
 
   const handleSaveUserFeedbackClick = (event, notification, wasgood) => {
     setAnchorEl(event.currentTarget);
+    notification.feedback_notification_type = currNoti.notification_type;
     saveUserFeedback(notification, wasgood);
   };
 
   const getSeveritiesLabel = (value) => {
     const severities = [
-      { label: "Information", value: "INFORMATION" },
-      { label: "Information", value: "INFO" },
-      { label: "Warning", value: "WARNING" },
-      { label: "Critical", value: "CRITICAL" },
+      { label: "Information", value: "INFORMATION", color: "#30ac64" },
+      { label: "Information", value: "INFO", color: "#30ac64" },
+      { label: "Warning", value: "WARNING", color: "#FF7518" },
+      { label: "Critical", value: "CRITICAL", color: "#FF0000" },
     ];
 
     const severity = severities.find((option) => option.value === value);
@@ -319,6 +317,7 @@ export default function Events() {
       { label: "Activity After Hours", value: "activity_after_hours" },
       { label: "Idle", value: "Idle" },
       { label: "Money Handling", value: "money_handling" },
+      { label: "Check/Document Handling", value: "Check_Document_Handling" },
     ];
 
     const notificationType = notificationTypes.find(
