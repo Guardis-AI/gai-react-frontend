@@ -18,6 +18,7 @@ import PlayCircleRoundedIcon from "@mui/icons-material/PlayCircleRounded";
 import SlowMotionVideoRoundedIcon from "@mui/icons-material/SlowMotionVideoRounded";
 import FastForwardRoundedIcon from "@mui/icons-material/FastForwardRounded";
 import FastRewindRoundedIcon from "@mui/icons-material/FastRewindRounded";
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 
 export default function Playback() {
   const navigate = useNavigate();
@@ -262,7 +263,7 @@ export default function Playback() {
             id="main"
             url={currVidUrl}
             width="100%"
-            //controls
+            controls
             playing={play}
             volume={0}
             playbackRate={playbackRate}
@@ -349,9 +350,22 @@ export default function Playback() {
               <FastRewindRoundedIcon fontSize="large"></FastRewindRoundedIcon>
             </button>
             &nbsp;
-            <button onClick={() => setPlaybackRate(0.5)}>
-              <SlowMotionVideoRoundedIcon fontSize="large"></SlowMotionVideoRoundedIcon>
-            </button>
+            {playbackRate == 1 ? (
+              <button
+                onClick={() => {
+                  setPlaybackRate(0.5);
+                }}              >
+                <SlowMotionVideoRoundedIcon fontSize="large"></SlowMotionVideoRoundedIcon>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setPlaybackRate(1);
+                }}
+              >
+                <PlayCircleOutlineIcon fontSize="large"></PlayCircleOutlineIcon>
+              </button>
+            )}
             &nbsp;
             {!play ? (
               <button onClick={() => setPlay(true)}>
@@ -372,20 +386,17 @@ export default function Playback() {
               <FastForwardRoundedIcon fontSize="large"></FastForwardRoundedIcon>
             </button>
           </div>
-          <div className="flex-1 p-4 text-white text-right text-sm">            
-              <h6>
-                {moment(new Date(0, 0, 0, 0, 0, currenTime)).format(
-                  "HH:mm:ss",
-                  {
-                    trim: false,
-                  }
-                )}
-                /{" "}
-                {moment(new Date(0, 0, 0, 0, 0, timeRange[1] * 60)).format(
-                  "HH:mm:ss",
-                  { trim: false }
-                )}               
-              </h6>            
+          <div className="flex-1 p-4 text-white text-right text-sm">
+            <h6>
+              {moment(new Date(0, 0, 0, 0, 0, currenTime)).format("HH:mm:ss", {
+                trim: false,
+              })}
+              /{" "}
+              {moment(new Date(0, 0, 0, 0, 0, timeRange[1] * 60)).format(
+                "HH:mm:ss",
+                { trim: false }
+              )}
+            </h6>
           </div>
         </div>
       </div>
