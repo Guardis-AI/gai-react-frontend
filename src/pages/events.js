@@ -30,7 +30,6 @@ export default function Events() {
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
-  // let frequencyToGetNotice = useRef(0);
   let cameraList = useRef(null);
 
   const open = Boolean(anchorEl);
@@ -210,7 +209,7 @@ export default function Events() {
           user_feedback: wasgood,
           notification_type: notification.notification_type,
           severity: notification.severity,
-          feedback_notification_type: notification.feedback_notification_type
+          user_feedback_notification_type: notification.user_feedback_notification_type
         }
       )
       .then(function (response) {
@@ -269,7 +268,7 @@ export default function Events() {
 
   const handleSaveFeedbackCallback = (result, notificationType, severity) => {
     if (result) {
-      currNoti.feedback_notification_type = notificationType;
+      currNoti.user_feedback_notification_type = notificationType;
       currNoti.severity = severity;
       saveUserFeedback(currNoti, false);
     }
@@ -284,14 +283,13 @@ export default function Events() {
 
   const handleSaveUserFeedbackClick = (event, notification, wasgood) => {
     setAnchorEl(event.currentTarget);
-    notification.feedback_notification_type = currNoti.notification_type;
+    notification.user_feedback_notification_type = currNoti.notification_type;
     saveUserFeedback(notification, wasgood);
   };
 
   const getSeveritiesLabel = (value) => {
     const severities = [
-      { label: "Information", value: "INFORMATION", color: "#30ac64" },
-      { label: "Information", value: "INFO", color: "#30ac64" },
+      { label: "Information", value: "INFORMATION", color: "#30ac64" },     
       { label: "Warning", value: "WARNING", color: "#FF7518" },
       { label: "Critical", value: "CRITICAL", color: "#FF0000" },
     ];

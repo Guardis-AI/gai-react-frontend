@@ -34,8 +34,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   ];
 
   const severities = [
-    { label: "Information", value: "INFORMATION", color: "#30ac64" },
-    { label: "Information", value: "INFO", color: "#30ac64" },
+    { label: "Information", value: "INFORMATION", color: "#30ac64" },    
     { label: "Warning", value: "WARNING", color: "#FF7518" },
     { label: "Critical", value: "CRITICAL", color: "#FF0000" },
   ];
