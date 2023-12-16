@@ -16,9 +16,12 @@ import Slider from "@mui/material/Slider";
 import PauseCircleRounded from "@mui/icons-material/PauseCircleRounded";
 import PlayCircleRoundedIcon from "@mui/icons-material/PlayCircleRounded";
 import SlowMotionVideoRoundedIcon from "@mui/icons-material/SlowMotionVideoRounded";
-import FastForwardRoundedIcon from "@mui/icons-material/FastForwardRounded";
-import FastRewindRoundedIcon from "@mui/icons-material/FastRewindRounded";
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import Forward10Icon from '@mui/icons-material/Forward10';
+import Replay10Icon from '@mui/icons-material/Replay10';
+import IconButton from '@mui/material/IconButton';
+import SkipPreviousIcon from '@mui/icons-material/SkipPreviousRounded';
+import SkipNextIcon from '@mui/icons-material/SkipNextRounded';
 
 export default function Playback() {
   const navigate = useNavigate();
@@ -219,6 +222,62 @@ export default function Playback() {
     }
   };
 
+  const goToNextCamera = () => {
+    var index = cameraList.findIndex(camera => camera.uuid === currCamera.uuid) + 1;
+
+    if(index <= cameraList.length){
+      setMainVideo(cameraList[index]);
+      setCurrCamera(cameraList[index]);
+    }
+  }
+
+  const goToBackCamera = () => {
+    var index = cameraList.findIndex(camera => camera.uuid === currCamera.uuid) - 1;
+
+    if(index >= 0 ){
+      setMainVideo(cameraList[index]);
+      setCurrCamera(cameraList[index]);
+    }
+  }
+
+  const getVideoFileFromTheSource = async(url) =>{
+    const request = axios.get(url)
+    .then(response => {      
+      const fileContent = response.data;
+      console.log(fileContent);
+
+      return fileContent;
+    })
+    .catch(error => {
+      console.error('Error fetching the file:', error);
+    });
+
+    return await request;
+  }
+
+  function parseTextFileContent(textContent) {
+    const lines = textContent.split('\n');
+    const tsFileList = [];
+  
+    lines.forEach(line => {
+      const [key] = line.split(':');
+      //Skip values that start with EXT 
+      if (key && !key.toUpperCase().includes('EXT')) {       
+        tsFileList.push(key.trim());
+      }
+    });
+  
+    return tsFileList;
+  }
+
+  const getVideoStarTime = async() =>{
+    
+   const fileData = await getVideoFileFromTheSource(currVidUrl);
+   const tsFileList = parseTextFileContent(fileData);
+
+   tsFileList[0].slice(startIndex, endIndex);
+  }
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow pr-2 flex flex-col">
@@ -238,6 +297,7 @@ export default function Playback() {
             ref={currentVideoPlayer}
             onStart={() => {
               var videoDuration = currentVideoPlayer.current.getDuration();
+              getVideoStarTime();
               const totalMinutes = Math.round(videoDuration / 60);
 
               if (totalMinutes <= 60) {
@@ -256,7 +316,7 @@ export default function Playback() {
               generateTimeLabel(totalMinutes);
               setMaxVideoTime(totalMinutes);
               setTimeRange([0, totalMinutes]);
-
+              setPlaybackRate(1);
               currentVideoPlayer.current.seekTo(1, "seconds");
             }}
             onProgress={handleProgress}
@@ -346,45 +406,58 @@ export default function Playback() {
             </h6>
           </div>
           <div className="inline-flex text-white">
-            <button onClick={() => setVideoSpeed(-10)}>
-              <FastRewindRoundedIcon fontSize="large"></FastRewindRoundedIcon>
-            </button>
+          <IconButton color="inherit" onClick={() => goToBackCamera()}>
+              <SkipPreviousIcon fontSize="large"></SkipPreviousIcon>
+            </IconButton>
+            &nbsp;
+            <IconButton color="inherit" onClick={() => setVideoSpeed(-10)}>
+              <Replay10Icon fontSize="large"></Replay10Icon>
+            </IconButton>
             &nbsp;
             {playbackRate == 1 ? (
-              <button
+              <IconButton color="inherit"
                 onClick={() => {
-                  setPlaybackRate(0.5);
+                  setPlay(true);
+                  setPlaybackRate(0.4);
                 }}              >
                 <SlowMotionVideoRoundedIcon fontSize="large"></SlowMotionVideoRoundedIcon>
-              </button>
+              </IconButton>
             ) : (
-              <button
+              <IconButton color="inherit"
                 onClick={() => {
+                  setPlay(true);
                   setPlaybackRate(1);
                 }}
               >
                 <PlayCircleOutlineIcon fontSize="large"></PlayCircleOutlineIcon>
-              </button>
+              </IconButton>
             )}
             &nbsp;
             {!play ? (
-              <button onClick={() => setPlay(true)}>
+              <IconButton color="inherit" onClick={() => { 
+                setPlay(true);
+                setPlaybackRate(1);
+                }}>
                 <PlayCircleRoundedIcon fontSize="large"></PlayCircleRoundedIcon>
-              </button>
+              </IconButton>
             ) : (
-              <button
+              <IconButton color="inherit"
                 onClick={() => {
                   setPlay(false);
                   setPlaybackRate(1);
                 }}
               >
                 <PauseCircleRounded fontSize="large"></PauseCircleRounded>
-              </button>
+              </IconButton>
             )}
             &nbsp;
-            <button onClick={() => setVideoSpeed(10)}>
-              <FastForwardRoundedIcon fontSize="large"></FastForwardRoundedIcon>
-            </button>
+            <IconButton color="inherit" onClick={() => setVideoSpeed(10)}>
+              <Forward10Icon fontSize="large"></Forward10Icon>
+            </IconButton>
+            &nbsp;
+            <IconButton color="inherit" onClick={() => goToNextCamera()}>
+              <SkipNextIcon fontSize="large"></SkipNextIcon>
+            </IconButton>
           </div>
           <div className="flex-1 p-4 text-white text-right text-sm">
             <h6>
