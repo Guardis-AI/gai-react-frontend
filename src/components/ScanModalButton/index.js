@@ -29,15 +29,6 @@ export default function ScanModalButton() {
 
   const closeScanModal = useCallback(async () => {
     axios
-      .post(localStorage.getItem("cfUrl") + "streams/restart", null)
-      .then(function (response) {
-        console.log("streams/restart:", response.data);
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
-
-    axios
       .post(localStorage.getItem("cfUrl") + "services/restart", null)
       .then(function (response) {
         console.log("services/restart:", response.data);
