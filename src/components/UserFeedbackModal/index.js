@@ -7,13 +7,18 @@ import {
 } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import Select from "react-select";
 
 const UserFeedbackModal = forwardRef((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notificationType, setNotificationType] = useState();
   const [severity, setSeverity] = useState();
+  const [detectedNotificationType, setDetectedNotificationType] = useState();
+  const [detectedSeverity, setDetectedSeverity] = useState();
   const cancelButtonRef = useRef(null);
   const [selectedColor, setSelectedColor] = useState("");
+  const [showValiation, setShowValiation] = useState(false);
+  const dialogRef = useRef(null);
 
   let notificationTypes = [
     { label: "Item Picking", value: "item_picking" },
@@ -31,10 +36,11 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     { label: "Idle", value: "idle" },
     { label: "Money Handling", value: "money_handling" },
     { label: "Check/Document Handling", value: "Check_Document_Handling" },
+    { label: "Normal", value: "normal", isDisabled :true },
   ];
 
   const severities = [
-    { label: "Information", value: "INFORMATION", color: "#30ac64" },    
+    { label: "Information", value: "INFORMATION", color: "#30ac64" },
     { label: "Warning", value: "WARNING", color: "#FF7518" },
     { label: "Critical", value: "CRITICAL", color: "#FF0000" },
   ];
@@ -44,18 +50,42 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   );
 
   const closeModal = (result) => {
+    if (result) {
+      if (
+        detectedNotificationType === notificationType.value &&
+        detectedSeverity === severity
+      ) {
+        setShowValiation(true);
+        return;
+      } else {
+        setShowValiation(false);
+        props.SaveFeedbackCallback(result, notificationType.value, severity);
+      }
+    }
     setIsOpen(false);
-    props.SaveFeedbackCallback(result, notificationType, severity);
   };
 
   const openModal = (event) => {
-    setNotificationType(event.notification_type);
+   
+    setDetectedNotificationType(event.notification_type);
+    setShowValiation(false);
     setSeverity(event.severity);
+    setDetectedSeverity(event.severity);
+
     setIsOpen(true);
 
-    const selectedOption = severities.find(
-      (option) => option.value === event.severity
-    );
+    const notificationType = notificationTypes.find((option) => {
+      return option.value === event.notification_type;
+    });
+
+    setNotificationType(notificationType);
+
+    const severityValue =
+      event.severity === "INFO" ? "INFORMATION" : event.severity;
+
+    const selectedOption = severities.find((option) => {
+      return option.value === severityValue;
+    });
 
     setSelectedColor(selectedOption.color);
   };
@@ -64,12 +94,8 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     openModal,
   }));
 
-  const handleNotificationTypeSelectChange = (e) => {
-    const selectedOption = notificationTypes.find(
-      (option) => option.value === e.target.value
-    );
-
-    setNotificationType(selectedOption.value);
+  const handleNotificationTypeSelectChange = (selectedOption) => {
+    setNotificationType(selectedOption);
   };
 
   const handleSeveritySelectChange = (e) => {
@@ -85,8 +111,9 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog
+        ref={dialogRef}
         as="div"
-        className="relative z-10"
+        className="relative z-10 your-dialog-content-class"
         initialFocus={cancelButtonRef}
         onClose={closeModal}
       >
@@ -101,7 +128,6 @@ const UserFeedbackModal = forwardRef((props, ref) => {
         >
           <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
         </Transition.Child>
-
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <Transition.Child
@@ -113,50 +139,53 @@ const UserFeedbackModal = forwardRef((props, ref) => {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+              <Dialog.Panel className="relative transform rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div className="bg-white m-1 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 sm:mx-0 sm:h-10 sm:w-10">
+                    <div className="mx-auto flex flex-shrink-0 items-center justify-center rounded-full bg-gray-300 sm:mx-0 sm:h-8 sm:w-8">
                       <InformationCircleIcon
                         className="h-6 w-6 text-red-600"
                         aria-hidden="true"
                       />
                     </div>
-                    <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                    <div className="text-center sm:ml-2 sm:mt-0 sm:text-left">
                       <Dialog.Title
                         as="h3"
-                        className="text-base font-semibold leading-6 text-gray-900"
+                        className="pt-0 text-base font-semibold leading-6 text-gray-900"
                       >
                         Help us to improve it!
                       </Dialog.Title>
-                      <div className="mt-2">
-                        <p className="text-sm text-gray-500">
-                          What did you see in the event?
-                        </p>
-                        <div className="relative mt-1">
-                          <select
-                            id="notificationType"
-                            className="border-none rounded-xl w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
-                            value={notificationType}
-                            onChange={handleNotificationTypeSelectChange}
-                          >
-                            <option value="" disabled>
-                              Select an option
-                            </option>
-                            {notificationTypes.map((option, i) => (
-                              <option key={i} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-500">
+                      What did you see in the event?
+                    </p>
+                    <div className="inset-0 items-center justify-center">
+                      <div className="p-2">
+                        <Select
+                          style="overflow: visible"
+                          name={"notificationTypes"}
+                          placeholder={"Select an option"}
+                          className="text-sm  rounded-lg"
+                          onChange={handleNotificationTypeSelectChange}
+                          options={notificationTypes.sort((a, b) =>
+                            a.label.localeCompare(b.label)
+                          )}
+                          value={notificationType}
+                          isSearchable={true}
+                        />
+                      </div>
+                    </div>
 
-                        <p className="text-sm text-gray-500">
-                          How do you classify the event?
-                        </p>
+                    <div className="bg-white rounded-lg shadow-md mt-3">
+                      <p className="text-sm text-gray-500">
+                        How do you classify the event?
+                      </p>
+                      <div className="pt-2">
                         <select
                           id="severity"
-                          className=" w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
+                          className=" w-full border-gray-300 border py-2 pl-3 rounded-lg text-sm text-gray-900"
                           value={severity}
                           onChange={handleSeveritySelectChange}
                           style={{ color: selectedColor }}
@@ -178,7 +207,20 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                {showValiation ? (
+                  <div className="bg-gray-50 ">
+                    <span
+                      className="mx-12 mt-4 text-sm  bg-red-100 border-l-4 border-red-500 text-red-700 p-2"
+                      role="alert"
+                    >
+                      Please select different values than values detected
+                      previously!
+                    </span>
+                  </div>
+                ) : (
+                  ""
+                )}
+                <div className="bg-gray-50 my-3 mx-1 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                   <button
                     type="button"
                     className="inline-flex w-full justify-center rounded-md bg-[#26272f] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#4f5263] sm:ml-3 sm:w-auto"
