@@ -1,11 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
-import notificationApi from "../../apis/notification";
+import { act } from "@testing-library/react";
+import moment from "moment";
 
-// 4. Create a slice for the state and reducers
 const notificationSlice = createSlice({
   name: "notification",
   initialState: {
-    data: [],
+    unreadCount: 0,
+    notifications: [],
+    allNotifications: [],
     notificationTypes: [
       { label: "Item Picking", value: "item_picking" },
       { label: "Bagging", value: "bagging" },
@@ -22,7 +24,7 @@ const notificationSlice = createSlice({
       { label: "Idle", value: "Idle" },
       { label: "Money Handling", value: "money_handling" },
       { label: "Check/Document Handling", value: "Check_Document_Handling" },
-      { label: "Normal", value: "normal", isDisabled :true },
+      { label: "Normal", value: "normal", isDisabled: true },
     ],
     severities: [
       { label: "Information", value: "INFORMATION", color: "#30ac64" },
@@ -31,25 +33,67 @@ const notificationSlice = createSlice({
     ],
   },
   reducers: {
-    // async getNotifications(state) {
-    //   state.data = await notificationApi.getNotificationsFromServer();
-    // },
+    replaceNotification(state, action) {
+      state.unreadCount = action.payload.length;
+
+      let notification_list = action.payload.map((notification) => {
+        let cameraname = "Generic";
+
+        return {
+          clip_id: notification.clip_id,
+          camera_id: notification.camera_id,
+          cameraname: cameraname,
+          sent_date: moment(notification.timestamp).format(
+            "MM/DD/yyyy, h:mm:ss A"
+          ),
+          severity: notification.severity,
+          user_feedback: notification.user_feedback,
+          notification_type: notification.notification_type,
+        };
+      });
+
+      notification_list = notification_list.sort(
+        (a, b) => a.sent_date - b.sent_date
+      );
+
+      state.allNotifications = action.payload;
+      state.notifications = notification_list.slice(0, 100);
+    },
+    setNotificationsByBatch(state, action) {
+      state.notifications = [
+        ...state.notifications.slice(
+          action.payload.starIndex,
+          action.payload.endIndex
+        ),
+      ];
+    },
+    setCameraNameInNotifications(state, action) {
+      let all_notification = state.allNotifications.map((notification) => {
+        replaceCameraNameInNotifications(notification, action.payload);
+      });
+
+      state.allNotifications = all_notification;
+
+      let notification_list = state.notifications.map((notification) => {
+        replaceCameraNameInNotifications(notification, action.payload);
+      });
+      state.notifications = notification_list;
+    }
   },
-  extraReducers: (builder) => {
-  //   builder
-  //     .addCase(fetchItems.pending, (state) => {
-  //       state.status = 'loading';
-  //     })
-  //     .addCase(fetchItems.fulfilled, (state, action) => {
-  //       state.status = 'succeeded';
-  //       state.data = action.payload;
-  //     })
-  //     .addCase(fetchItems.rejected, (state, action) => {
-  //       state.status = 'failed';
-  //       state.error = action.error.message;
-  //     });
-  },
+  // extraReducers: (builder) => {
+  //   builder.addCase("notification/getNotifications", (state, action) => {
+  //     state.notifications = action.payload;
+  //   });
+  // },
 });
+
+const replaceCameraNameInNotifications = (notification, cameraList)=>{ 
+    let cameraname = "Generic";
+    const camera = cameraList.find(
+      (c) => c.mac === notification.camera_id
+    );
+    cameraname = camera ? camera.name : cameraname; 
+}
 
 export const notificationAction = notificationSlice.actions;
 

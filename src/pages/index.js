@@ -6,16 +6,24 @@ import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
-
-const baseUrlApi = process.env.REACT_APP_BASE_URL;
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getNotifications,
+  setNotificationsByBatch,
+} from "../store/notification/notificationAction";
 
 export default function Home() {
+  const dispatch = useDispatch();
+  const events = useSelector((state) => state.notification.notifications);
+  const unreadCount = useSelector((state) => state.notification.unreadCount);
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
-  const [events, setEvents] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(null);
 
   useEffect(() => {
+    if (events.length===0) {
+      dispatch(getNotifications());
+    }
+    
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
@@ -35,70 +43,12 @@ export default function Home() {
           });
 
           setCameraList(camera_list);
-          getNotifications(camera_list);
         }
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate]);
-
-  function getNotifications(listOfCameras) {
-    axios
-      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
-      .then(async function (response) {
-        console.log(response);
-
-        if (response == null) {
-          console.log("No events found!");
-        } else {
-          
-          let notification_list =  response.data.slice(0, 1000);
-         
-          notification_list = updateCameraNameInNotifications(
-            notification_list,
-            listOfCameras
-          );
-         
-          setUnreadCount(response.data.length);
-          setEvents(notification_list);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  }
-
-  function updateCameraNameInNotifications(notificationList, listOfCameras) {
-    let notification_list = notificationList.map((notification) => {
-      let cameraname = "Generic";
-
-      if (listOfCameras !== null) {
-        const camera = listOfCameras.find(
-          (c) => c.mac === notification.camera_id
-        );
-        cameraname = camera ? camera.name : cameraname;
-      }
-
-      return {
-        clip_id: notification.clip_id,
-        camera_id: notification.camera_id,
-        cameraname: cameraname,
-        sent_date: moment(notification.timestamp).format(
-          "MM/DD/yyyy, h:mm:ss A"
-        ),
-        severity: notification.severity,
-        user_feedback: notification.user_feedback,
-        notification_type: notification.notification_type,
-      };
-    });
-
-    notification_list = notification_list.sort(
-      (a, b) => a.sent_date - b.sent_date
-    );
-
-    return notification_list;
-  }
+  }, [navigate, dispatch]);
 
   function createUrl(macOfCamera) {
     return (
@@ -231,13 +181,17 @@ export default function Home() {
                       },
                     }}
                   />
-                </div>             
+                </div>
               </div>
             );
           })}
         </div>
       </div>
-      <EventList events={events} setMainVideo={navNoti} unreadCount={unreadCount} />
+      <EventList
+        events={events}
+        setMainVideo={navNoti}
+        unreadCount={unreadCount}
+      />
     </div>
   );
 }
