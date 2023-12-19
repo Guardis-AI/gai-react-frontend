@@ -1,5 +1,6 @@
 import { notificationAction } from "./notification";
 import notificationApi from "../../apis/notification";
+import {getCameraName} from "../camera/cameraAction";
 
 export const getSeveritiesLabel = (state, value) => {
   const severities = [...state.notification.severities];
@@ -22,8 +23,18 @@ export const getNotificationTypesLabel = (state, value) => {
 
 export const getNotifications = () => {
   return async (dispatch) => {    
-    try {
+    try {     
       const respose = await notificationApi.getNotificationsFromServer();     
+
+      // respose.map((notification)  => {
+       
+      //   notification.cameraname = dispatch(
+      //     getCameraName(notification.camera_id)
+      //   );
+
+      //   return notification;
+      // });
+
       dispatch(notificationAction.replaceNotification(respose));     
     } catch (err) {       
       console.log(err);

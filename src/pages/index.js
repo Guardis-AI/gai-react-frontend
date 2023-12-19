@@ -3,51 +3,26 @@ import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
-import moment from "moment";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getNotifications,
-  setNotificationsByBatch,
-} from "../store/notification/notificationAction";
+import { getNotifications } from "../store/notification/notificationAction";
+import { getCameras } from "../store/camera/cameraAction";
 
 export default function Home() {
   const dispatch = useDispatch();
   const events = useSelector((state) => state.notification.notifications);
+  const cameraList = useSelector((state) => state.camera.cameraList);
   const unreadCount = useSelector((state) => state.notification.unreadCount);
   const navigate = useNavigate();
-  const [cameraList, setCameraList] = useState(null);
 
   useEffect(() => {
-    if (events.length===0) {
-      dispatch(getNotifications());
-    }
-    
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-    axios
-      .get(localStorage.getItem("cfUrl") + "camera/credentials")
-      .then(function (response) {
-        if (response == null) {
-          console.log("No devices found!");
-        } else {
-          const camera_list = response.data.map((camera) => {
-            return {
-              uuid: camera.uuid,
-              name: camera.name,
-              mac: camera.mac,
-              editMode: false,
-            };
-          });
-
-          setCameraList(camera_list);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+      dispatch(getCameras());
+      dispatch(getNotifications());
+      
   }, [navigate, dispatch]);
 
   function createUrl(macOfCamera) {
@@ -97,7 +72,7 @@ export default function Home() {
               editMode: false,
             };
           });
-          setCameraList(camera_list);
+          //setCameraList(camera_list);
         }
       })
       .catch(function (error) {
@@ -108,13 +83,13 @@ export default function Home() {
   const handleChange = (index, value) => {
     const updatedCamera = [...cameraList];
     updatedCamera[index].name = value;
-    setCameraList(updatedCamera);
+    //setCameraList(updatedCamera);
   };
 
   const handleEditMode = (index, value) => {
     const updatedCamera = [...cameraList];
     updatedCamera[index].editMode = value;
-    setCameraList(updatedCamera);
+    //setCameraList(updatedCamera);
   };
 
   return (

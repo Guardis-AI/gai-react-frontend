@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { act } from "@testing-library/react";
 import moment from "moment";
 
 const notificationSlice = createSlice({
@@ -37,12 +36,9 @@ const notificationSlice = createSlice({
       state.unreadCount = action.payload.length;
 
       let notification_list = action.payload.map((notification) => {
-        let cameraname = "Generic";
-
         return {
           clip_id: notification.clip_id,
-          camera_id: notification.camera_id,
-          cameraname: cameraname,
+          camera_id: notification.camera_id,         
           sent_date: moment(notification.timestamp).format(
             "MM/DD/yyyy, h:mm:ss A"
           ),
@@ -56,7 +52,7 @@ const notificationSlice = createSlice({
         (a, b) => a.sent_date - b.sent_date
       );
 
-      state.allNotifications = action.payload;
+      state.allNotifications = notification_list;
       state.notifications = notification_list.slice(0, 100);
     },
     setNotificationsByBatch(state, action) {
@@ -69,13 +65,13 @@ const notificationSlice = createSlice({
     },
     setCameraNameInNotifications(state, action) {
       let all_notification = state.allNotifications.map((notification) => {
-        replaceCameraNameInNotifications(notification, action.payload);
+       return replaceCameraNameInNotifications(notification,  action.payload);
       });
 
       state.allNotifications = all_notification;
 
       let notification_list = state.notifications.map((notification) => {
-        replaceCameraNameInNotifications(notification, action.payload);
+        return replaceCameraNameInNotifications(notification, action.payload);
       });
       state.notifications = notification_list;
     }
