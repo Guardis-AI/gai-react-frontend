@@ -6,13 +6,17 @@ import reportWebVitals from "./reportWebVitals";
 import { HashRouter } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import {Provider } from 'react-redux';
+import store from "./store";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <HashRouter>
-        <App />
+        <Provider store ={store} >
+        <App/>
+        </Provider>        
       </HashRouter>
     </LocalizationProvider>
   </React.StrictMode>

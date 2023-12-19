@@ -3,6 +3,7 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import numeral from "numeral";
+import { useSelector } from 'react-redux';
 
 const darkTheme = createTheme({
   palette: {
@@ -10,31 +11,9 @@ const darkTheme = createTheme({
   },
 });
 
-const notificationTypes = [
-  { label: "Item Picking", value: "item_picking" },
-  { label: "Bagging", value: "bagging" },
-  { label: "Pocketing", value: "pocketing" },
-  { label: "Enter Store", value: "enter_store" },
-  { label: "Leave Store", value: "leave_store" },
-  { label: "Pay Or Checkout", value: "pay/checkout" },
-  { label: "No Action", value: "no_actiion" },
-  { label: "Shoplift", value: "shoplift" },
-  { label: "Phone Engagement", value: "phone_engagement" },
-  { label: "Mishandling Documents", value: "mishandling_documents" },
-  { label: "Cash theft", value: "cash_theft" },
-  { label: "Activity After Hours", value: "activity_after_hours" },
-  { label: "Idle", value: "Idle" },
-  { label: "Money Handling", value: "money_handling" },
-  { label: "Check/Document Handling", value: "Check_Document_Handling" },
-];
-
-const severities = [
-  { label: "Information", value: "INFORMATION", color: "#30ac64" }, 
-  { label: "Warning", value: "WARNING", color: "#FF7518" },
-  { label: "Critical", value: "CRITICAL", color: "#FF0000" },
-];
-
 export default function EventList(props) {
+  let notificationTypes = useSelector((state) => state.notification.notificationTypes);
+  const severities = useSelector((state) => state.notification.severities);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 

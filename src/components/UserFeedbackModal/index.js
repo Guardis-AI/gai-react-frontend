@@ -7,41 +7,18 @@ import {
 } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import Select from "react-select";
+import { useSelector } from 'react-redux';
 
 const UserFeedbackModal = forwardRef((props, ref) => {
+  let notificationTypes = [...useSelector((state) => state.notification.notificationTypes)];
+  const severities = useSelector((state) => state.notification.severities);
   const [isOpen, setIsOpen] = useState(false);
   const [notificationType, setNotificationType] = useState();
   const [severity, setSeverity] = useState();
   const cancelButtonRef = useRef(null);
   const [selectedColor, setSelectedColor] = useState("");
-
-  let notificationTypes = [
-    { label: "Item Picking", value: "item_picking" },
-    { label: "Bagging", value: "bagging" },
-    { label: "Pocketing", value: "pocketing" },
-    { label: "Enter Store", value: "enter_store" },
-    { label: "Leave Store", value: "leave_store" },
-    { label: "Pay Or Checkout", value: "pay_checkout" },
-    { label: "No Action", value: "no_action" },
-    { label: "Shoplift", value: "shoplift" },
-    { label: "Phone Engagement", value: "phone_engagement" },
-    { label: "Mishandling Documents", value: "mishandling_documents" },
-    { label: "Cash Theft", value: "cash_theft" },
-    { label: "Activity After Hours", value: "activity_after_hours" },
-    { label: "Idle", value: "idle" },
-    { label: "Money Handling", value: "money_handling" },
-    { label: "Check/Document Handling", value: "Check_Document_Handling" },
-  ];
-
-  const severities = [
-    { label: "Information", value: "INFORMATION", color: "#30ac64" },    
-    { label: "Warning", value: "WARNING", color: "#FF7518" },
-    { label: "Critical", value: "CRITICAL", color: "#FF0000" },
-  ];
-
-  notificationTypes = notificationTypes.sort((a, b) =>
-    a.label.localeCompare(b.label)
-  );
+  const dialogRef = useRef(null);
 
   const closeModal = (result) => {
     setIsOpen(false);
@@ -49,7 +26,11 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   };
 
   const openModal = (event) => {
-    setNotificationType(event.notification_type);
+    const notificationType = notificationTypes.find(
+      (option) => option.value === event.notification_type
+    );
+
+    setNotificationType(notificationType);
     setSeverity(event.severity);
     setIsOpen(true);
 
@@ -64,12 +45,8 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     openModal,
   }));
 
-  const handleNotificationTypeSelectChange = (e) => {
-    const selectedOption = notificationTypes.find(
-      (option) => option.value === e.target.value
-    );
-
-    setNotificationType(selectedOption.value);
+  const handleNotificationTypeSelectChange = (selectedOption) => {
+    setNotificationType(selectedOption);
   };
 
   const handleSeveritySelectChange = (e) => {
@@ -85,8 +62,9 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog
+      ref={dialogRef}
         as="div"
-        className="relative z-10"
+        className="relative z-10 your-dialog-content-class"
         initialFocus={cancelButtonRef}
         onClose={closeModal}
       >
@@ -101,7 +79,6 @@ const UserFeedbackModal = forwardRef((props, ref) => {
         >
           <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
         </Transition.Child>
-
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <Transition.Child
@@ -113,67 +90,70 @@ const UserFeedbackModal = forwardRef((props, ref) => {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+              <Dialog.Panel className="relative transform rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div className="bg-white m-1 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 sm:mx-0 sm:h-10 sm:w-10">
+                    <div className="mx-auto flex flex-shrink-0 items-center justify-center rounded-full bg-gray-300 sm:mx-0 sm:h-8 sm:w-8">
                       <InformationCircleIcon
                         className="h-6 w-6 text-red-600"
                         aria-hidden="true"
                       />
                     </div>
-                    <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                    <div className="text-center sm:ml-2 sm:mt-0 sm:text-left">
                       <Dialog.Title
                         as="h3"
-                        className="text-base font-semibold leading-6 text-gray-900"
+                        className="pt-0 text-base font-semibold leading-6 text-gray-900"
                       >
                         Help us to improve it!
                       </Dialog.Title>
-                      <div className="mt-2">
-                        <p className="text-sm text-gray-500">
-                          What did you see in the event?
-                        </p>
-                        <div className="relative mt-1">
-                          <select
-                            id="notificationType"
-                            className="border-none rounded-xl w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
-                            value={notificationType}
-                            onChange={handleNotificationTypeSelectChange}
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-500">
+                      What did you see in the event?
+                    </p>
+                    <div className="inset-0 items-center justify-center">
+                      <div className="p-2">
+                        <Select
+                        style="overflow: visible"
+                        name={"notificationTypes"}
+                          placeholder={"Select an option"}
+                          className="text-sm  rounded-lg"
+                          onChange={handleNotificationTypeSelectChange}
+                          options={notificationTypes.sort((a, b) =>
+                            a.label.localeCompare(b.label)
+                          )}
+                          value={notificationType}
+                          isSearchable ={true}                          
+                        />                        
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-md mt-3">
+                      <p className="text-sm text-gray-500">
+                        How do you classify the event?
+                      </p>
+                      <div  className="pt-2">
+                      <select
+                        id="severity"
+                        className=" w-full border-gray-300 border py-2 pl-3 rounded-lg text-sm text-gray-900"
+                        value={severity}
+                        onChange={handleSeveritySelectChange}
+                        style={{ color: selectedColor }}
+                      >
+                        <option value="" disabled>
+                          Select an option
+                        </option>
+                        {severities.map((option) => (
+                          <option
+                            key={option.value}
+                            value={option.value}
+                            style={{ color: option.color }}
                           >
-                            <option value="" disabled>
-                              Select an option
-                            </option>
-                            {notificationTypes.map((option, i) => (
-                              <option key={i} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <p className="text-sm text-gray-500">
-                          How do you classify the event?
-                        </p>
-                        <select
-                          id="severity"
-                          className=" w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
-                          value={severity}
-                          onChange={handleSeveritySelectChange}
-                          style={{ color: selectedColor }}
-                        >
-                          <option value="" disabled>
-                            Select an option
+                            {option.label}
                           </option>
-                          {severities.map((option) => (
-                            <option
-                              key={option.value}
-                              value={option.value}
-                              style={{ color: option.color }}
-                            >
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        ))}
+                      </select>
                       </div>
                     </div>
                   </div>

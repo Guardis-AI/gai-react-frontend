@@ -13,6 +13,11 @@ import Typography from "@mui/material/Typography";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningMessageModal from "../components/WarningMessageModal";
 import UpdateIcon from "@mui/icons-material/Update";
+import { useSelector } from "react-redux";
+import {
+  getNotificationTypesLabel,
+  getSeveritiesLabel,
+} from "../store/notification/notificationAction";
 
 export default function Events() {
   const navigate = useNavigate();
@@ -26,7 +31,7 @@ export default function Events() {
   const [warningMessage, setWarningMessage] = useState("");
   const [eventsFromSever, setEventsFromSever] = useState(null);
   const [currentEventsLoded, setCurrentEventsLoded] = useState(100);
-
+  
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
@@ -209,7 +214,8 @@ export default function Events() {
           user_feedback: wasgood,
           notification_type: notification.notification_type,
           severity: notification.severity,
-          user_feedback_notification_type: notification.user_feedback_notification_type
+          user_feedback_notification_type:
+            notification.user_feedback_notification_type,
         }
       )
       .then(function (response) {
@@ -287,44 +293,6 @@ export default function Events() {
     saveUserFeedback(notification, wasgood);
   };
 
-  const getSeveritiesLabel = (value) => {
-    const severities = [
-      { label: "Information", value: "INFORMATION", color: "#30ac64" },     
-      { label: "Warning", value: "WARNING", color: "#FF7518" },
-      { label: "Critical", value: "CRITICAL", color: "#FF0000" },
-    ];
-
-    const severity = severities.find((option) => option.value === value);
-
-    return severity ? severity.label : value;
-  };
-
-  const getNotificationTypesLabel = (value) => {
-    const notificationTypes = [
-      { label: "Item Picking", value: "item_picking" },
-      { label: "Bagging", value: "bagging" },
-      { label: "Pocketing", value: "pocketing" },
-      { label: "Enter Store", value: "enter_store" },
-      { label: "Leave Store", value: "leave_store" },
-      { label: "Pay Or Checkout", value: "pay/checkout" },
-      { label: "No Action", value: "no_actiion" },
-      { label: "Shoplift", value: "shoplift" },
-      { label: "Phone Engagement", value: "phone_engagement" },
-      { label: "Mishandling Documents", value: "mishandling_documents" },
-      { label: "Cash Threft", value: "cash_theft" },
-      { label: "Activity After Hours", value: "activity_after_hours" },
-      { label: "Idle", value: "Idle" },
-      { label: "Money Handling", value: "money_handling" },
-      { label: "Check/Document Handling", value: "Check_Document_Handling" },
-    ];
-
-    const notificationType = notificationTypes.find(
-      (option) => option.value === value
-    );
-
-    return notificationType ? notificationType.label : value;
-  };
-
   const warningModalResult = (result) => {
     if (result) {
       deleteNotification(currNoti);
@@ -352,11 +320,15 @@ export default function Events() {
             </p>
             <p>
               <strong>Type:</strong>&nbsp;
-              {getNotificationTypesLabel(currNoti?.notification_type)}
+              {useSelector((state) =>
+                getNotificationTypesLabel(state, currNoti?.notification_type)
+              )}
             </p>
             <p>
               <strong>Severity:</strong>&nbsp;
-              {getSeveritiesLabel(currNoti?.severity)}
+              {useSelector((state) =>
+                getSeveritiesLabel(state, currNoti?.severity)
+              )}
             </p>
             <p>
               <strong>Date:</strong>&nbsp;{currNoti?.sent_date}
