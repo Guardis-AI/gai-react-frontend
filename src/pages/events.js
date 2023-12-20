@@ -12,7 +12,6 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningMessageModal from "../components/WarningMessageModal";
-import UpdateIcon from "@mui/icons-material/Update";
 
 export default function Events() {
   const navigate = useNavigate();
@@ -25,7 +24,6 @@ export default function Events() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [warningMessage, setWarningMessage] = useState("");
   const [eventsFromSever, setEventsFromSever] = useState(null);
-  const [currentEventsLoded, setCurrentEventsLoded] = useState(100);
 
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
@@ -42,8 +40,6 @@ export default function Events() {
     if (cameraList.current === null || cameraList.current.length === 0) {
       getCamerasDetails();
     }
-
-    getNotifications();
   }, [navigate, state]);
 
   const getCamerasDetails = async () => {
@@ -67,136 +63,13 @@ export default function Events() {
     cameraList.current = await request;
   };
 
-  const setMainVideo = (clip_id, notifications) => {
-    let selNoti;
-
-    if (notifications) {
-      selNoti = notifications.find((i) => i.clip_id === clip_id);
-    } else {
-      selNoti = events.find((i) => i.clip_id === clip_id);
-    }
-
+  const setMainVideo = (notification) => {
     const streamUrl = `${localStorage.getItem(
       "cfUrl"
-    )}notifications/get_video/${selNoti.clip_id}`;
+    )}notifications/get_video/${notification.clip_id}`;
 
     setCurrVidUrl(streamUrl);
-    setCurrNoti(selNoti);
-  };
-
-  const getNotificationsFromServer = async () => {
-    const request = axios
-      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
-      .then(function (response) {
-        if (response == null || response.data.length === 0) {
-          console.log("No events found!");
-          return null;
-        } else {
-          let notification_list = response.data.filter(
-            (n) => n.user_feedback === null
-          );
-
-          notification_list =
-            updateCameraNameInNotifications(notification_list);
-
-          return notification_list;
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-
-    const notificationList = await request;
-
-    return notificationList;
-  };
-
-  const getNotifications = async () => {
-    const notificationList = await getNotificationsFromServer();
-
-    setUnreadCount(notificationList.length);
-    setEventsFromSever(notificationList);
-    setEvents(notificationList.slice(0, currentEventsLoded));
-
-    if (state) {
-      if (!currVidUrl) {
-        const selNoti = notificationList.find((i) => i.clip_id === state.id);
-
-        selNoti.cameraname = state.cameraname;
-        setCurrVidUrl(state.url);
-        setCurrNoti(selNoti);
-      }
-    } else {
-      if (!currVidUrl) {
-        setMainVideo(notificationList[0].clip_id, notificationList);
-      }
-    }
-  };
-
-  const loadMoreEvents = async () => {
-    if (currentEventsLoded >= eventsFromSever.length) {
-      const notificationsList = await getNotificationsFromServer();
-      let notificationsListDifference = eventsFromSever.filter((event) => {
-        return !notificationsList.find((not) => not.clip_id === event.clip_id);
-      });
-
-      if (notificationsListDifference.length) {
-        setEventsFromSever((events) => [
-          ...events,
-          ...notificationsListDifference,
-        ]);
-        setUnreadCount(currentEventsLoded + notificationsListDifference.length);
-
-        if (notificationsListDifference.length > 100) {
-          notificationsListDifference = notificationsListDifference.slice(100);
-        }
-
-        setEvents((prevEvents) => [
-          ...prevEvents,
-          ...notificationsListDifference,
-        ]);
-      }
-    } else {
-      const nextEnd = currentEventsLoded + 100;
-      const nextEvents = eventsFromSever.slice(currentEventsLoded, nextEnd);
-
-      setCurrentEventsLoded(nextEnd);
-      setEvents((prevEvents) => [...prevEvents, ...nextEvents]);
-    }
-  };
-
-  const updateCameraNameInNotifications = (notifications) => {
-    let notification_list = notifications.map((notification) => {
-      let cameraname = "Generic";
-
-      if (cameraList.current !== null) {
-        const camera = cameraList.current.find(
-          (c) => c.mac === notification.camera_id
-        );
-        cameraname = camera ? camera.name : cameraname;
-      }
-
-      return {
-        clip_id: notification.clip_id,
-        camera_id: notification.camera_id,
-        cameraname: cameraname,
-        sent_date: moment(notification.timestamp).format(
-          "MM/DD/yyyy, h:mm:ss A"
-        ),
-        severity: notification.severity,
-        user_feedback: notification.user_feedback,
-        notification_type: notification.notification_type,
-      };
-    });
-
-    if (currNoti && currNoti.cameraname === "Generic") {
-      const notification = notification_list.find(
-        (n) => n.clip_id === currNoti.clip_id
-      );
-      setCurrNoti(notification);
-    }
-
-    return notification_list;
+    setCurrNoti(notification);
   };
 
   const saveUserFeedback = (notification, wasgood) => {
@@ -209,7 +82,8 @@ export default function Events() {
           user_feedback: wasgood,
           notification_type: notification.notification_type,
           severity: notification.severity,
-          user_feedback_notification_type: notification.user_feedback_notification_type
+          user_feedback_notification_type:
+            notification.user_feedback_notification_type,
         }
       )
       .then(function (response) {
@@ -289,7 +163,7 @@ export default function Events() {
 
   const getSeveritiesLabel = (value) => {
     const severities = [
-      { label: "Information", value: "INFORMATION", color: "#30ac64" },     
+      { label: "Information", value: "INFORMATION", color: "#30ac64" },
       { label: "Warning", value: "WARNING", color: "#FF7518" },
       { label: "Critical", value: "CRITICAL", color: "#FF0000" },
     ];
@@ -402,12 +276,6 @@ export default function Events() {
             >
               <ThumbDownIcon />
             </button>
-            <button
-              className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
-              onClick={() => loadMoreEvents()}
-            >
-              <UpdateIcon />
-            </button>
           </div>
         </div>
       </div>
@@ -415,6 +283,7 @@ export default function Events() {
         unreadCount={unreadCount}
         events={events}
         setMainVideo={setMainVideo}
+        cameraList={cameraList.current}
       />
       <UserFeedbackModal
         ref={userFeedbackModal}
