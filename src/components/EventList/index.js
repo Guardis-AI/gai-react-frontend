@@ -3,6 +3,7 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import numeral from "numeral";
+import Select from "react-select";
 
 const darkTheme = createTheme({
   palette: {
@@ -29,7 +30,7 @@ const notificationTypes = [
 ];
 
 const severities = [
-  { label: "Information", value: "INFORMATION", color: "#30ac64" }, 
+  { label: "Information", value: "INFORMATION", color: "#30ac64" },
   { label: "Warning", value: "WARNING", color: "#FF7518" },
   { label: "Critical", value: "CRITICAL", color: "#FF0000" },
 ];
@@ -37,6 +38,9 @@ const severities = [
 export default function EventList(props) {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [notificationType, setNotificationType] = useState();
+  const [severity, setSeverity] = useState();
+  const [selectedColor, setSelectedColor] = useState("");
 
   function dateFilter(event) {
     if (!startDate && !endDate) {
@@ -68,7 +72,21 @@ export default function EventList(props) {
   const getSeveritiesLabelColor = (value) => {
     const severity = severities.find((option) => option.value === value);
 
-    return severity ? severity.color : '#FFFFFF';
+    return severity ? severity.color : "#FFFFFF";
+  };
+
+  const handleNotificationTypeSelectChange = (selectedOption) => {
+    setNotificationType(selectedOption);
+  };
+
+  const handleSeveritySelectChange = (e) => {
+    e.preventDefault();
+    const selectedOption = severities.find(
+      (option) => option.value === e.target.value
+    );
+
+    setSeverity(selectedOption.value);
+    setSelectedColor(selectedOption.color);
   };
 
   return (
@@ -82,21 +100,18 @@ export default function EventList(props) {
           ).format("0,0")}{" "}
           &nbsp; From: {numeral(props.unreadCount).format("0,0")}
         </p>
-        <div>
-          <h6>Start date:</h6>
-          <div className="py-2 rounded">
+        <div className="flex mt-2">
+          <div className="py-2 rounded mr-2">
             <ThemeProvider theme={darkTheme}>
               <DateTimePicker
+                className="text-sm"
                 label="Start Date"
                 value={startDate}
                 onChange={(newStart) => setStartDate(newStart)}
               />
             </ThemeProvider>
           </div>
-        </div>
-        <div>
-          <h6>End date:</h6>
-          <div className="py-2 rounded">
+          <div className="py-2 rounded ml-4">
             <ThemeProvider theme={darkTheme}>
               <DateTimePicker
                 label="End Date"
@@ -104,6 +119,75 @@ export default function EventList(props) {
                 onChange={(newEnd) => setEndDate(newEnd)}
               />
             </ThemeProvider>
+          </div>
+        </div>
+        <div className="flex mt-2">
+          <div className="inset-0 items-center justify-center w-full">
+            <div className="p-2 w-full">
+              <h6 className="m-1" >Types:</h6>
+              <Select
+                style="overflow: visible"
+                name={"notificationTypes"}
+                placeholder={"Select an option"}
+                className="text-sm  rounded-lg"
+                onChange={handleNotificationTypeSelectChange}
+                options={notificationTypes.sort((a, b) =>
+                  a.label.localeCompare(b.label)
+                )}
+                value={notificationType}
+                isSearchable={true}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex  w-full">
+          <div className="p-2 w-full">
+          <h6 className="m-1" >Severity:</h6>
+            <select
+              id="severity"
+              className=" w-full border-gray-300 border py-2 pl-3 rounded-lg text-sm text-gray-900"
+              value={severity}
+              onChange={handleSeveritySelectChange}
+              style={{ color: selectedColor }}
+            >
+              <option value="" disabled>
+                Select an option
+              </option>
+              {severities.map((option) => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                  style={{ color: option.color }}
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="flex w-full">
+          <div className="p-2 w-full">
+          <h6 className="m-1" >Camera:</h6>
+            <select
+              id="severity"
+              className=" w-full border-gray-300 border py-2 pl-3 rounded-lg text-sm text-gray-900"
+              value={severity}
+              onChange={handleSeveritySelectChange}
+              style={{ color: selectedColor }}
+            >
+              <option value="" disabled>
+                Select an option
+              </option>
+              {severities.map((option) => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                  style={{ color: option.color }}
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
@@ -126,10 +210,17 @@ export default function EventList(props) {
                   <strong>Date:</strong> {event.sent_date}
                   <br />
                   <strong>Type:</strong>{" "}
-                  <span> {getNotificationTypesLabel(event.notification_type)}</span>
+                  <span>
+                    {" "}
+                    {getNotificationTypesLabel(event.notification_type)}
+                  </span>
                   <br />
                   <strong>Severity:</strong>{" "}
-                  <span style={{ color: getSeveritiesLabelColor(event.severity) }}>{getSeveritiesLabel(event.severity)}</span>
+                  <span
+                    style={{ color: getSeveritiesLabelColor(event.severity) }}
+                  >
+                    {getSeveritiesLabel(event.severity)}
+                  </span>
                 </p>
               </div>
             </div>
