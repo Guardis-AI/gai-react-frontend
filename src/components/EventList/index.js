@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import numeral from "numeral";
 
 const darkTheme = createTheme({
   palette: {
@@ -24,13 +25,13 @@ const notificationTypes = [
   { label: "Activity After Hours", value: "activity_after_hours" },
   { label: "Idle", value: "Idle" },
   { label: "Money Handling", value: "money_handling" },
+  { label: "Check/Document Handling", value: "Check_Document_Handling" },
 ];
 
 const severities = [
-  { label: "Information", value: "INFORMATION" },
-  { label: "Information", value: "INFO" },
-  { label: "Warning", value: "WARNING" },
-  { label: "Critical", value: "CRITICAL" },
+  { label: "Information", value: "INFORMATION", color: "#30ac64" }, 
+  { label: "Warning", value: "WARNING", color: "#FF7518" },
+  { label: "Critical", value: "CRITICAL", color: "#FF0000" },
 ];
 
 export default function EventList(props) {
@@ -50,26 +51,37 @@ export default function EventList(props) {
     }
   }
 
-  const getSeveritiesLabel = (value)=>{
-    const severity = severities.find(
-      (option) => option.value === value
-    );
+  const getSeveritiesLabel = (value) => {
+    const severity = severities.find((option) => option.value === value);
 
-    return severity? severity.label:value;
-  }
+    return severity ? severity.label : value;
+  };
 
-  const getNotificationTypesLabel = (value)=>{
+  const getNotificationTypesLabel = (value) => {
     const notificationType = notificationTypes.find(
       (option) => option.value === value
     );
 
-    return notificationType? notificationType.label:value;
-  }
+    return notificationType ? notificationType.label : value;
+  };
+
+  const getSeveritiesLabelColor = (value) => {
+    const severity = severities.find((option) => option.value === value);
+
+    return severity ? severity.color : '#FFFFFF';
+  };
 
   return (
     <div className="h-full overflow-auto text-white space-y-4 xl:w-3/12 md:w-1/2 self-center">
       <div className="flex flex-col justify-between px-4 py-2 mb-2 bg-[#26272f] rounded-xl text-white font-semibold">
-        <h6>Event count: {props.unreadCount}</h6>
+        <p>
+          {" "}
+          Events Loaded:{" "}
+          {numeral(
+            props.events?.filter((event) => dateFilter(event)).length
+          ).format("0,0")}{" "}
+          &nbsp; From: {numeral(props.unreadCount).format("0,0")}
+        </p>
         <div>
           <h6>Start date:</h6>
           <div className="py-2 rounded">
@@ -102,20 +114,24 @@ export default function EventList(props) {
             <div
               className="flex p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] space-x-2"
               key={i}
-              onClick={() =>
-                props.setMainVideo(event.clip_id, null)
-              }
+              onClick={() => props.setMainVideo(event.clip_id, null)}
             >
               <PlayCircleOutlineIcon
                 className="self-center ml-2 mr-4"
                 fontSize="large"
               />
               <div className="space-y-3 text-sm">
-                <p><strong>Camera:</strong> {event.cameraname} <br/>
-                <strong>Date:</strong> {event.sent_date}<br/>
-                <strong>Type:</strong> {getNotificationTypesLabel(event.notification_type)}<br/>
-                <strong>Severity:</strong> { getSeveritiesLabel(event.severity)}</p>                
-              </div>             
+                <p>
+                  <strong>Camera:</strong> {event.cameraname} <br />
+                  <strong>Date:</strong> {event.sent_date}
+                  <br />
+                  <strong>Type:</strong>{" "}
+                  <span> {getNotificationTypesLabel(event.notification_type)}</span>
+                  <br />
+                  <strong>Severity:</strong>{" "}
+                  <span style={{ color: getSeveritiesLabelColor(event.severity) }}>{getSeveritiesLabel(event.severity)}</span>
+                </p>
+              </div>
             </div>
           );
         })}

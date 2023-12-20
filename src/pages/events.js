@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import axios from "axios";
@@ -12,6 +12,7 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningMessageModal from "../components/WarningMessageModal";
+import UpdateIcon from "@mui/icons-material/Update";
 
 export default function Events() {
   const navigate = useNavigate();
@@ -23,34 +24,27 @@ export default function Events() {
   const [errorMessage, setErrorMessage] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [warningMessage, setWarningMessage] = useState("");
+  const [eventsFromSever, setEventsFromSever] = useState(null);
+  const [currentEventsLoded, setCurrentEventsLoded] = useState(100);
 
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
-  let frequencyToGetNotice = useRef(0);
   let cameraList = useRef(null);
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
-  const setMainVideo = useCallback(
-    (id, notifs) => {
-      let selNoti;
+  useEffect(() => {
+    if (localStorage.getItem("loginStatus") !== "true")
+      return navigate("/log-in");
 
-      if (notifs) {
-        selNoti = notifs.find((i) => i.clip_id === id);
-      } else {
-        selNoti = events.find((i) => i.clip_id === id);
-      }
+    if (cameraList.current === null || cameraList.current.length === 0) {
+      getCamerasDetails();
+    }
 
-      const streamUrl = `${localStorage.getItem(
-        "cfUrl"
-      )}notifications/get_video/${selNoti.clip_id}`;
-      setCurrVidUrl(streamUrl);
-      setCurrNoti(selNoti);
-    },
-    [events]
-  );
+    getNotifications();
+  }, [navigate, state]);
 
   const getCamerasDetails = async () => {
     const request = axios
@@ -63,70 +57,113 @@ export default function Events() {
             return { uuid: camera.uuid, name: camera.name, mac: camera.mac };
           });
 
-          cameraList.current = camera_list;
+          return camera_list;
         }
       })
       .catch(function (error) {
         console.log(error);
       });
 
-    await request;
+    cameraList.current = await request;
   };
 
-  useEffect(() => {
-    if (localStorage.getItem("loginStatus") !== "true")
-      return navigate("/log-in");
+  const setMainVideo = (clip_id, notifications) => {
+    let selNoti;
 
-    if (cameraList.current === null || cameraList.current.length === 0) {
-      getCamerasDetails();
+    if (notifications) {
+      selNoti = notifications.find((i) => i.clip_id === clip_id);
+    } else {
+      selNoti = events.find((i) => i.clip_id === clip_id);
     }
 
-    axios
+    const streamUrl = `${localStorage.getItem(
+      "cfUrl"
+    )}notifications/get_video/${selNoti.clip_id}`;
+
+    setCurrVidUrl(streamUrl);
+    setCurrNoti(selNoti);
+  };
+
+  const getNotificationsFromServer = async () => {
+    const request = axios
       .get(`${localStorage.getItem("cfUrl")}notifications`, null)
-      .then(async function (response) {
+      .then(function (response) {
         if (response == null || response.data.length === 0) {
           console.log("No events found!");
+          return null;
         } else {
-          let notification_list = updateCameraNameInNotifications(
-            response.data
-          );
-
-          const notificationsUnread = notification_list.filter(
+          let notification_list = response.data.filter(
             (n) => n.user_feedback === null
           );
 
-          if (frequencyToGetNotice.current === 0) {
-            setUnreadCount(notificationsUnread.length);
-            setEvents(notificationsUnread);
-            frequencyToGetNotice.current = 60000;
-          } else {
-            setTimeout(function () {
-              setUnreadCount(notificationsUnread.length);
-              setEvents(notificationsUnread);
-            }, frequencyToGetNotice.current);
-          }
+          notification_list =
+            updateCameraNameInNotifications(notification_list);
 
-          if (state) {
-            if (!currVidUrl) {
-              const selNoti = notification_list.find(
-                (i) => i.clip_id === state.id
-              );
-
-              selNoti.cameraname = state.cameraname;
-              setCurrVidUrl(state.url);
-              setCurrNoti(selNoti);
-            }
-          } else {
-            if (!currVidUrl) {
-              setMainVideo(notification_list[0].clip_id, notification_list);
-            }
-          }
+          return notification_list;
         }
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, state, setMainVideo]);
+
+    const notificationList = await request;
+
+    return notificationList;
+  };
+
+  const getNotifications = async () => {
+    const notificationList = await getNotificationsFromServer();
+
+    setUnreadCount(notificationList.length);
+    setEventsFromSever(notificationList);
+    setEvents(notificationList.slice(0, currentEventsLoded));
+
+    if (state) {
+      if (!currVidUrl) {
+        const selNoti = notificationList.find((i) => i.clip_id === state.id);
+
+        selNoti.cameraname = state.cameraname;
+        setCurrVidUrl(state.url);
+        setCurrNoti(selNoti);
+      }
+    } else {
+      if (!currVidUrl) {
+        setMainVideo(notificationList[0].clip_id, notificationList);
+      }
+    }
+  };
+
+  const loadMoreEvents = async () => {
+    if (currentEventsLoded >= eventsFromSever.length) {
+      const notificationsList = await getNotificationsFromServer();
+      let notificationsListDifference = eventsFromSever.filter((event) => {
+        return !notificationsList.find((not) => not.clip_id === event.clip_id);
+      });
+
+      if (notificationsListDifference.length) {
+        setEventsFromSever((events) => [
+          ...events,
+          ...notificationsListDifference,
+        ]);
+        setUnreadCount(currentEventsLoded + notificationsListDifference.length);
+
+        if (notificationsListDifference.length > 100) {
+          notificationsListDifference = notificationsListDifference.slice(100);
+        }
+
+        setEvents((prevEvents) => [
+          ...prevEvents,
+          ...notificationsListDifference,
+        ]);
+      }
+    } else {
+      const nextEnd = currentEventsLoded + 100;
+      const nextEvents = eventsFromSever.slice(currentEventsLoded, nextEnd);
+
+      setCurrentEventsLoded(nextEnd);
+      setEvents((prevEvents) => [...prevEvents, ...nextEvents]);
+    }
+  };
 
   const updateCameraNameInNotifications = (notifications) => {
     let notification_list = notifications.map((notification) => {
@@ -153,7 +190,7 @@ export default function Events() {
     });
     if (currNoti && currNoti.cameraname === "Generic") {
       const notification = notification_list.find(
-        (n) => n.clip_id == currNoti.clip_id
+        (n) => n.clip_id === currNoti.clip_id
       );
       setCurrNoti(notification);
     }
@@ -170,13 +207,22 @@ export default function Events() {
           user_feedback: wasgood,
           notification_type: notification.notification_type,
           severity: notification.severity,
+          user_feedback_notification_type:
+            notification.user_feedback_notification_type,
         }
       )
       .then(function (response) {
         const notification_list = events.filter(
-          (n) => n.camera_id !== response.data.camera_id
+          (n) => n.clip_id !== response.data.clip_id
         );
         setEvents(notification_list);
+
+        const events_from_sever = eventsFromSever.filter(
+          (n) => n.clip_id !== response.data.clip_id
+        );
+        setEventsFromSever(events_from_sever);
+
+        setUnreadCount(events_from_sever.length);
         setMainVideo(notification_list[0].clip_id, notification_list);
         setAnchorEl(null);
       })
@@ -194,9 +240,16 @@ export default function Events() {
       )
       .then(function (response) {
         const notification_list = events.filter(
-          (n) => n.camera_id !== response.data.camera_id
+          (n) => n.clip_id !== response.data.clip_id
         );
         setEvents(notification_list);
+
+        const events_from_sever = eventsFromSever.filter(
+          (n) => n.clip_id !== response.data.clip_id
+        );
+        setEventsFromSever(events_from_sever);
+
+        setUnreadCount(events_from_sever.length);
         setMainVideo(notification_list[0].clip_id, notification_list);
         setAnchorEl(null);
       })
@@ -214,7 +267,7 @@ export default function Events() {
 
   const handleSaveFeedbackCallback = (result, notificationType, severity) => {
     if (result) {
-      currNoti.notification_type = notificationType;
+      currNoti.user_feedback_notification_type = notificationType;
       currNoti.severity = severity;
       saveUserFeedback(currNoti, false);
     }
@@ -229,15 +282,15 @@ export default function Events() {
 
   const handleSaveUserFeedbackClick = (event, notification, wasgood) => {
     setAnchorEl(event.currentTarget);
+    notification.user_feedback_notification_type = currNoti.notification_type;
     saveUserFeedback(notification, wasgood);
   };
 
   const getSeveritiesLabel = (value) => {
     const severities = [
-      { label: "Information", value: "INFORMATION" },
-      { label: "Information", value: "INFO" },
-      { label: "Warning", value: "WARNING" },
-      { label: "Critical", value: "CRITICAL" },
+      { label: "Information", value: "INFORMATION", color: "#30ac64" },
+      { label: "Warning", value: "WARNING", color: "#FF7518" },
+      { label: "Critical", value: "CRITICAL", color: "#FF0000" },
     ];
 
     const severity = severities.find((option) => option.value === value);
@@ -261,6 +314,7 @@ export default function Events() {
       { label: "Activity After Hours", value: "activity_after_hours" },
       { label: "Idle", value: "Idle" },
       { label: "Money Handling", value: "money_handling" },
+      { label: "Check/Document Handling", value: "Check_Document_Handling" },
     ];
 
     const notificationType = notificationTypes.find(
@@ -347,6 +401,12 @@ export default function Events() {
             >
               <ThumbDownIcon />
             </button>
+            <button
+              className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
+              onClick={() => loadMoreEvents()}
+            >
+              <UpdateIcon />
+            </button>
           </div>
         </div>
       </div>
@@ -365,7 +425,6 @@ export default function Events() {
         Title={"Oops! Something Went Wrong!"}
         Message={errorMessage}
       />
-
       <WarningMessageModal
         ref={warningMessageModal}
         Title={"Caution!"}

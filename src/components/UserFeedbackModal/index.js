@@ -13,6 +13,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   const [notificationType, setNotificationType] = useState();
   const [severity, setSeverity] = useState();
   const cancelButtonRef = useRef(null);
+  const [selectedColor, setSelectedColor] = useState("");
 
   let notificationTypes = [
     { label: "Item Picking", value: "item_picking" },
@@ -29,12 +30,13 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     { label: "Activity After Hours", value: "activity_after_hours" },
     { label: "Idle", value: "idle" },
     { label: "Money Handling", value: "money_handling" },
+    { label: "Check/Document Handling", value: "Check_Document_Handling" },
   ];
 
   const severities = [
-    { label: "Critical", value: "CRITICAL" },
-    { label: "Information", value: "INFORMATION" },
-    { label: "Warning", value: "WARNING" },
+    { label: "Information", value: "INFORMATION", color: "#30ac64" },    
+    { label: "Warning", value: "WARNING", color: "#FF7518" },
+    { label: "Critical", value: "CRITICAL", color: "#FF0000" },
   ];
 
   notificationTypes = notificationTypes.sort((a, b) =>
@@ -50,6 +52,12 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     setNotificationType(event.notification_type);
     setSeverity(event.severity);
     setIsOpen(true);
+
+    const selectedOption = severities.find(
+      (option) => option.value === event.severity
+    );
+
+    setSelectedColor(selectedOption.color);
   };
 
   useImperativeHandle(ref, () => ({
@@ -71,6 +79,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     );
 
     setSeverity(selectedOption.value);
+    setSelectedColor(selectedOption.color);
   };
 
   return (
@@ -150,12 +159,17 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                           className=" w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-900"
                           value={severity}
                           onChange={handleSeveritySelectChange}
+                          style={{ color: selectedColor }}
                         >
                           <option value="" disabled>
                             Select an option
                           </option>
                           {severities.map((option) => (
-                            <option key={option.value} value={option.value}>
+                            <option
+                              key={option.value}
+                              value={option.value}
+                              style={{ color: option.color }}
+                            >
                               {option.label}
                             </option>
                           ))}
