@@ -1,4 +1,4 @@
-import React, { useState,useRef } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Login from "../assets/images/login/Login.png";
@@ -51,7 +51,7 @@ export default function LogIn() {
           // Set the authenticated flag to true
           navigate("/");
         } else {
-          openErrorModal("Invalid login");          
+          openErrorModal("Invalid login");
         }
       })
       .catch(function (error) {
@@ -61,7 +61,7 @@ export default function LogIn() {
 
   // Sign Up Modal
   const [signUpModalIsOpen, setSignUpModalIsOpen] = useState(false);
-  
+
   function openSignUpModal() {
     setSignUpModalIsOpen(true);
   }
@@ -87,16 +87,16 @@ export default function LogIn() {
       ...signUpFormData,
       [e.target.name]: e.target.value,
     });
-  };
-  
-  async function  onSignUp(e) {
+  }
+
+  async function onSignUp(e) {
     e.preventDefault();
     console.log("submitting sign up form: ");
     console.log(signUpFormData);
 
     if (await isValidCrfUrl(signUpFormData.cfurl)) {
       createNewUser(signUpFormData);
-    }else{      
+    } else {
       openErrorModal(`The url ${signUpFormData.cfurl} is invalid`);
     }
   }
@@ -108,14 +108,14 @@ export default function LogIn() {
       .get(`${url}camera/ping`)
       .then(function (response) {
         console.log(response);
-        return response.data == 'PONG!'
+        return response.data === "PONG!";
       })
       .catch(function (error) {
         console.log(error);
         return false;
       });
 
-      result = await response;
+    result = await response;
     return result;
   };
 
@@ -123,8 +123,10 @@ export default function LogIn() {
     axios
       .post(`${baseUrlApi}/api/user/insuser`, user)
       .then(function (response) {
-
-        if (response.data?.gai_ins_user?.message === "\"The username already exist!\"") {
+        if (
+          response.data?.gai_ins_user?.message ===
+          '"The username already exist!"'
+        ) {
           openErrorModal("The username already exist!");
         } else {
           console.log(response);
@@ -137,8 +139,8 @@ export default function LogIn() {
       });
   };
 
-  function openErrorModal(message){
-    if (errorMessageModal.current) {    
+  function openErrorModal(message) {
+    if (errorMessageModal.current) {
       setErrorMessage(message);
       errorMessageModal.current.openModal();
     }
@@ -280,7 +282,7 @@ export default function LogIn() {
               className="text-black"
             />
           </label>
-         { /*<label className="flex flex-col w-3/5">
+          {/*<label className="flex flex-col w-3/5">
             User Role
             <input
               type="text"
@@ -289,7 +291,7 @@ export default function LogIn() {
               onChange={handleSignUpFormChange}
               className="text-black"
             />
-          </label> */ }
+          </label> */}
           <label className="flex flex-col w-3/5">
             Password
             <input
@@ -332,17 +334,17 @@ export default function LogIn() {
           </label>
           <button
             type="submit"
-            className="bg-[#26272f] rounded-full text-white font-semibold"
+            className="bg-[#2DAB64] rounded-full text-white font-semibold"
           >
             Save
           </button>
         </form>
       </Modal>
-      <ErrorMessageModal 
-      ref={errorMessageModal} 
-      Title={"Oops, That Didn't Work"}
-      Message ={errorMessage}
-        />
+      <ErrorMessageModal
+        ref={errorMessageModal}
+        Title={"Oops, That Didn't Work"}
+        Message={errorMessage}
+      />
     </div>
   );
 }

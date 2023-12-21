@@ -29,7 +29,7 @@ const notificationTypes = [
 ];
 
 const severities = [
-  { label: "Information", value: "INFORMATION", color: "#30ac64" }, 
+  { label: "Information", value: "INFORMATION", color: "#30ac64" },
   { label: "Warning", value: "WARNING", color: "#FF7518" },
   { label: "Critical", value: "CRITICAL", color: "#FF0000" },
 ];
@@ -68,20 +68,13 @@ export default function EventList(props) {
   const getSeveritiesLabelColor = (value) => {
     const severity = severities.find((option) => option.value === value);
 
-    return severity ? severity.color : '#FFFFFF';
+    return severity ? severity.color : "#FFFFFF";
   };
 
   return (
     <div className="h-full overflow-auto text-white space-y-4 xl:w-3/12 md:w-1/2 self-center">
-      <div className="flex flex-col justify-between px-4 py-2 mb-2 bg-[#26272f] rounded-xl text-white font-semibold">
-        <p>
-          {" "}
-          Events Loaded:{" "}
-          {numeral(
-            props.events?.filter((event) => dateFilter(event)).length
-          ).format("0,0")}{" "}
-          &nbsp; From: {numeral(props.unreadCount).format("0,0")}
-        </p>
+      <div className="flex flex-col justify-between px-4 py-2 mb-2 bg-[#26272f] rounded-xl text-white">
+        <h2 className="text-xl font-semibold">Filter Events</h2>
         <div>
           <h6>Start date:</h6>
           <div className="py-2 rounded">
@@ -107,6 +100,17 @@ export default function EventList(props) {
           </div>
         </div>
       </div>
+      <div className="text-black">
+        <h1 className="text-xl font-semibold">Event List</h1>
+        <p>
+          Events Loaded:{" "}
+          {numeral(
+            props.events?.filter((event) => dateFilter(event)).length
+          ).format("0,0")}
+          <br />
+          From {numeral(props.unreadCount).format("0,0")} total events
+        </p>
+      </div>
       {props.events
         ?.filter((event) => dateFilter(event))
         .map((event, i) => {
@@ -126,10 +130,17 @@ export default function EventList(props) {
                   <strong>Date:</strong> {event.sent_date}
                   <br />
                   <strong>Type:</strong>{" "}
-                  <span> {getNotificationTypesLabel(event.notification_type)}</span>
+                  <span>
+                    {" "}
+                    {getNotificationTypesLabel(event.notification_type)}
+                  </span>
                   <br />
                   <strong>Severity:</strong>{" "}
-                  <span style={{ color: getSeveritiesLabelColor(event.severity) }}>{getSeveritiesLabel(event.severity)}</span>
+                  <span
+                    style={{ color: getSeveritiesLabelColor(event.severity) }}
+                  >
+                    {getSeveritiesLabel(event.severity)}
+                  </span>
                 </p>
               </div>
             </div>

@@ -33,13 +33,18 @@ export default function Live() {
           console.log("No devices found!");
         } else {
           const camera_list = response.data.map((camera) => {
-            return { uuid: camera.uuid, name: camera.name, mac: camera.mac, originalname: camera.name, };
+            return {
+              uuid: camera.uuid,
+              name: camera.name,
+              mac: camera.mac,
+              originalname: camera.name,
+            };
           });
           setCameraList(camera_list);
           if (state) {
             setCurrVidUrl(state.url);
             setCurrCamera(state);
-          } else {            
+          } else {
             setMainVideo(camera_list[0]);
           }
         }
@@ -51,7 +56,10 @@ export default function Live() {
 
   function createUrl(macOfCamera) {
     return (
-      localStorage.getItem("cfUrl") + "media/live/" + macOfCamera + "/output.m3u8"
+      localStorage.getItem("cfUrl") +
+      "media/live/" +
+      macOfCamera +
+      "/output.m3u8"
     );
   }
 
@@ -96,16 +104,16 @@ export default function Live() {
     const updatedCamera = [...cameraList];
     updatedCamera[index].editMode = value;
 
-    if(!value){
+    if (!value) {
       updatedCamera[index].name = updatedCamera[index].originalname;
     }
-    
+
     setCameraList(updatedCamera);
   };
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
-      <div className="xl:grow pr-2 flex flex-col">
+    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
+      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white">
         <div className="w-5/6 self-center flex flex-col py-3">
           <div className="px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
             <h6>{currCamera.name}</h6>
@@ -114,7 +122,7 @@ export default function Live() {
           <ReactPlayer
             id="main"
             url={currVidUrl}
-            width="100%"            
+            width="100%"
             playing={true}
             volume={0}
             config={{
@@ -132,7 +140,7 @@ export default function Live() {
         cameraList={cameraList}
         createUrl={createUrl}
         setMainVideo={setMainVideo}
-        setCurrCamera={setCurrCamera}               
+        setCurrCamera={setCurrCamera}
         handleChange={handleChange}
         handleEditMode={handleEditMode}
         renameCamera={renameCamera}

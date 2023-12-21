@@ -368,7 +368,7 @@ export default function ScanModalButton() {
             </button> */}
             <button
               type="button"
-              className="bg-[#26272f] rounded-full text-white font-semibold py-2 px-4 self-end"
+              className="bg-[#2DAB64] rounded-full text-white font-semibold py-2 px-4 self-end"
               onClick={onContinue}
             >
               Continue
@@ -397,7 +397,7 @@ export default function ScanModalButton() {
     <React.Fragment>
       <button
         type="button"
-        className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
+        className="py-2 px-8 bg-[#2DAB64] rounded-full text-white font-semibold"
         onClick={onScan}
       >
         Scan Devices

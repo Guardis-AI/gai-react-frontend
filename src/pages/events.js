@@ -188,14 +188,12 @@ export default function Events() {
         notification_type: notification.notification_type,
       };
     });
-
     if (currNoti && currNoti.cameraname === "Generic") {
       const notification = notification_list.find(
         (n) => n.clip_id === currNoti.clip_id
       );
       setCurrNoti(notification);
     }
-
     return notification_list;
   };
 
@@ -209,7 +207,8 @@ export default function Events() {
           user_feedback: wasgood,
           notification_type: notification.notification_type,
           severity: notification.severity,
-          user_feedback_notification_type: notification.user_feedback_notification_type
+          user_feedback_notification_type:
+            notification.user_feedback_notification_type,
         }
       )
       .then(function (response) {
@@ -289,7 +288,7 @@ export default function Events() {
 
   const getSeveritiesLabel = (value) => {
     const severities = [
-      { label: "Information", value: "INFORMATION", color: "#30ac64" },     
+      { label: "Information", value: "INFORMATION", color: "#30ac64" },
       { label: "Warning", value: "WARNING", color: "#FF7518" },
       { label: "Critical", value: "CRITICAL", color: "#FF0000" },
     ];
@@ -343,10 +342,10 @@ export default function Events() {
   };
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
-      <div className="xl:grow pr-2 flex flex-col">
+    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
+      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white">
         <div className="w-5/6 self-center">
-          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white ">
+          <div className="flex justify-between px-3 md:px-8 py-2 mb-2 bg-[#26272f] rounded-lg md:rounded-full text-white flex-col md:flex-row">
             <p>
               <strong>Camera:</strong>&nbsp;{currNoti?.cameraname}
             </p>

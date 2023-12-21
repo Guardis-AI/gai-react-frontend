@@ -14,27 +14,27 @@ export const navData = [
   },
   {
     id: 1,
-    icon: <SettingsIcon />,
-    text: "Setup",
-    link: "setup",
-  },
-  {
-    id: 2,
     icon: <VideocamIcon />,
     text: "Live",
     link: "live",
   },
   {
-    id: 3,
+    id: 2,
     icon: <PlayCircleOutlineIcon />,
     text: "Playback",
     link: "playback",
   },
   {
-    id: 4,
+    id: 3,
     icon: <NotificationsIcon />,
     text: "Events",
     link: "events",
+  },
+  {
+    id: 4,
+    icon: <SettingsIcon />,
+    text: "Setup",
+    link: "setup",
   },
   {
     id: 5,
