@@ -345,7 +345,7 @@ export default function Events() {
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
       <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white">
         <div className="w-5/6 self-center">
-          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white ">
+          <div className="flex justify-between px-3 md:px-8 py-2 mb-2 bg-[#26272f] rounded-lg md:rounded-full text-white flex-col md:flex-row">
             <p>
               <strong>Camera:</strong>&nbsp;{currNoti?.cameraname}
             </p>

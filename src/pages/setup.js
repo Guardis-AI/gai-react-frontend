@@ -278,14 +278,14 @@ export default function Setup() {
           <button
             type="button"
             style={{ display: "none" }}
-            className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
+            className="py-2 px-8 bg-[#2DAB64] rounded-full text-white font-semibold"
             onClick={openUserModal}
           >
             Add User
           </button>
           <button
             type="button"
-            className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
+            className="py-2 px-8 bg-[#2DAB64] rounded-full text-white font-semibold"
             onClick={openDeviceModal}
           >
             Add Device
@@ -396,7 +396,7 @@ export default function Setup() {
             </div>
             <button
               type="submit"
-              className="bg-[#26272f] rounded-full text-white font-semibold"
+              className="bg-[#2DAB64] rounded-full text-white font-semibold"
             >
               Save
             </button>
@@ -505,7 +505,7 @@ export default function Setup() {
             <div className="flex space-x-2">
               <button
                 type="submit"
-                className="w-1/6 bg-[#26272f] rounded-full text-white font-semibold ml-auto "
+                className="w-1/6 bg-[#2DAB64] rounded-full text-white font-semibold ml-auto "
               >
                 Save
               </button>

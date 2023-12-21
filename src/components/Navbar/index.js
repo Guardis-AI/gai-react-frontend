@@ -43,7 +43,7 @@ export function Navbar() {
         )}
       </button>
       {navData.map((item, i) => {
-        if (i === navData.length - 1)
+        if (i === navData.length - 2)
           return (
             <Fragment key={item.id}>
               <div className="grow" />
