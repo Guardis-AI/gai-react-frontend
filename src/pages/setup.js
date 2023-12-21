@@ -303,7 +303,7 @@ export default function Setup() {
           </button>
           <button
             type="button"
-            className="py-2 px-8 bg-[#30ac64] rounded-full text-white font-semibold"
+            className="py-2 px-8 bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white font-semibold"
             onClick={openDeviceModal}
           >
             Add Device
@@ -534,7 +534,7 @@ export default function Setup() {
             <div className="flex space-x-2">
               <button
                 type="submit"
-                className="w-1/6 py-2 px-2 bg-[#30ac64] rounded-full text-white font-semibold ml-auto "
+                className="w-1/6 py-2 px-2 bg-[#30ac64] hover:bg-emerald-600 rounded-full text-white font-semibold ml-auto "
               >
                 Save
               </button>

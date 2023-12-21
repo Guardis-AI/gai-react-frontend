@@ -5,7 +5,6 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
-import moment from "moment";
 import UserFeedbackModal from "../components/UserFeedbackModal";
 import ErrorMessageModal from "../components/ErrorMessageModal";
 import Popover from "@mui/material/Popover";
@@ -63,7 +62,7 @@ export default function Events() {
     cameraList.current = await request;
   };
 
-  const setMainVideo = (notification) => {
+  const setMainNotification = (notification) => {
     const streamUrl = `${localStorage.getItem(
       "cfUrl"
     )}notifications/get_video/${notification.clip_id}`;
@@ -98,7 +97,7 @@ export default function Events() {
         setEventsFromSever(events_from_sever);
 
         setUnreadCount(events_from_sever.length);
-        setMainVideo(notification_list[0].clip_id, notification_list);
+        setMainNotification(notification_list[0]);
         setAnchorEl(null);
       })
       .catch(function (error) {
@@ -125,7 +124,7 @@ export default function Events() {
         setEventsFromSever(events_from_sever);
 
         setUnreadCount(events_from_sever.length);
-        setMainVideo(notification_list[0].clip_id, notification_list);
+        setMainNotification(notification_list[0]);
         setAnchorEl(null);
       })
       .catch(function (error) {
@@ -280,9 +279,8 @@ export default function Events() {
         </div>
       </div>
       <EventList
-        unreadCount={unreadCount}
-        events={events}
-        setMainVideo={setMainVideo}
+        handleNotificationClick={setMainNotification}
+        setMainNotification={setMainNotification}
         cameraList={cameraList.current}
       />
       <UserFeedbackModal

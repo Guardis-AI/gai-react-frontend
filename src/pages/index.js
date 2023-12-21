@@ -3,7 +3,6 @@ import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
-import moment from "moment";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
 
@@ -12,8 +11,6 @@ const baseUrlApi = process.env.REACT_APP_BASE_URL;
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
-  const [events, setEvents] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -35,70 +32,12 @@ export default function Home() {
           });
 
           setCameraList(camera_list);
-          getNotifications(camera_list);
         }
       })
       .catch(function (error) {
         console.log(error);
       });
   }, [navigate]);
-
-  function getNotifications(listOfCameras) {
-    axios
-      .get(`${localStorage.getItem("cfUrl")}notifications`, null)
-      .then(async function (response) {
-        console.log(response);
-
-        if (response == null) {
-          console.log("No events found!");
-        } else {
-          
-          let notification_list =  response.data.slice(0, 1000);
-         
-          notification_list = updateCameraNameInNotifications(
-            notification_list,
-            listOfCameras
-          );
-         
-          setUnreadCount(response.data.length);
-          setEvents(notification_list);
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  }
-
-  function updateCameraNameInNotifications(notificationList, listOfCameras) {
-    let notification_list = notificationList.map((notification) => {
-      let cameraname = "Generic";
-
-      if (listOfCameras !== null) {
-        const camera = listOfCameras.find(
-          (c) => c.mac === notification.camera_id
-        );
-        cameraname = camera ? camera.name : cameraname;
-      }
-
-      return {
-        clip_id: notification.clip_id,
-        camera_id: notification.camera_id,
-        cameraname: cameraname,
-        sent_date: moment(notification.timestamp).format(
-          "MM/DD/yyyy, h:mm:ss A"
-        ),
-        severity: notification.severity,
-        user_feedback: notification.user_feedback,
-        notification_type: notification.notification_type,
-      };
-    });
-
-    notification_list = notification_list.sort(
-      (a, b) => a.sent_date - b.sent_date
-    );
-
-    return notification_list;
-  }
 
   function createUrl(macOfCamera) {
     return (
@@ -109,16 +48,14 @@ export default function Home() {
     );
   }
 
-  function navNoti(id) {
-    const selNoti = events.find((i) => i.clip_id === id);
-
+  function navNoti(selNoti) {
     const url = `${localStorage.getItem("cfUrl")}notifications/get_video/${
       selNoti.clip_id
     }`;
 
     navigate("/events", {
       state: {
-        id: id,
+        id: selNoti.clip_id,
         url: url,
         cameraname: selNoti.cameraname,
       },
@@ -231,13 +168,13 @@ export default function Home() {
                       },
                     }}
                   />
-                </div>             
+                </div>
               </div>
             );
           })}
         </div>
       </div>
-      <EventList events={events} setMainVideo={navNoti} unreadCount={unreadCount} />
+      <EventList handleNotificationClick={navNoti} cameraList={cameraList} />
     </div>
   );
 }

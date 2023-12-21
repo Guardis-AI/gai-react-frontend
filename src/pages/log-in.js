@@ -385,7 +385,7 @@ export default function LogIn() {
           <div className="flex flex-col w-full">
             <button
               type="submit"
-              className="bg-[#30ac64] rounded-full text-white text-white font-bold py-2 px-4 rounded-full"
+              className="bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white text-white font-bold py-2 px-4 rounded-full"
             >
               Save
             </button>
