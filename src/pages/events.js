@@ -364,15 +364,14 @@ export default function Events() {
           <ReactPlayer url={currVidUrl} width="100%" controls />
           <div className="flex mt-2 space-x-2 space-y-2 justify-center flex-wrap">
             <button
-              className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
+              type="button"
+              className="px-8 py-2 mt-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={(e) => handleRemoveNotificationkClick(e, currNoti)}
             >
-              <DeleteForeverIcon
-                className="h-6 w-6 text-black-600"
-                aria-hidden="true"
-              />
+              <DeleteForeverIcon />
             </button>
             <button
+              type="button"
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={(e) => handleSaveUserFeedbackClick(e, currNoti, true)}
             >
@@ -395,12 +394,14 @@ export default function Events() {
               <Typography sx={{ p: 1 }}>Done!</Typography>
             </Popover>
             <button
+              type="button"
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={() => openFeedbackModal(currNoti)}
             >
               <ThumbDownIcon />
             </button>
             <button
+              type="button"
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={() => loadMoreEvents()}
             >
