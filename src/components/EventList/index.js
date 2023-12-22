@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef, useRef,  useImperativeHandle } from "react";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -8,6 +8,9 @@ import Select from "react-select";
 import axios from "axios";
 import moment from "moment";
 import AddIcon from "@mui/icons-material/Queue";
+import { useLocation } from "react-router-dom";
+import ErrorMessageModal from "../../components/ErrorMessageModal";
+import AlertMessageModal from "../../components/AlertMessageModal";
 
 const darkTheme = createTheme({
   palette: {
@@ -39,7 +42,7 @@ const severities = [
   { label: "Critical", value: "CRITICAL", color: "#FF0000" },
 ];
 
-export default function EventList(props) {
+const EventList = forwardRef((props, ref) => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [notificationType, setNotificationType] = useState();
@@ -47,29 +50,67 @@ export default function EventList(props) {
   const [selectedColor, setSelectedColor] = useState("");
   const [camera, setCamera] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [eventsFromSever, setEventsFromSever] = useState([]);
+  const [notificationsFromServer, setNotificationsFromServer] = useState([]);
   const [currentEventsLoded, setCurrentEventsLoded] = useState(0);
   const [totalOfNotification, setTotalOfNotification] = useState(0);
   const [eventsToLoadedForPage] = useState(1000);
+  const { state } = useLocation();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  let errorMessageModal = useRef();
+  let alertMessageModal = useRef();
+
+  useImperativeHandle(ref, () => ({
+    getNextNotification,
+    removeNotificationById
+  }));
 
   useEffect(() => {
-    if (eventsFromSever.length === 0) {
-      const startDate = new Date().setHours(0, 0, 0, 0);
-      const endDate = new Date().setHours(23, 55, 0, 0);
+    let model = {};
+    let startDate = null;
+    let endDate = null;
 
-      const model = {
+    if (state) {
+      model = state.filterModel;
+
+      if (model.timestamp) {
+        startDate = new Date(model.timestamp[0]);
+        endDate = new Date(model.timestamp[1]);
+      }
+
+      if (model.camera_id) {
+        const camara = props.cameraList.find(
+          (option) => option.mac === model.camera_id
+        );
+        setCamera(camara);
+      }
+
+      if (model.severity) {
+        setSeverity(model.severity);
+      }
+
+      if (model.notification_type) {
+        const notificationType = notificationTypes.find(
+          (option) => option.value === model.notification_type
+        );
+        setNotificationType(notificationType);
+      }
+    } else {
+      endDate = Date.now();
+      startDate = new Date(endDate - 86400 * 1000);      
+      model = {
         timestamp: [
           moment(startDate).format("YYYY-MM-DD HH:mm:ss"),
           moment(endDate).format("YYYY-MM-DD HH:mm:ss"),
         ],
       };
-
-      setStartDate(startDate);
-      setEndDate(endDate);
-
-      getNotifications(model);
     }
-  }, []);
+
+    setStartDate(startDate);
+    setEndDate(endDate);
+
+    getNotifications(model);
+  }, [state]);
 
   const getSeveritiesLabel = (value) => {
     const severity = severities.find((option) => option.value === value);
@@ -132,7 +173,7 @@ export default function EventList(props) {
     }),
   };
 
-  const getCurrentModel = () => {
+  const getCurrentFilterModel = () => {
     let model = {};
 
     if (camera) {
@@ -157,9 +198,35 @@ export default function EventList(props) {
     return model;
   };
 
+  const getNextNotification =() =>{
+    const notification = notifications[0];
+
+    return notification;
+  }
+
+  const removeNotificationById =(clip_id) =>{
+    const notificationList = notifications.filter(
+      (n) => n.clip_id !== clip_id
+    );
+
+    const notificationListFromServer = notificationsFromServer.filter(
+      (n) => n.clip_id !== clip_id
+    );
+    
+
+    setNotifications(notificationList);
+    setNotificationsFromServer(notificationListFromServer)
+  }
+
   const searchHandle = async () => {
-    const model = getCurrentModel();
-    await getNotifications(model);
+    if (startDate >= endDate) {
+      openErrorModal(
+        "The start date cannot be after or equal to the end date!"
+      );
+    } else {
+      const model = getCurrentFilterModel();
+      await getNotifications(model);
+    }
   };
 
   const updateCameraNameInNotifications = (notifications) => {
@@ -193,7 +260,7 @@ export default function EventList(props) {
     const notificationList = await getNotificationsFromServer(model);
     if (notificationList) {
       setTotalOfNotification(notificationList.length);
-      setEventsFromSever(notificationList);
+      setNotificationsFromServer(notificationList);
 
       if (notificationList.length >= eventsToLoadedForPage) {
         setNotifications(notificationList.slice(0, eventsToLoadedForPage));
@@ -202,21 +269,18 @@ export default function EventList(props) {
         setNotifications(notificationList);
       }
 
-      // if (state) {
-      //   if (!currVidUrl) {
-      //     const selNoti = notificationList.find((i) => i.clip_id === state.id);
-
-      //     selNoti.cameraname = state.cameraname;
-      //     setCurrVidUrl(state.url);
-      //     setCurrNoti(selNoti);
-      //   }
-      // } else {
-      // if (!currVidUrl) {
       if (props.setMainNotification) {
-        props.setMainNotification(notificationList[0]);
+        let mainNotification = {};
+
+        if (state) {
+          mainNotification = state.notification;
+        } else {
+          mainNotification = notificationList[0];
+        }
+        props.setMainNotification(mainNotification);
       }
-      // }
-      // }
+    }else{
+      openAlertModal("There is not data that match with current values selected in the filters!");
     }
   };
 
@@ -245,19 +309,19 @@ export default function EventList(props) {
   };
 
   const loadMoreEvents = async () => {
-    if (currentEventsLoded >= eventsFromSever.length) {
-      const model = getCurrentModel();
+    if (currentEventsLoded >= notificationsFromServer.length) {
+      const model = getCurrentFilterModel();
       const notificationsList = await getNotificationsFromServer(model);
 
       if (notificationsList) {
-        let notificationsListDifference = eventsFromSever.filter((event) => {
+        let notificationsListDifference = notificationsFromServer.filter((event) => {
           return !notificationsList.find(
             (not) => not.clip_id === event.clip_id
           );
         });
 
         if (notificationsListDifference.length) {
-          setEventsFromSever((events) => [
+          setNotificationsFromServer((events) => [
             ...events,
             ...notificationsListDifference,
           ]);
@@ -277,16 +341,30 @@ export default function EventList(props) {
     } else {
       let nextEnd = currentEventsLoded + eventsToLoadedForPage;
 
-      if (nextEnd >= eventsFromSever.length) {
-        nextEnd = eventsFromSever.length;
+      if (nextEnd >= notificationsFromServer.length) {
+        nextEnd = notificationsFromServer.length;
       }
 
-      const nextEvents = eventsFromSever.slice(currentEventsLoded, nextEnd);
+      const nextEvents = notificationsFromServer.slice(currentEventsLoded, nextEnd);
       setCurrentEventsLoded(nextEnd);
       setNotifications((prevEvents) => [...prevEvents, ...nextEvents]);
     }
   };
 
+  const openErrorModal = (message) => {
+    if (errorMessageModal.current) {
+      setErrorMessage(message);
+      errorMessageModal.current.openModal();
+    }
+  };
+
+  const openAlertModal = (message) => {
+    if (errorMessageModal.current) {
+      setAlertMessage(message);
+      alertMessageModal.current.openModal();
+    }
+  };
+  
   return (
     <div className="h-full overflow-auto text-white space-y-4 xl:w-3/12 md:w-1/2 self-center">
       <div className="flex flex-col justify-between px-4 py-2 mb-2 bg-[#26272f] rounded-xl text-white font-semibold">
@@ -409,7 +487,9 @@ export default function EventList(props) {
           <div
             className="flex p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] space-x-2"
             key={i}
-            onClick={() => props.handleNotificationClick(event)}
+            onClick={() =>
+              props.handleNotificationClick(event, getCurrentFilterModel())
+            }
           >
             <PlayCircleOutlineIcon
               className="self-center ml-2 mr-4"
@@ -436,6 +516,21 @@ export default function EventList(props) {
           </div>
         );
       })}
+      <ErrorMessageModal
+        id="errorMessageModal"
+        ref={errorMessageModal}
+        Title={"Oops! Something Went Wrong!"}
+        Message={errorMessage}
+      />
+      <AlertMessageModal
+        id="alertMessageModal"
+        ref={alertMessageModal}
+        Title={"No Results Found!"}
+        Message={alertMessage}
+      />
+      ;
     </div>
   );
-}
+});
+
+export default EventList;

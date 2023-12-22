@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
@@ -6,11 +6,10 @@ import { useNavigate } from "react-router-dom";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
 
-const baseUrlApi = process.env.REACT_APP_BASE_URL;
-
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
+
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -30,7 +29,6 @@ export default function Home() {
               editMode: false,
             };
           });
-
           setCameraList(camera_list);
         }
       })
@@ -48,16 +46,11 @@ export default function Home() {
     );
   }
 
-  function navNoti(selNoti) {
-    const url = `${localStorage.getItem("cfUrl")}notifications/get_video/${
-      selNoti.clip_id
-    }`;
-
+  function navNoti(notification, filterModel) {
     navigate("/events", {
-      state: {
-        id: selNoti.clip_id,
-        url: url,
-        cameraname: selNoti.cameraname,
+      state: {       
+        filterModel: filterModel,
+        notification:notification,
       },
     });
   }

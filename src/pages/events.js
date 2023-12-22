@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import UserFeedbackModal from "../components/UserFeedbackModal";
@@ -14,20 +14,19 @@ import WarningMessageModal from "../components/WarningMessageModal";
 
 export default function Events() {
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(null);
-  const [events, setEvents] = useState(null);
+  // const [events, setEvents] = useState(null);
   const [currNoti, setCurrNoti] = useState(null);
-  const [currVidUrl, setCurrVidUrl] = useState(null);
-  const { state } = useLocation();
+  const [currVidUrl, setCurrVidUrl] = useState(null);  
   const [errorMessage, setErrorMessage] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [warningMessage, setWarningMessage] = useState("");
-  const [eventsFromSever, setEventsFromSever] = useState(null);
+  // const [eventsFromSever, setEventsFromSever] = useState(null);
 
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
   let cameraList = useRef(null);
+  let eventListControl  = useRef(); 
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -39,7 +38,8 @@ export default function Events() {
     if (cameraList.current === null || cameraList.current.length === 0) {
       getCamerasDetails();
     }
-  }, [navigate, state]);
+
+  }, [navigate]);
 
   const getCamerasDetails = async () => {
     const request = axios
@@ -72,9 +72,10 @@ export default function Events() {
   };
 
   const saveUserFeedback = (notification, wasgood) => {
+    const clip_id = notification.clip_id;
     axios
       .put(
-        `${localStorage.getItem("cfUrl")}notifications/${notification.clip_id}`,
+        `${localStorage.getItem("cfUrl")}notifications/${clip_id}`,
         {
           clip_id: notification.clip_id,
           camera_id: notification.camera_id,
@@ -86,18 +87,9 @@ export default function Events() {
         }
       )
       .then(function (response) {
-        const notification_list = events.filter(
-          (n) => n.clip_id !== response.data.clip_id
-        );
-        setEvents(notification_list);
-
-        const events_from_sever = eventsFromSever.filter(
-          (n) => n.clip_id !== response.data.clip_id
-        );
-        setEventsFromSever(events_from_sever);
-
-        setUnreadCount(events_from_sever.length);
-        setMainNotification(notification_list[0]);
+        eventListControl.current.removeNotificationById(clip_id)    
+       const notification = eventListControl.current.getNextNotification()
+        setMainNotification(notification);
         setAnchorEl(null);
       })
       .catch(function (error) {
@@ -107,24 +99,16 @@ export default function Events() {
   };
 
   const deleteNotification = (notification) => {
+    const clip_id = notification.clip_id;
     axios
       .delete(
-        `${localStorage.getItem("cfUrl")}notifications/${notification.clip_id}`,
+        `${localStorage.getItem("cfUrl")}notifications/${clip_id}`,
         null
       )
-      .then(function (response) {
-        const notification_list = events.filter(
-          (n) => n.clip_id !== response.data.clip_id
-        );
-        setEvents(notification_list);
-
-        const events_from_sever = eventsFromSever.filter(
-          (n) => n.clip_id !== response.data.clip_id
-        );
-        setEventsFromSever(events_from_sever);
-
-        setUnreadCount(events_from_sever.length);
-        setMainNotification(notification_list[0]);
+      .then(function (response) {        
+        eventListControl.current.removeNotificationById(clip_id)    
+        const notification = eventListControl.current.getNextNotification()
+        setMainNotification(notification);
         setAnchorEl(null);
       })
       .catch(function (error) {
@@ -279,6 +263,7 @@ export default function Events() {
         </div>
       </div>
       <EventList
+      ref={eventListControl}
         handleNotificationClick={setMainNotification}
         setMainNotification={setMainNotification}
         cameraList={cameraList.current}
@@ -288,7 +273,7 @@ export default function Events() {
         SaveFeedbackCallback={handleSaveFeedbackCallback}
       />
       <ErrorMessageModal
-        id="a"
+        id="errorMessageModal"
         ref={errorMessageModal}
         Title={"Oops! Something Went Wrong!"}
         Message={errorMessage}
