@@ -12,7 +12,7 @@ import SignOut from "./pages/signout";
 import useWindowDimensions from "./utils/useWindowDimensions";
 
 export default function App() {
-  const { height, width } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
   if (width >= 768)
     return (
