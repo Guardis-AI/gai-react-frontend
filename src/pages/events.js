@@ -343,7 +343,7 @@ export default function Events() {
 
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
-      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white">
+      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white z-10">
         <div className="w-5/6 self-center">
           <div className="flex justify-between px-3 md:px-8 py-2 mb-2 bg-[#26272f] rounded-lg md:rounded-full text-white flex-col md:flex-row">
             <p>
@@ -362,7 +362,7 @@ export default function Events() {
             </p>
           </div>
           <ReactPlayer url={currVidUrl} width="100%" controls />
-          <div className="flex mt-2 space-x-2 justify-center">
+          <div className="flex mt-2 space-x-2 space-y-2 justify-center flex-wrap">
             <button
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={(e) => handleRemoveNotificationkClick(e, currNoti)}
@@ -370,9 +370,8 @@ export default function Events() {
               <DeleteForeverIcon
                 className="h-6 w-6 text-black-600"
                 aria-hidden="true"
-              ></DeleteForeverIcon>
+              />
             </button>
-
             <button
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={(e) => handleSaveUserFeedbackClick(e, currNoti, true)}
