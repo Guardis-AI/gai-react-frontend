@@ -4,10 +4,12 @@ import {
   useState,
   forwardRef,
   useImperativeHandle,
+  useEffect
 } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import Select from "react-select";
+import notificationTypeApi from '../../api/notification';
 
 const UserFeedbackModal = forwardRef((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,26 +20,8 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   const cancelButtonRef = useRef(null);
   const [selectedColor, setSelectedColor] = useState("");
   const [showValiation, setShowValiation] = useState(false);
-  const dialogRef = useRef(null);
-
-  let notificationTypes = [
-    { label: "Item Picking", value: "item_picking" },
-    { label: "Bagging", value: "bagging" },
-    { label: "Pocketing", value: "pocketing" },
-    { label: "Enter Store", value: "enter_store" },
-    { label: "Leave Store", value: "leave_store" },
-    { label: "Pay Or Checkout", value: "pay_checkout" },
-    { label: "No Action", value: "no_action" },
-    { label: "Shoplift", value: "shoplift" },
-    { label: "Phone Engagement", value: "phone_engagement" },
-    { label: "Mishandling Documents", value: "mishandling_documents" },
-    { label: "Cash Theft", value: "cash_theft" },
-    { label: "Activity After Hours", value: "activity_after_hours" },
-    { label: "Idle", value: "idle" },
-    { label: "Money Handling", value: "money_handling" },
-    { label: "Check/Document Handling", value: "Check_Document_Handling" },
-    { label: "Normal", value: "normal", isDisabled :true },
-  ];
+  const [notificationTypes, setNotificationTypes] = useState([]);
+  const dialogRef = useRef(null); 
 
   const severities = [
     { label: "Information", value: "INFORMATION", color: "#30ac64" },
@@ -45,49 +29,52 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     { label: "Critical", value: "CRITICAL", color: "#FF0000" },
   ];
 
-  notificationTypes = notificationTypes.sort((a, b) =>
-    a.label.localeCompare(b.label)
-  );
+  useEffect(() => {
+    getNotificationTypes();    
+  },[])
+
+  const getNotificationTypes = async () => {
+    const notificationTypeList =
+      await notificationTypeApi.getNotificationTypes();
+    setNotificationTypes(notificationTypeList);
+  };
 
   const closeModal = (result) => {
     if (result) {
       if (
-        detectedNotificationType === notificationType.value &&
+        detectedNotificationType === notificationType &&
         detectedSeverity === severity
       ) {
         setShowValiation(true);
         return;
       } else {
         setShowValiation(false);
-        props.SaveFeedbackCallback(result, notificationType.value, severity);
+
+        notificationType.severity= severity;
+
+        props.SaveFeedbackCallback(result, notificationType);
       }
     }
     setIsOpen(false);
   };
 
   const openModal = (event) => {
-   
-    setDetectedNotificationType(event.notification_type);
-    setShowValiation(false);
-    setSeverity(event.severity);
-    setDetectedSeverity(event.severity);
+    if (event) {
+      setDetectedNotificationType(event.notification_type);
+      setShowValiation(false);
+      setSeverity(event.notification_type.severity);
+      setDetectedSeverity(event.notification_type.severity);
 
-    setIsOpen(true);
+      setIsOpen(true);
 
-    const notificationType = notificationTypes.find((option) => {
-      return option.value === event.notification_type;
-    });
+      setNotificationType(event.notification_type);
 
-    setNotificationType(notificationType);
+      const selectedOption = severities.find((option) => {
+        return option.value === event.notification_type.severity;
+      });
 
-    const severityValue =
-      event.severity === "INFO" ? "INFORMATION" : event.severity;
-
-    const selectedOption = severities.find((option) => {
-      return option.value === severityValue;
-    });
-
-    setSelectedColor(selectedOption.color);
+      setSelectedColor(selectedOption.color);
+    }
   };
 
   useImperativeHandle(ref, () => ({
@@ -164,13 +151,15 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                     <div className="inset-0 items-center justify-center">
                       <div className="p-2">
                         <Select
+                         getOptionValue={(option) => option.id }
+                         getOptionLabel={(option) => option.human_readable}
                           style="overflow: visible"
                           name={"notificationTypes"}
                           placeholder={"Select an option"}
                           className="text-sm  rounded-lg"
                           onChange={handleNotificationTypeSelectChange}
                           options={notificationTypes.sort((a, b) =>
-                            a.label.localeCompare(b.label)
+                            a.human_readable.localeCompare(b.human_readable)
                           )}
                           value={notificationType}
                           isSearchable={true}

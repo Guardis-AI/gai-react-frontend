@@ -11,22 +11,22 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningMessageModal from "../components/WarningMessageModal";
+import notificationTypeApi from '../api/notification';
+import { Sync } from "@mui/icons-material";
 
 export default function Events() {
   const navigate = useNavigate();
-  // const [events, setEvents] = useState(null);
   const [currNoti, setCurrNoti] = useState(null);
-  const [currVidUrl, setCurrVidUrl] = useState(null);  
+  const [currVidUrl, setCurrVidUrl] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [warningMessage, setWarningMessage] = useState("");
-  // const [eventsFromSever, setEventsFromSever] = useState(null);
 
   let userFeedbackModal = useRef();
   let errorMessageModal = useRef();
   let warningMessageModal = useRef();
   let cameraList = useRef(null);
-  let eventListControl  = useRef(); 
+  let eventListControl = useRef();
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -38,7 +38,6 @@ export default function Events() {
     if (cameraList.current === null || cameraList.current.length === 0) {
       getCamerasDetails();
     }
-
   }, [navigate]);
 
   const getCamerasDetails = async () => {
@@ -71,24 +70,19 @@ export default function Events() {
     setCurrNoti(notification);
   };
 
-  const saveUserFeedback = (notification, wasgood) => {
+  const saveUserFeedback = async(notification, wasgood) => {
     const clip_id = notification.clip_id;
-    axios
-      .put(
-        `${localStorage.getItem("cfUrl")}notifications/${clip_id}`,
-        {
-          clip_id: notification.clip_id,
-          camera_id: notification.camera_id,
-          user_feedback: wasgood,
-          notification_type: notification.notification_type,
-          severity: notification.severity,
-          user_feedback_notification_type:
-            notification.user_feedback_notification_type,
-        }
-      )
+    var response =  axios
+      .put(`${localStorage.getItem("cfUrl")}notifications/${clip_id}`, {
+        clip_id: notification.clip_id,
+        camera_id: notification.camera_id,
+        user_feedback: wasgood,
+        notification_type: notification.notification_type,
+        feedback_notification_type: notification.feedback_notification_type,
+      })
       .then(function (response) {
-        eventListControl.current.removeNotificationById(clip_id)    
-       const notification = eventListControl.current.getNextNotification()
+        eventListControl.current.removeNotificationById(clip_id);
+        const notification = eventListControl.current.getNextNotification();
         setMainNotification(notification);
         setAnchorEl(null);
       })
@@ -96,18 +90,17 @@ export default function Events() {
         openErrorModal(error.message);
         console.log(error);
       });
+
+      await response;
   };
 
   const deleteNotification = (notification) => {
     const clip_id = notification.clip_id;
     axios
-      .delete(
-        `${localStorage.getItem("cfUrl")}notifications/${clip_id}`,
-        null
-      )
-      .then(function (response) {        
-        eventListControl.current.removeNotificationById(clip_id)    
-        const notification = eventListControl.current.getNextNotification()
+      .delete(`${localStorage.getItem("cfUrl")}notifications/${clip_id}`, null)
+      .then(function (response) {
+        eventListControl.current.removeNotificationById(clip_id);
+        const notification = eventListControl.current.getNextNotification();
         setMainNotification(notification);
         setAnchorEl(null);
       })
@@ -123,11 +116,11 @@ export default function Events() {
     }
   };
 
-  const handleSaveFeedbackCallback = (result, notificationType, severity) => {
+  const handleSaveFeedbackCallback = async (result, notificationType) => {
     if (result) {
-      currNoti.user_feedback_notification_type = notificationType;
-      currNoti.severity = severity;
-      saveUserFeedback(currNoti, false);
+      currNoti.feedback_notification_type  = notificationType;
+     
+      await saveUserFeedback(currNoti, false);
     }
   };
 
@@ -138,10 +131,17 @@ export default function Events() {
     }
   };
 
-  const handleSaveUserFeedbackClick = (event, notification, wasgood) => {
-    setAnchorEl(event.currentTarget);
-    notification.user_feedback_notification_type = currNoti.notification_type;
-    saveUserFeedback(notification, wasgood);
+  const handleSaveUserFeedbackClick =  async (event, notification, wasgood)  => {
+    if (event) {
+      setAnchorEl(event.currentTarget);
+      notification.feedback_notification_type = currNoti.notification_type ;
+
+     await saveUserFeedback(notification, wasgood);
+
+      setTimeout(() => {
+        setAnchorEl(null);
+      }, 900);
+    }
   };
 
   const getSeveritiesLabel = (value) => {
@@ -154,32 +154,6 @@ export default function Events() {
     const severity = severities.find((option) => option.value === value);
 
     return severity ? severity.label : value;
-  };
-
-  const getNotificationTypesLabel = (value) => {
-    const notificationTypes = [
-      { label: "Item Picking", value: "item_picking" },
-      { label: "Bagging", value: "bagging" },
-      { label: "Pocketing", value: "pocketing" },
-      { label: "Enter Store", value: "enter_store" },
-      { label: "Leave Store", value: "leave_store" },
-      { label: "Pay Or Checkout", value: "pay/checkout" },
-      { label: "No Action", value: "no_actiion" },
-      { label: "Shoplift", value: "shoplift" },
-      { label: "Phone Engagement", value: "phone_engagement" },
-      { label: "Mishandling Documents", value: "mishandling_documents" },
-      { label: "Cash Threft", value: "cash_theft" },
-      { label: "Activity After Hours", value: "activity_after_hours" },
-      { label: "Idle", value: "Idle" },
-      { label: "Money Handling", value: "money_handling" },
-      { label: "Check/Document Handling", value: "Check_Document_Handling" },
-    ];
-
-    const notificationType = notificationTypes.find(
-      (option) => option.value === value
-    );
-
-    return notificationType ? notificationType.label : value;
   };
 
   const warningModalResult = (result) => {
@@ -209,11 +183,11 @@ export default function Events() {
             </p>
             <p>
               <strong>Type:</strong>&nbsp;
-              {getNotificationTypesLabel(currNoti?.notification_type)}
+              {currNoti?.notification_type?.human_readable}
             </p>
             <p>
               <strong>Severity:</strong>&nbsp;
-              {getSeveritiesLabel(currNoti?.severity)}
+              {getSeveritiesLabel(currNoti?.notification_type?.severity)}
             </p>
             <p>
               <strong>Date:</strong>&nbsp;{currNoti?.sent_date}
@@ -238,7 +212,7 @@ export default function Events() {
               <ThumbUpIcon />
             </button>
             <Popover
-              id={id}
+              id={id}             
               open={open}
               anchorEl={anchorEl}
               aria-haspopup="true"
@@ -263,7 +237,7 @@ export default function Events() {
         </div>
       </div>
       <EventList
-      ref={eventListControl}
+        ref={eventListControl}
         handleNotificationClick={setMainNotification}
         setMainNotification={setMainNotification}
         cameraList={cameraList.current}

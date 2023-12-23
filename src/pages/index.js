@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useRef } from "react";
+import React, { useState, useEffect} from "react";
 import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
@@ -9,7 +9,6 @@ import CancelIcon from "@mui/icons-material/CancelTwoTone";
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
-
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")

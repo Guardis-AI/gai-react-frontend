@@ -11,30 +11,13 @@ import AddIcon from "@mui/icons-material/Queue";
 import { useLocation } from "react-router-dom";
 import ErrorMessageModal from "../../components/ErrorMessageModal";
 import AlertMessageModal from "../../components/AlertMessageModal";
+import notificationTypeApi from '../../api/notification';
 
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
   },
 });
-
-const notificationTypes = [
-  { label: "Item Picking", value: "item_picking" },
-  { label: "Bagging", value: "bagging" },
-  { label: "Pocketing", value: "pocketing" },
-  { label: "Enter Store", value: "enter_store" },
-  { label: "Leave Store", value: "leave_store" },
-  { label: "Pay Or Checkout", value: "pay/checkout" },
-  { label: "No Action", value: "no_actiion" },
-  { label: "Shoplift", value: "shoplift" },
-  { label: "Phone Engagement", value: "phone_engagement" },
-  { label: "Mishandling Documents", value: "mishandling_documents" },
-  { label: "Cash theft", value: "cash_theft" },
-  { label: "Activity After Hours", value: "activity_after_hours" },
-  { label: "Idle", value: "Idle" },
-  { label: "Money Handling", value: "money_handling" },
-  { label: "Check/Document Handling", value: "Check_Document_Handling" },
-];
 
 const severities = [
   { label: "Information", value: "INFORMATION", color: "#30ac64" },
@@ -43,6 +26,7 @@ const severities = [
 ];
 
 const EventList = forwardRef((props, ref) => {
+  const [notificationTypes, setNotificationTypes] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [notificationType, setNotificationType] = useState();
@@ -62,13 +46,15 @@ const EventList = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     getNextNotification,
-    removeNotificationById
+    removeNotificationById,
   }));
 
   useEffect(() => {
     let model = {};
     let startDate = null;
     let endDate = null;
+
+    getNotificationTypes();    
 
     if (state) {
       model = state.filterModel;
@@ -78,7 +64,7 @@ const EventList = forwardRef((props, ref) => {
         endDate = new Date(model.timestamp[1]);
       }
 
-      if (model.camera_id) {
+      if (model.camera_id && props.cameraList!= null) {
         const camara = props.cameraList.find(
           (option) => option.mac === model.camera_id
         );
@@ -91,7 +77,7 @@ const EventList = forwardRef((props, ref) => {
 
       if (model.notification_type) {
         const notificationType = notificationTypes.find(
-          (option) => option.value === model.notification_type
+          (option) => option.id === model.id
         );
         setNotificationType(notificationType);
       }
@@ -109,21 +95,13 @@ const EventList = forwardRef((props, ref) => {
     setStartDate(startDate);
     setEndDate(endDate);
 
-    getNotifications(model);
+   getNotifications(model);
   }, [state]);
 
   const getSeveritiesLabel = (value) => {
     const severity = severities.find((option) => option.value === value);
 
     return severity ? severity.label : value;
-  };
-
-  const getNotificationTypesLabel = (value) => {
-    const notificationType = notificationTypes.find(
-      (option) => option.value === value
-    );
-
-    return notificationType ? notificationType.label : value;
   };
 
   const getSeveritiesLabelColor = (value) => {
@@ -180,12 +158,16 @@ const EventList = forwardRef((props, ref) => {
       model.camera_id = camera.mac;
     }
 
-    if (severity) {
-      model.severity = severity;
-    }
+    if (severity || notificationType) {
+      model.notification_type = {};
 
-    if (notificationType) {
-      model.notification_type = notificationType.value;
+      if (notificationType) {
+        model.notification_type.id = notificationType.id;
+      }
+
+      if (severity) {
+        model.notification_type.severity = severity;
+      }
     }
 
     if (startDate && endDate) {
@@ -280,8 +262,14 @@ const EventList = forwardRef((props, ref) => {
         props.setMainNotification(mainNotification);
       }
     }else{
-      openAlertModal("There is not data that match with current values selected in the filters!");
+      openAlertModal("There is not notification that match with current values selected in the filters!");
     }
+  };
+
+  const getNotificationTypes = async () => {    
+
+    const notificationTypeList = await notificationTypeApi.getNotificationTypes();       
+    setNotificationTypes(notificationTypeList);    
   };
 
   const getNotificationsFromServer = async (model) => {
@@ -406,13 +394,15 @@ const EventList = forwardRef((props, ref) => {
           <div className="p-2 w-full">
             <h6 className="mb-1">Types:</h6>
             <Select
+              getOptionValue={(option) => option.id }
+              getOptionLabel={(option) => option.human_readable}
               styles={customStyles}
               name={"notificationTypes"}
               placeholder={"Select an option"}
               className="text-sm  rounded-lg"
               onChange={handleNotificationTypeSelectChange}
-              options={notificationTypes.sort((a, b) =>
-                a.label.localeCompare(b.label)
+              options={notificationTypes?.sort((a, b) =>
+                a.human_readable.localeCompare(b.human_readable )
               )}
               value={notificationType}
               isSearchable={true}
@@ -502,14 +492,14 @@ const EventList = forwardRef((props, ref) => {
                 <br />
                 <strong>Type:</strong>{" "}
                 <span>
-                  {getNotificationTypesLabel(event.notification_type)}
+                  {event.notification_type?.human_readable}
                 </span>
                 <br />
                 <strong>Severity:</strong>{" "}
                 <span
                   style={{ color: getSeveritiesLabelColor(event.severity) }}
                 >
-                  {getSeveritiesLabel(event.severity)}
+                  {getSeveritiesLabel(event.notification_type.severity)}
                 </span>
               </p>
             </div>
