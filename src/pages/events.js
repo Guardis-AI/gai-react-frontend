@@ -77,8 +77,8 @@ export default function Events() {
         clip_id: notification.clip_id,
         camera_id: notification.camera_id,
         user_feedback: wasgood,
-        notification_type: notification.notification_type,
-        feedback_notification_type: notification.feedback_notification_type,
+        notification_type_id: notification.notification_type.id,
+        feedback_notification_type_id: notification.feedback_notification_type.id,
       })
       .then(function (response) {
         eventListControl.current.removeNotificationById(clip_id);
