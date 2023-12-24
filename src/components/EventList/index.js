@@ -1,4 +1,10 @@
-import React, { useState, useEffect, forwardRef, useRef,  useImperativeHandle } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useRef,
+  useImperativeHandle,
+} from "react";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -11,7 +17,7 @@ import AddIcon from "@mui/icons-material/Queue";
 import { useLocation } from "react-router-dom";
 import ErrorMessageModal from "../../components/ErrorMessageModal";
 import AlertMessageModal from "../../components/AlertMessageModal";
-import notificationTypeApi from '../../api/notification';
+import notificationTypeApi from "../../api/notification";
 
 const darkTheme = createTheme({
   palette: {
@@ -54,7 +60,7 @@ const EventList = forwardRef((props, ref) => {
     let startDate = null;
     let endDate = null;
 
-    getNotificationTypes();    
+    getNotificationTypes();
 
     if (state) {
       model = state.filterModel;
@@ -64,7 +70,7 @@ const EventList = forwardRef((props, ref) => {
         endDate = new Date(model.timestamp[1]);
       }
 
-      if (model.camera_id && props.cameraList!= null) {
+      if (model.camera_id && props.cameraList != null) {
         const camara = props.cameraList.find(
           (option) => option.mac === model.camera_id
         );
@@ -83,7 +89,7 @@ const EventList = forwardRef((props, ref) => {
       }
     } else {
       endDate = Date.now();
-      startDate = new Date(endDate - 86400 * 1000);      
+      startDate = new Date(endDate - 86400 * 1000);
       model = {
         timestamp: [
           moment(startDate).format("YYYY-MM-DD HH:mm:ss"),
@@ -95,7 +101,7 @@ const EventList = forwardRef((props, ref) => {
     setStartDate(startDate);
     setEndDate(endDate);
 
-   getNotifications(model);
+    getNotifications(model, false);
   }, [state]);
 
   const getSeveritiesLabel = (value) => {
@@ -180,25 +186,22 @@ const EventList = forwardRef((props, ref) => {
     return model;
   };
 
-  const getNextNotification =() =>{
+  const getNextNotification = () => {
     const notification = notifications[0];
 
     return notification;
-  }
+  };
 
-  const removeNotificationById =(clip_id) =>{
-    const notificationList = notifications.filter(
-      (n) => n.clip_id !== clip_id
-    );
+  const removeNotificationById = (clip_id) => {
+    const notificationList = notifications.filter((n) => n.clip_id !== clip_id);
 
     const notificationListFromServer = notificationsFromServer.filter(
       (n) => n.clip_id !== clip_id
     );
-    
 
     setNotifications(notificationList);
-    setNotificationsFromServer(notificationListFromServer)
-  }
+    setNotificationsFromServer(notificationListFromServer);
+  };
 
   const searchHandle = async () => {
     if (startDate >= endDate) {
@@ -238,7 +241,7 @@ const EventList = forwardRef((props, ref) => {
     return notification_list;
   };
 
-  const getNotifications = async (model) => {
+  const getNotifications = async (model, displayNotFoundMessage = true) => {
     const notificationList = await getNotificationsFromServer(model);
     if (notificationList) {
       setTotalOfNotification(notificationList.length);
@@ -261,15 +264,19 @@ const EventList = forwardRef((props, ref) => {
         }
         props.setMainNotification(mainNotification);
       }
-    }else{
-      openAlertModal("There is not notification that match with current values selected in the filters!");
+    } else {
+      if (displayNotFoundMessage) {
+        openAlertModal(
+          "There is not notification that match with current values selected in the filters!"
+        );
+      }
     }
   };
 
-  const getNotificationTypes = async () => {    
-
-    const notificationTypeList = await notificationTypeApi.getNotificationTypes();       
-    setNotificationTypes(notificationTypeList);    
+  const getNotificationTypes = async () => {
+    const notificationTypeList =
+      await notificationTypeApi.getNotificationTypes();
+    setNotificationTypes(notificationTypeList);
   };
 
   const getNotificationsFromServer = async (model) => {
@@ -302,11 +309,13 @@ const EventList = forwardRef((props, ref) => {
       const notificationsList = await getNotificationsFromServer(model);
 
       if (notificationsList) {
-        let notificationsListDifference = notificationsFromServer.filter((event) => {
-          return !notificationsList.find(
-            (not) => not.clip_id === event.clip_id
-          );
-        });
+        let notificationsListDifference = notificationsFromServer.filter(
+          (event) => {
+            return !notificationsList.find(
+              (not) => not.clip_id === event.clip_id
+            );
+          }
+        );
 
         if (notificationsListDifference.length) {
           setNotificationsFromServer((events) => [
@@ -333,7 +342,10 @@ const EventList = forwardRef((props, ref) => {
         nextEnd = notificationsFromServer.length;
       }
 
-      const nextEvents = notificationsFromServer.slice(currentEventsLoded, nextEnd);
+      const nextEvents = notificationsFromServer.slice(
+        currentEventsLoded,
+        nextEnd
+      );
       setCurrentEventsLoded(nextEnd);
       setNotifications((prevEvents) => [...prevEvents, ...nextEvents]);
     }
@@ -352,7 +364,7 @@ const EventList = forwardRef((props, ref) => {
       alertMessageModal.current.openModal();
     }
   };
-  
+
   return (
     <div className="h-full overflow-auto text-white space-y-4 xl:w-3/12 md:w-1/2 self-center">
       <div className="flex flex-col justify-between px-4 py-2 mb-2 bg-[#26272f] rounded-xl text-white font-semibold">
@@ -394,7 +406,7 @@ const EventList = forwardRef((props, ref) => {
           <div className="p-2 w-full">
             <h6 className="mb-1">Types:</h6>
             <Select
-              getOptionValue={(option) => option.id }
+              getOptionValue={(option) => option.id}
               getOptionLabel={(option) => option.human_readable}
               styles={customStyles}
               name={"notificationTypes"}
@@ -402,7 +414,7 @@ const EventList = forwardRef((props, ref) => {
               className="text-sm  rounded-lg"
               onChange={handleNotificationTypeSelectChange}
               options={notificationTypes?.sort((a, b) =>
-                a.human_readable.localeCompare(b.human_readable )
+                a.human_readable.localeCompare(b.human_readable)
               )}
               value={notificationType}
               isSearchable={true}
@@ -472,40 +484,51 @@ const EventList = forwardRef((props, ref) => {
           </div>
         </div>
       </div>
-      {notifications.map((event, i) => {
-        return (
-          <div
-            className="flex p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] space-x-2"
-            key={i}
-            onClick={() =>
-              props.handleNotificationClick(event, getCurrentFilterModel())
-            }
-          >
-            <PlayCircleOutlineIcon
-              className="self-center ml-2 mr-4"
-              fontSize="large"
-            />
-            <div className="space-y-3 text-sm">
-              <p>
-                <strong>Camera:</strong> {event.cameraname} <br />
-                <strong>Date:</strong> {event.sent_date}
-                <br />
-                <strong>Type:</strong>{" "}
-                <span>
-                  {event.notification_type?.human_readable}
-                </span>
-                <br />
-                <strong>Severity:</strong>{" "}
-                <span
-                  style={{ color: getSeveritiesLabelColor(event.severity) }}
-                >
-                  {getSeveritiesLabel(event.notification_type.severity)}
-                </span>
-              </p>
+      {notifications.length > 0 ? (
+        notifications.map((event, i) => {
+          return (
+            <div
+              className="flex p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] space-x-2"
+              key={i}
+              onClick={() =>
+                props.handleNotificationClick(event, getCurrentFilterModel())
+              }
+            >
+              <PlayCircleOutlineIcon
+                className="self-center ml-2 mr-4"
+                fontSize="large"
+              />
+              <div className="space-y-3 text-sm">
+                <p>
+                  <strong>Camera:</strong> {event.cameraname} <br />
+                  <strong>Date:</strong> {event.sent_date}
+                  <br />
+                  <strong>Type:</strong>{" "}
+                  <span>{event.notification_type?.human_readable}</span>
+                  <br />
+                  <strong>Severity:</strong>{" "}
+                  <span
+                    style={{ color: getSeveritiesLabelColor(event.severity) }}
+                  >
+                    {getSeveritiesLabel(event.notification_type.severity)}
+                  </span>
+                </p>
+              </div>
             </div>
+          );
+        })
+      ) : (
+        <div>
+          <div className="bg-gray-50 w-full mt-6 text-center ">
+            <span
+              className="w-full mx-4 my-4  bg-green-100 border-green-400 text-green-700 border-l-4 p-2"
+              role="alert"
+            >
+              There are not notification to show yet!
+            </span>
           </div>
-        );
-      })}
+        </div>
+      )}
       <ErrorMessageModal
         id="errorMessageModal"
         ref={errorMessageModal}

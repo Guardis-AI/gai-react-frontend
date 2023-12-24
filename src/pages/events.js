@@ -11,8 +11,6 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningMessageModal from "../components/WarningMessageModal";
-import notificationTypeApi from '../api/notification';
-import { Sync } from "@mui/icons-material";
 
 export default function Events() {
   const navigate = useNavigate();

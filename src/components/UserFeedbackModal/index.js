@@ -158,7 +158,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                           placeholder={"Select an option"}
                           className="text-sm  rounded-lg"
                           onChange={handleNotificationTypeSelectChange}
-                          options={notificationTypes.sort((a, b) =>
+                          options={notificationType?.sort((a, b) =>
                             a.human_readable.localeCompare(b.human_readable)
                           )}
                           value={notificationType}
@@ -196,7 +196,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                     </div>
                   </div>
                 </div>
-                {showValiation ? (
+                {showValiation && (
                   <div className="bg-gray-50 ">
                     <span
                       className="mx-12 mt-4 text-sm  bg-red-100 border-l-4 border-red-500 text-red-700 p-2"
@@ -206,9 +206,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                       previously!
                     </span>
                   </div>
-                ) : (
-                  ""
-                )}
+                ) }
                 <div className="bg-gray-50 my-3 mx-1 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                   <button
                     type="button"
