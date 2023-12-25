@@ -158,7 +158,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                           placeholder={"Select an option"}
                           className="text-sm  rounded-lg"
                           onChange={handleNotificationTypeSelectChange}
-                          options={notificationType?.sort((a, b) =>
+                          options={notificationTypes?.sort((a, b) =>
                             a.human_readable.localeCompare(b.human_readable)
                           )}
                           value={notificationType}
