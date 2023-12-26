@@ -155,6 +155,12 @@ const EventList = forwardRef((props, ref) => {
       ...provided,
       color: "black",
     }),
+    groupHeading: (provided, state) => ({
+      ...provided,
+      color: groupHeadingTextColor(state.data),
+      fontSize: "12px",
+      textTransform: "capitalize!import",
+    }),
   };
 
   const getCurrentFilterModel = () => {
@@ -274,8 +280,10 @@ const EventList = forwardRef((props, ref) => {
   };
 
   const getNotificationTypes = async () => {
-    const notificationTypeList =
-      await notificationTypeApi.getNotificationTypes();
+    let notificationTypeList = await notificationTypeApi.getNotificationTypes();
+
+    notificationTypeList = groupBy(notificationTypeList, "severity");
+
     setNotificationTypes(notificationTypeList);
   };
 
@@ -365,6 +373,41 @@ const EventList = forwardRef((props, ref) => {
     }
   };
 
+  const groupBy = (array, property) => {
+    return Object.values(
+      array.reduce((acc, obj) => {
+        const key = obj[property];
+
+        // Check if the key (group) already exists, if not, create it
+        if (!acc[key]) {
+          acc[key] = { label: key, options: [] };
+        }
+
+        // Push the current object to the group's options
+        acc[key].options.push(obj);
+
+        return acc;
+      }, {})
+    );
+  };
+
+  const groupHeadingTextColor = (option, state) => {
+    // Set text color based on the group property
+    if (option.label === "CRITICAL") {
+      return "#FF0000";
+    }
+
+    if (option.label === "WARNING") {
+      return "#FF7518";
+    }
+
+    if (option.label === "INFORMATION") {
+      return "#30ac64";
+    }
+    // Default text color for other options
+    return "black";
+  };
+
   return (
     <div className="h-full overflow-auto text-white space-y-4 xl:w-3/12 md:w-1/2 self-center">
       <div className="flex flex-col justify-between px-4 py-2 mb-2 bg-[#26272f] rounded-xl text-white font-semibold">
@@ -413,9 +456,7 @@ const EventList = forwardRef((props, ref) => {
               placeholder={"Select an option"}
               className="text-sm  rounded-lg"
               onChange={handleNotificationTypeSelectChange}
-              options={notificationTypes?.sort((a, b) =>
-                a.human_readable.localeCompare(b.human_readable)
-              )}
+              options={notificationTypes}
               value={notificationType}
               isSearchable={true}
             />
@@ -506,9 +547,13 @@ const EventList = forwardRef((props, ref) => {
                   <strong>Type:</strong>{" "}
                   <span>{event.notification_type?.human_readable}</span>
                   <br />
-                  <strong>Severity:</strong>{" "}
+                  <strong>Severity:</strong>&nbsp;
                   <span
-                    style={{ color: getSeveritiesLabelColor(event.severity) }}
+                    style={{
+                      color: getSeveritiesLabelColor(
+                        event.notification_type.severity
+                      ),
+                    }}
                   >
                     {getSeveritiesLabel(event.notification_type.severity)}
                   </span>

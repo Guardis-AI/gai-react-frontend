@@ -18,7 +18,6 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   const [detectedNotificationType, setDetectedNotificationType] = useState();
   const [detectedSeverity, setDetectedSeverity] = useState();
   const cancelButtonRef = useRef(null);
-  // const [selectedColor, setSelectedColor] = useState("");
   const [showValiation, setShowValiation] = useState(false);
   const [notificationTypes, setNotificationTypes] = useState([]);
   const dialogRef = useRef(null); 
@@ -71,12 +70,6 @@ const UserFeedbackModal = forwardRef((props, ref) => {
       setIsOpen(true);
 
       setNotificationType(event.notification_type);
-
-      const selectedOption = severities.find((option) => {
-        return option.value === event.notification_type.severity;
-      });
-
-      // setSelectedColor(selectedOption.color);
     }
   };
 
@@ -88,28 +81,20 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     setNotificationType(selectedOption);
   };
 
-  // const handleSeveritySelectChange = (e) => {
-  //   e.preventDefault();
-  //   const selectedOption = severities.find(
-  //     (option) => option.value === e.target.value
-  //   );
-
-  //   setSeverity(selectedOption.value);
-  //   setSelectedColor(selectedOption.color);
-  // };
-
   const groupBy = (array, property) => {
     return Object.values(array.reduce((acc, obj) => {
       const key = obj[property];
-  
+
       // Check if the key (group) already exists, if not, create it
       if (!acc[key]) {
         acc[key] = { label: key, options: [] };
       }
-  
+
       // Push the current object to the group's options
-      acc[key].options.push(obj);
-  
+      if (obj.meta_type != "hidden") {
+        acc[key].options.push(obj);
+      }
+
       return acc;
     }, {}));
   }
@@ -213,35 +198,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                           styles={customStyles}
                         />
                       </div>
-                    </div>
-
-                    {/* <div className="bg-white rounded-lg shadow-md mt-3">
-                      <p className="text-sm text-gray-500">
-                        How do you classify the event?
-                      </p>
-                      <div className="pt-2">
-                        <select
-                          id="severity"
-                          className=" w-full border-gray-300 border py-2 pl-3 rounded-lg text-sm text-gray-900"
-                          value={severity}
-                          onChange={handleSeveritySelectChange}
-                          style={{ color: selectedColor }}
-                        >
-                          <option value="" disabled>
-                            Select an option
-                          </option>
-                          {severities.map((option) => (
-                            <option
-                              key={option.value}
-                              value={option.value}
-                              style={{ color: option.color }}
-                            >
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div> */}
+                    </div>                  
                   </div>
                 </div>
                 {showValiation && (
