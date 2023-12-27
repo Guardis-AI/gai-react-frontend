@@ -282,7 +282,9 @@ const EventList = forwardRef((props, ref) => {
   const getNotificationTypes = async () => {
     let notificationTypeList = await notificationTypeApi.getNotificationTypes();
 
-    notificationTypeList = groupBy(notificationTypeList, "severity");
+    if (notificationTypeList) {
+      notificationTypeList = groupBy(notificationTypeList, "severity");
+    }
 
     setNotificationTypes(notificationTypeList);
   };

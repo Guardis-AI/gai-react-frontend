@@ -4,12 +4,12 @@ import {
   useState,
   forwardRef,
   useImperativeHandle,
-  useEffect
+  useEffect,
 } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import Select from "react-select";
-import notificationTypeApi from '../../api/notification';
+import notificationTypeApi from "../../api/notification";
 
 const UserFeedbackModal = forwardRef((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +20,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   const cancelButtonRef = useRef(null);
   const [showValiation, setShowValiation] = useState(false);
   const [notificationTypes, setNotificationTypes] = useState([]);
-  const dialogRef = useRef(null); 
+  const dialogRef = useRef(null);
 
   const severities = [
     { label: "Information", value: "INFORMATION", color: "#30ac64" },
@@ -29,14 +29,15 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   ];
 
   useEffect(() => {
-    getNotificationTypes();    
-  },[])
+    getNotificationTypes();
+  }, []);
 
   const getNotificationTypes = async () => {
-    let notificationTypeList =
-      await notificationTypeApi.getNotificationTypes();
+    let notificationTypeList = await notificationTypeApi.getNotificationTypes();
 
-      notificationTypeList = groupBy(notificationTypeList, 'severity');
+    if (notificationTypeList) {
+      notificationTypeList = groupBy(notificationTypeList, "severity");
+    }
 
     setNotificationTypes(notificationTypeList);
   };
@@ -52,7 +53,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
       } else {
         setShowValiation(false);
 
-        notificationType.severity= severity;
+        notificationType.severity = severity;
 
         props.SaveFeedbackCallback(result, notificationType);
       }
@@ -82,28 +83,30 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   };
 
   const groupBy = (array, property) => {
-    return Object.values(array.reduce((acc, obj) => {
-      const key = obj[property];
+    return Object.values(
+      array.reduce((acc, obj) => {
+        const key = obj[property];
 
-      // Check if the key (group) already exists, if not, create it
-      if (!acc[key]) {
-        acc[key] = { label: key, options: [] };
-      }
+        // Check if the key (group) already exists, if not, create it
+        if (!acc[key]) {
+          acc[key] = { label: key, options: [] };
+        }
 
-      // Push the current object to the group's options
-      if (obj.meta_type != "hidden") {
-        acc[key].options.push(obj);
-      }
+        // Push the current object to the group's options
+        if (obj.meta_type != "hidden") {
+          acc[key].options.push(obj);
+        }
 
-      return acc;
-    }, {}));
-  }
+        return acc;
+      }, {})
+    );
+  };
 
   const getOptionTextColor = (option, state) => {
     // Set text color based on the group property
     if (option.label === "CRITICAL") {
       return "#FF0000";
-    } 
+    }
 
     if (option.label === "WARNING") {
       return "#FF7518";
@@ -111,7 +114,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
 
     if (option.label === "INFORMATION") {
       return "#30ac64";
-    } 
+    }
     // Default text color for other options
     return "black";
   };
@@ -124,8 +127,8 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     groupHeading: (provided, state) => ({
       ...provided,
       color: getOptionTextColor(state.data),
-      fontSize: '12px',
-      textTransform:'capitalize!import', 
+      fontSize: "12px",
+      textTransform: "capitalize!import",
     }),
   };
 
@@ -185,8 +188,8 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                     <div className="inset-0 items-center justify-center">
                       <div className="p-2">
                         <Select
-                         getOptionValue={(option) => option.id }
-                         getOptionLabel={(option) => option.human_readable}
+                          getOptionValue={(option) => option.id}
+                          getOptionLabel={(option) => option.human_readable}
                           style="overflow: visible"
                           name={"notificationTypes"}
                           placeholder={"Select an option"}
@@ -198,7 +201,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                           styles={customStyles}
                         />
                       </div>
-                    </div>                  
+                    </div>
                   </div>
                 </div>
                 {showValiation && (
@@ -211,7 +214,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                       previously!
                     </span>
                   </div>
-                ) }
+                )}
                 <div className="bg-gray-50 my-3 mx-1 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                   <button
                     type="button"
