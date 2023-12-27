@@ -7,8 +7,8 @@ import React, {
 } from "react";
 import ReactPlayer from "react-player";
 import VideoList from "../components/VideoList";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
@@ -22,6 +22,12 @@ import Replay10Icon from '@mui/icons-material/Replay10';
 import IconButton from '@mui/material/IconButton';
 import SkipPreviousIcon from '@mui/icons-material/SkipPreviousRounded';
 import SkipNextIcon from '@mui/icons-material/SkipNextRounded';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
 
 export default function Playback() {
   const navigate = useNavigate();
@@ -40,10 +46,11 @@ export default function Playback() {
   const selectedDateRef = useRef(new Date());
   const currentVideoPlayer = createRef();
 
-  const setMainVideo = useCallback((camera) => {
+  function setMainVideo(camera) {
     const streamUrl = createUrl(camera.mac);
+    console.log(streamUrl);
     setCurrVidUrl(streamUrl);
-  }, []);
+  }
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
@@ -73,10 +80,11 @@ export default function Playback() {
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, setMainVideo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, selectedDate]);
 
   function createUrl(macOfCamera) {
-    const yyyyMMdd = moment(selectedDateRef.current).format("yyyyMMDD");
+    const yyyyMMdd = moment(selectedDate).format("yyyyMMDD");
 
     const videoUrl = `${localStorage.getItem(
       "cfUrl"
@@ -157,7 +165,7 @@ export default function Playback() {
   };
 
   const handleDateChange = async (date) => {
-    selectedDateRef.current = date;
+    setSelectedDate(date);
     setMainVideo(currCamera);
   };
 
@@ -279,11 +287,11 @@ export default function Playback() {
   }
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
-      <div className="xl:grow pr-2 flex flex-col">
+    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
+      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white">
         <div className="w-5/6 self-center flex flex-col py-3">
-          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white font-semibold">
-            <h6>{currCamera.name}</h6>
+          <div className="flex flex-wrap justify-between px-8 py-4 mb-2 bg-[#26272f] rounded-full text-white font-semibold items-center">
+            <h2 className="text-3xl">{currCamera.name}</h2>
             <div>
               <span>Selected date: </span>
               <DatePicker
