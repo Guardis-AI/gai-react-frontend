@@ -7,14 +7,24 @@ import Username1 from "../assets/images/logo/Username1.png";
 import Passwords1 from "../assets/images/logo/Passwords1.png";
 import Modal from "react-modal";
 import ErrorMessageModal from "../components/ErrorMessageModal";
+import InfoSharpIcon from "@mui/icons-material/InfoSharp";
+import InfoOutlined from "@mui/icons-material/InfoRounded";
+import Popover from "@mui/material/Popover";
+import Typography from "@mui/material/Typography";
+
 const baseUrlApi = process.env.REACT_APP_BASE_URL;
 
 export default function LogIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  let errorMessageModal = useRef();
+  const [popoverMessage, setPopoverMessage] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);  
+  
+  const open = Boolean(anchorEl);
   const navigate = useNavigate();
+
+  let errorMessageModal = useRef(); 
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -108,7 +118,7 @@ export default function LogIn() {
       .get(`${url}camera/ping`)
       .then(function (response) {
         console.log(response);
-        return response.data === "PONG!";
+        return response.data == "PONG!";
       })
       .catch(function (error) {
         console.log(error);
@@ -154,6 +164,17 @@ export default function LogIn() {
       transform: "translate(-50%, -50%)",
     },
   };
+
+  const handlePopoverOpen = (event, message) => {
+    setPopoverMessage(message);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = (timeToBeDisplay = 0) => {
+    setTimeout(() => {
+      setAnchorEl(null);
+    }, timeToBeDisplay);
+  }; 
 
   return (
     <div className="flex h-full w-full bg-[#e0e2da] place-content-center place-items-center overflow-hidden">
@@ -258,7 +279,7 @@ export default function LogIn() {
         isOpen={signUpModalIsOpen}
         onRequestClose={closeSignUpModal}
         contentLabel="Sign Up Modal"
-        className="bg-[#4f5263] w-2/5 h-11/12 overflow-auto text-white rounded-xl"
+        className="bg-[#4f5263] w-3/12 h-11/12 overflow-auto text-white rounded-xl"
         style={customStyles}
         ariaHideApp={false}
       >
@@ -272,7 +293,7 @@ export default function LogIn() {
           className="flex flex-col space-y-3 px-5 py-2 pb-4"
           onSubmit={onSignUp}
         >
-          <label className="flex flex-col w-3/5">
+          <label className="flex flex-col w-full">
             Username
             <input
               type="text"
@@ -292,7 +313,7 @@ export default function LogIn() {
               className="text-black"
             />
           </label> */}
-          <label className="flex flex-col w-3/5">
+          <label className="flex flex-col w-full">
             Password
             <input
               type="password"
@@ -302,7 +323,7 @@ export default function LogIn() {
               className="text-black"
             />
           </label>
-          <label className="flex flex-col w-3/5">
+          <label className="flex flex-col w-full">
             Password (Confirm)
             <input
               type="password"
@@ -312,33 +333,81 @@ export default function LogIn() {
               className="text-black"
             />
           </label>
-          <label className="flex flex-col w-3/5">
+          <label className="flex flex-col w-full">
             CF-Url
-            <input
-              type="text"
-              name="cfurl"
-              value={signUpFormData.cfurl}
-              onChange={handleSignUpFormChange}
-              className="text-black"
-            />
+            <div className="flex space-x-1">
+              <input
+                type="text"
+                name="cfurl"
+                value={signUpFormData.cfurl}
+                onChange={handleSignUpFormChange}
+                className="text-black w-full"
+              />
+              <span>
+                <InfoOutlined
+                  className="bg-[#26272f] rounded-xl "
+                  onMouseEnter={(e) =>
+                    handlePopoverOpen(
+                      e,
+                      "Copy the code provided when you purchased your subscription. If a code was not provided, please contact customer support for assistance!"
+                    )
+                  }
+                  onMouseLeave={() => handlePopoverClose(5000)}
+                />
+              </span>
+            </div>
           </label>
-          <label className="flex flex-col w-3/5">
+
+          <label className="flex flex-col w-full">
             Unit Name
-            <input
-              type="text"
-              name="p_edgeunit"
-              value={signUpFormData.p_edgeunit}
-              onChange={handleSignUpFormChange}
-              className="text-black"
-            />
+            <div className="flex space-x-1">
+              <input
+                type="text"
+                name="p_edgeunit"
+                value={signUpFormData.p_edgeunit}
+                onChange={handleSignUpFormChange}
+                className="text-black w-full"
+              />
+              <span>
+                <InfoOutlined
+                  className="rounded-xl bg-[#26272f] "
+                  onMouseEnter={(e) =>
+                    handlePopoverOpen(
+                      e,
+                      "Please add in your site address or other identifying information here!"
+                    )
+                  }
+                  onMouseLeave={() => handlePopoverClose(5000)}
+                />
+              </span>
+            </div>
           </label>
-          <button
-            type="submit"
-            className="bg-[#2DAB64] rounded-full text-white font-semibold"
-          >
-            Save
-          </button>
+          <div className="flex flex-col w-full">
+            <button
+              type="submit"
+              className="bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white text-white font-bold py-2 px-4 rounded-full"
+            >
+              Save
+            </button>
+          </div>
         </form>
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          onClose={() => handlePopoverClose(0)}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "left",
+          }}
+        >
+          <Typography sx={{ p: 0.5, fontSize: 11 }}>
+            <InfoSharpIcon sx={{ fontSize: 15, color:'#30ac64' }} ></InfoSharpIcon> {popoverMessage}
+          </Typography>
+        </Popover>
       </Modal>
       <ErrorMessageModal
         ref={errorMessageModal}

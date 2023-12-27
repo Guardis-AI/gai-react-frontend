@@ -29,6 +29,15 @@ export default function ScanModalButton() {
 
   const closeScanModal = useCallback(async () => {
     axios
+      .post(localStorage.getItem("cfUrl") + "streams/restart", null)
+      .then(function (response) {
+        console.log("streams/restart:", response.data);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+
+    axios
       .post(localStorage.getItem("cfUrl") + "services/restart", null)
       .then(function (response) {
         console.log("services/restart:", response.data);
@@ -359,7 +368,7 @@ export default function ScanModalButton() {
             </button> */}
             <button
               type="button"
-              className="bg-[#2DAB64] rounded-full text-white font-semibold py-2 px-4 self-end"
+              className="bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white font-semibold py-2 px-4 self-end"
               onClick={onContinue}
             >
               Continue
@@ -388,7 +397,7 @@ export default function ScanModalButton() {
     <React.Fragment>
       <button
         type="button"
-        className="py-2 px-8 bg-[#2DAB64] rounded-full text-white font-semibold"
+        className="py-2 px-8 bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white font-semibold"
         onClick={onScan}
       >
         Scan Devices
