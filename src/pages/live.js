@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import ReactPlayer from "react-player";
 import VideoList from "../components/VideoList";
 import "react-datepicker/dist/react-datepicker.css";
@@ -10,8 +10,8 @@ export default function Live() {
   const [cameraList, setCameraList] = useState(null);
   const [currCamera, setCurrCamera] = useState({ namr: "" });
   const [currVidUrl, setCurrVidUrl] = useState(null);
-
   const { state } = useLocation();
+  const hasCameras = useRef(false);
 
   const setMainVideo = useCallback(
     (camera) => {
@@ -26,7 +26,14 @@ export default function Live() {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-    axios
+    if (!hasCameras.current) {
+      hasCameras.current = true;
+      getCameras();
+    }
+  }, [navigate, setMainVideo]);
+
+  const getCameras = async () => {
+    const request = axios
       .get(localStorage.getItem("cfUrl") + "camera/credentials")
       .then(function (response) {
         if (response == null) {
@@ -40,27 +47,31 @@ export default function Live() {
               originalname: camera.name,
             };
           });
-          setCameraList(camera_list);
-          if (state) {
-            setCurrVidUrl(state.url);
-            setCurrCamera(state);
-          } else {
-            setMainVideo(camera_list[0]);
-          }
+
+          return camera_list;
         }
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate, state, setMainVideo]);
+
+    const camera_list = await request;
+
+    setCameraList(camera_list);
+
+    if (state) {
+      setCurrVidUrl(state.url);
+      setCurrCamera(state);
+    } else {
+      setMainVideo(camera_list[0]);
+    }
+  };
 
   function createUrl(macOfCamera) {
-    return (
-      localStorage.getItem("cfUrl") +
-      "media/live/" +
-      macOfCamera +
-      "/output.m3u8"
-    );
+    const url = `${localStorage.getItem(
+      "cfUrl"
+    )}media/live/${macOfCamera}/output.m3u8?${Math.random()}`
+    return url;
   }
 
   function renameCamera(index) {
@@ -130,8 +141,20 @@ export default function Live() {
                 hlsOptions: {
                   maxBufferLength: 10, // or 15 or 20 based on tests
                   maxMaxBufferLength: 30,
+                  maxBufferSize: 90,
+                  maxBufferHole: 2.5,
+                  highBufferWatchdogPeriod: 10,
+                  maxFragLookUpTolerance: 2.5,
+                  enableWorker: true,
+                  lowLatencyMode: true,
+                  backBufferLength: 90,
                 },
               },
+            }}
+            onError={(...args) => {
+              console.log(
+                `Camera:${currCamera.name}, there is a error with the video: ${JSON.stringify(args[1])}`
+              );
             }}
           />
         </div>

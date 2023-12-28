@@ -18,36 +18,37 @@ export default function VideoList(props) {
             key={index}
           >
             {camera.editMode ? (
-                  <div>
-                    <input
-                      type="text"
-                      className="border-solid border-1 border-gray rounded mb-2 pl-1 text-black"
-                      defaultValue={camera.name}
-                      onChange={(e) => props.handleChange(index, e.target.value)}
-                    ></input>
-                    <button
-                      className="ml-1 mb-2 border-solid border-1 border-gray rounded text-white"
-                      onClick={() => props.renameCamera(index)}
-                    >
-                      <SaveIcon />
-                    </button>
-                    <button
-                      className="ml-1 mb-2 border-solid border-1 border-gray rounded text-white"
-                      onClick={() => props.handleEditMode(index, false)}
-                    >
-                      <CancelIcon />
-                    </button>
-                  </div>
-                ) : (
-                  <h1
-                    className="pb-2 text-white"
-                    onClick={() => props.handleEditMode(index, true)}
-                  >
-                    {camera.name}
-                  </h1>
-                )}
-            <div onClick={() => updatePlayer(camera)}>            
+              <div>
+                <input
+                  type="text"
+                  className="border-solid border-1 border-gray rounded mb-2 pl-1 text-black"
+                  defaultValue={camera.name}
+                  onChange={(e) => props.handleChange(index, e.target.value)}
+                ></input>
+                <button
+                  className="ml-1 mb-2 border-solid border-1 border-gray rounded text-white"
+                  onClick={() => props.renameCamera(index)}
+                >
+                  <SaveIcon />
+                </button>
+                <button
+                  className="ml-1 mb-2 border-solid border-1 border-gray rounded text-white"
+                  onClick={() => props.handleEditMode(index, false)}
+                >
+                  <CancelIcon />
+                </button>
+              </div>
+            ) : (
+              <h1
+                className="pb-2 text-white"
+                onClick={() => props.handleEditMode(index, true)}
+              >
+                {camera.name}
+              </h1>
+            )}
+            <div onClick={() => updatePlayer(camera)}>
               <ReactPlayer
+                key={index}
                 url={props.createUrl(camera.mac)}
                 width="100%"
                 height="auto"
@@ -58,8 +59,22 @@ export default function VideoList(props) {
                     hlsOptions: {
                       maxBufferLength: 10, // or 15 or 20 based on tests
                       maxMaxBufferLength: 30,
+                      maxBufferSize: 90,
+                      maxBufferHole: 2.5,
+                      highBufferWatchdogPeriod: 10,
+                      maxFragLookUpTolerance: 2.5,
+                      enableWorker: true,
+                      lowLatencyMode: true,
+                      backBufferLength: 90,
                     },
                   },
+                }}
+                onError={(...args) => {
+                  console.log(
+                    `Camera:${camera.name}, there is a error with the video: ${JSON.stringify(
+                      args[1]
+                    )}`
+                  );
                 }}
               />
             </div>

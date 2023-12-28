@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
@@ -9,12 +9,20 @@ import CancelIcon from "@mui/icons-material/CancelTwoTone";
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
+  const hasCameras = useRef(false);
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-    axios
+    if (!hasCameras.current) {
+      hasCameras.current = true;
+      getCameras();
+    }
+  }, [navigate]);
+
+  const getCameras = async () => {
+    const request = axios
       .get(localStorage.getItem("cfUrl") + "camera/credentials")
       .then(function (response) {
         if (response == null) {
@@ -28,28 +36,30 @@ export default function Home() {
               editMode: false,
             };
           });
-          setCameraList(camera_list);
+          return camera_list;
         }
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, [navigate]);
+
+    const camera_list = await request;
+    setCameraList(camera_list);
+  };
 
   function createUrl(macOfCamera) {
-    return (
-      localStorage.getItem("cfUrl") +
-      "media/live/" +
-      macOfCamera +
-      "/output.m3u8"
-    );
+    const url = `${localStorage.getItem(
+      "cfUrl"
+    )}media/live/${macOfCamera}/output.m3u8?${Math.random()}`;
+
+    return url;
   }
 
   function navNoti(notification, filterModel) {
     navigate("/events", {
-      state: {       
+      state: {
         filterModel: filterModel,
-        notification:notification,
+        notification: notification,
       },
     });
   }
@@ -156,8 +166,20 @@ export default function Home() {
                         hlsOptions: {
                           maxBufferLength: 10, // or 15 or 20 based on tests
                           maxMaxBufferLength: 30,
+                          maxBufferSize: 90,
+                          maxBufferHole: 2.5,
+                          highBufferWatchdogPeriod: 10,
+                          maxFragLookUpTolerance: 2.5,
+                          enableWorker: true,
+                          lowLatencyMode: true,
+                          backBufferLength: 90,
                         },
                       },
+                    }}
+                    onError={(...args) => {
+                      console.log(
+                        `Camera:${camera.name}, there is a error with the video: ${JSON.stringify(args[1])}`
+                      );
                     }}
                   />
                 </div>
