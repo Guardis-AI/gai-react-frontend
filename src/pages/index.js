@@ -5,10 +5,13 @@ import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
+import PersonalVideoIcon from '@mui/icons-material/PersonalVideo';
 
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
+
   const hasCameras = useRef(false);
 
   useEffect(() => {
@@ -106,6 +109,58 @@ export default function Home() {
     setCameraList(updatedCamera);
   };
 
+  const openModalVideo = (videoUrl, camera) => {
+    const winHtml = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Camere: ${camera.name}</title>
+      <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+      <style>
+        body {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          margin: 0;
+        }    
+        video {
+          width: 100%;
+          max-width: 800px;
+        }
+      </style>
+    </head>
+    <body>    
+    <video id="videoPlayer${camera.uuid}" controls autoplay muted ></video>    
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const video = document.getElementById('videoPlayer${camera.uuid}');
+        const videoUrl = '${videoUrl}'; // Replace with the actual URL to your .m3u8 file
+    
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(videoUrl);
+          hls.attachMedia(video);
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = videoUrl;
+        }
+      });
+    </script>    
+    </body>
+    </html>`;
+
+    const winUrl = URL.createObjectURL(
+      new Blob([winHtml], { type: "text/html" })
+    );
+
+    window.open(
+      winUrl,
+      "win",
+      "toolbar=no, location=no, directories=no, status=no, menubar=no,fullscreen=yes, resizable=yes, scrollbars=no, titlebar=yes"
+    );
+  };
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow w-full md:w-5/6 px-6 pr-8">
@@ -138,12 +193,26 @@ export default function Home() {
                     </button>
                   </div>
                 ) : (
-                  <h1
-                    className="pb-2 text-white"
-                    onClick={() => handleEditMode(index, true)}
-                  >
-                    {camera.name}
-                  </h1>
+                  <div className="flex">
+                    <div>
+                      <h1
+                        className="text-white"
+                        onClick={() => handleEditMode(index, true)}
+                      >
+                        {camera.name}
+                      </h1>
+                    </div>
+                    <div className="w-full">
+                      <button
+                        className="text-white float-right"
+                        onClick={() =>
+                          openModalVideo(createUrl(camera.mac), camera)
+                        }
+                      >
+                        <PersonalVideoIcon></PersonalVideoIcon>
+                      </button>
+                    </div>
+                  </div>
                 )}
                 <div
                   onClick={() =>
@@ -178,7 +247,11 @@ export default function Home() {
                     }}
                     onError={(...args) => {
                       console.log(
-                        `Camera:${camera.name}, there is a error with the video: ${JSON.stringify(args[1])}`
+                        `Camera:${
+                          camera.name
+                        }, there is a error with the video: ${JSON.stringify(
+                          args[1]
+                        )}`
                       );
                     }}
                   />
