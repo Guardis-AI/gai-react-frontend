@@ -26,6 +26,7 @@ export default function Live() {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
+    //Avoid to load the cameras detail multiple times.
     if (!hasCameras.current) {
       hasCameras.current = true;
       getCameras();
@@ -70,7 +71,7 @@ export default function Live() {
   function createUrl(macOfCamera) {
     const url = `${localStorage.getItem(
       "cfUrl"
-    )}media/live/${macOfCamera}/output.m3u8`
+    )}media/live/${macOfCamera}/output.m3u8`;
     return url;
   }
 
@@ -153,7 +154,9 @@ export default function Live() {
             }}
             onError={(...args) => {
               console.log(
-                `Camera:${currCamera.name}, there is a error with the video: ${JSON.stringify(args[1])}`
+                `Camera:${
+                  currCamera.name
+                }, there is a error with the video: ${JSON.stringify(args[1])}`
               );
             }}
           />
