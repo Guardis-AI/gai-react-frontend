@@ -70,7 +70,7 @@ export default function Live() {
   function createUrl(macOfCamera) {
     const url = `${localStorage.getItem(
       "cfUrl"
-    )}media/live/${macOfCamera}/output.m3u8?${Math.random()}`
+    )}media/live/${macOfCamera}/output.m3u8`
     return url;
   }
 
