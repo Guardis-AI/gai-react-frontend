@@ -166,6 +166,10 @@ const EventList = forwardRef((props, ref) => {
   const getCurrentFilterModel = () => {
     let model = {};
 
+    // NOTE: CURRENTLY! HIDE ON FEEDBACK. (Filter for NULL on feedback flag)
+    model.user_feedback = [null]
+    // TODO. MAYBE WE JUST DISPLAY differently (with feedback vs without feedback on notifications)
+
     if (camera) {
       model.camera_id = camera.mac;
     }
