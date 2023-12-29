@@ -11,7 +11,8 @@ export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
   const hasCameras = useRef(false);
-
+  let eventListControl = useRef();
+  
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
@@ -47,6 +48,8 @@ export default function Home() {
 
     const camera_list = await request;
     setCameraList(camera_list);
+
+    eventListControl.current.setCamerasList(camera_list)
   };
 
   function createUrl(macOfCamera) {
@@ -260,7 +263,7 @@ export default function Home() {
           })}
         </div>
       </div>
-      <EventList handleNotificationClick={navNoti} cameraList={cameraList} />
+      <EventList  ref={eventListControl} handleNotificationClick={navNoti} cameraList={cameraList} />
     </div>
   );
 }

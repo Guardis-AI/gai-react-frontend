@@ -57,6 +57,8 @@ export default function Events() {
       });
 
     cameraList.current = await request;
+
+    eventListControl.current.setCamerasList(cameraList.current)
   };
 
   const setMainNotification = (notification) => {
