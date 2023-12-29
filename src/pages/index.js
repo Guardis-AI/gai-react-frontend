@@ -5,19 +5,18 @@ import EventList from "../components/EventList";
 import { useNavigate } from "react-router-dom";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
-import PersonalVideoIcon from '@mui/icons-material/PersonalVideo';
+import PersonalVideoIcon from "@mui/icons-material/PersonalVideo";
 
 export default function Home() {
   const navigate = useNavigate();
   const [cameraList, setCameraList] = useState(null);
-  const [isHovered, setIsHovered] = useState(false);
-
   const hasCameras = useRef(false);
 
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
+    //Avoid to load the cameras detail multiple times.
     if (!hasCameras.current) {
       hasCameras.current = true;
       getCameras();
