@@ -193,7 +193,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="flex">
-                    <div>
+                    <div className="w-full">
                       <h1
                         className="text-white"
                         onClick={() => handleEditMode(index, true)}
@@ -201,7 +201,7 @@ export default function Home() {
                         {camera.name}
                       </h1>
                     </div>
-                    <div className="w-full">
+                    <div >
                       <button
                         className="text-white float-right"
                         onClick={() =>
