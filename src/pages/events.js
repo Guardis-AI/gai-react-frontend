@@ -68,15 +68,16 @@ export default function Events() {
     setCurrNoti(notification);
   };
 
-  const saveUserFeedback = async(notification, wasgood) => {
+  const saveUserFeedback = async (notification, wasgood) => {
     const clip_id = notification.clip_id;
-    var response =  axios
+    var response = axios
       .put(`${localStorage.getItem("cfUrl")}notifications/${clip_id}`, {
         clip_id: notification.clip_id,
         camera_id: notification.camera_id,
         user_feedback: wasgood,
         notification_type_id: notification.notification_type.id,
-        feedback_notification_type_id: notification.feedback_notification_type.id,
+        feedback_notification_type_id:
+          notification.feedback_notification_type.id,
       })
       .then(function (response) {
         eventListControl.current.removeNotificationById(clip_id);
@@ -89,7 +90,7 @@ export default function Events() {
         console.log(error);
       });
 
-      await response;
+    await response;
   };
 
   const deleteNotification = (notification) => {
@@ -116,8 +117,8 @@ export default function Events() {
 
   const handleSaveFeedbackCallback = async (result, notificationType) => {
     if (result) {
-      currNoti.feedback_notification_type  = notificationType;
-     
+      currNoti.feedback_notification_type = notificationType;
+
       await saveUserFeedback(currNoti, false);
     }
   };
@@ -129,12 +130,12 @@ export default function Events() {
     }
   };
 
-  const handleSaveUserFeedbackClick =  async (event, notification, wasgood)  => {
+  const handleSaveUserFeedbackClick = async (event, notification, wasgood) => {
     if (event) {
       setAnchorEl(event.currentTarget);
-      notification.feedback_notification_type = currNoti.notification_type ;
+      notification.feedback_notification_type = currNoti.notification_type;
 
-     await saveUserFeedback(notification, wasgood);
+      await saveUserFeedback(notification, wasgood);
 
       setTimeout(() => {
         setAnchorEl(null);
@@ -172,10 +173,10 @@ export default function Events() {
   };
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
-      <div className="xl:grow pr-2 flex flex-col">
+    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
+      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white z-10 py-2">
         <div className="w-5/6 self-center">
-          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white ">
+          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white flex-wrap">
             <p>
               <strong>Camera:</strong>&nbsp;{currNoti?.cameraname}
             </p>
@@ -192,25 +193,23 @@ export default function Events() {
             </p>
           </div>
           <ReactPlayer url={currVidUrl} width="100%" controls />
-          <div className="flex mt-2 space-x-2 justify-center">
+          <div className="flex mt-2 space-x-2 space-y-2 justify-center flex-wrap">
             <button
-              className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
+              type="button"
+              className="px-8 py-2 mt-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={(e) => handleRemoveNotificationkClick(e, currNoti)}
             >
-              <DeleteForeverIcon
-                className="h-6 w-6 text-black-600"
-                aria-hidden="true"
-              ></DeleteForeverIcon>
+              <DeleteForeverIcon />
             </button>
-
             <button
+              type="button"
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={(e) => handleSaveUserFeedbackClick(e, currNoti, true)}
             >
               <ThumbUpIcon />
             </button>
             <Popover
-              id={id}             
+              id={id}
               open={open}
               anchorEl={anchorEl}
               aria-haspopup="true"
@@ -226,6 +225,7 @@ export default function Events() {
               <Typography sx={{ p: 1 }}>Done!</Typography>
             </Popover>
             <button
+              type="button"
               className="px-8 py-2 bg-[#26272f] rounded-full text-white font-semibold"
               onClick={() => openFeedbackModal(currNoti)}
             >
