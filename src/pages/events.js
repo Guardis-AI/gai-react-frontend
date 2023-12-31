@@ -176,7 +176,7 @@ export default function Events() {
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
       <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white z-10 py-2">
         <div className="w-5/6 self-center">
-          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-full text-white flex-wrap">
+          <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-xl md:rounded-full text-white flex-wrap">
             <p>
               <strong>Camera:</strong>&nbsp;{currNoti?.cameraname}
             </p>
@@ -192,8 +192,8 @@ export default function Events() {
               <strong>Date:</strong>&nbsp;{currNoti?.sent_date}
             </p>
           </div>
-          <ReactPlayer url={currVidUrl} width="100%" controls />
-          <div className="flex mt-2 space-x-2 space-y-2 justify-center flex-wrap">
+          <ReactPlayer url={currVidUrl} width="100%" height="auto" controls />
+          <div className="flex mt-2 space-x-2 space-y-2 justify-center">
             <button
               type="button"
               className="px-8 py-2 mt-2 bg-[#26272f] rounded-full text-white font-semibold"
