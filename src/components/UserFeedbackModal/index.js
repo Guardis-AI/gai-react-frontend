@@ -93,7 +93,7 @@ const UserFeedbackModal = forwardRef((props, ref) => {
         }
 
         // Push the current object to the group's options
-        if (obj.meta_type != "hidden") {
+        if (obj.meta_type !== "hidden") {
           acc[key].options.push(obj);
         }
 
