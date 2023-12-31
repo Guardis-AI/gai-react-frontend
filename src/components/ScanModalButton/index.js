@@ -397,7 +397,7 @@ export default function ScanModalButton() {
     <React.Fragment>
       <button
         type="button"
-        className="py-2 px-8 bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white font-semibold"
+        className="py-2 px-6 md:px-8 bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white font-semibold"
         onClick={onScan}
       >
         Scan Devices

@@ -291,19 +291,19 @@ export default function Setup() {
   return (
     <div>
       <div className="py-3 px-8 h-full overflow-auto">
-        <div className="flex flex-row space-x-2 md:space-x-4 flex-wrap space-y-2 max-w-full">
-          <div className="flex grow flex-col"></div>
-          <button
+        <div className="flex flex-row space-x-2 md:space-x-4 flex-wrap space-y-2 max-w-full justify-center md:justify-normal">
+          <div className="hidden md:flex grow flex-col"></div>
+          {/* <button
             type="button"
             style={{ display: "none" }}
-            className="py-2 px-8 bg-[#26272f] rounded-full text-white font-semibold"
+            className="py-2 px-6 md:px-8 bg-[#26272f] rounded-full text-white font-semibold"
             onClick={openUserModal}
           >
             Add User
-          </button>
+          </button> */}
           <button
             type="button"
-            className="py-2 px-8 bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white font-semibold"
+            className="py-2 px-6 md:px-8 bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white font-semibold"
             onClick={openDeviceModal}
           >
             Add Device
