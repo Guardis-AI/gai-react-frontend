@@ -173,8 +173,8 @@ export default function Events() {
   };
 
   return (
-    <div className="h-full flex flex-col xl:flex-row space-y-2 p-3">
-      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white z-10 py-2">
+    <div className="h-full flex flex-col lg:flex-row space-y-2 p-3">
+      <div className="xl:grow pr-2 flex flex-col sticky top-0 bg-white z-10 py-1 md:py-0">
         <div className="w-5/6 self-center">
           <div className="flex justify-between px-8 py-2 mb-2 bg-[#26272f] rounded-xl md:rounded-full text-white flex-wrap">
             <p>
