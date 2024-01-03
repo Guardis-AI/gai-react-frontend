@@ -32,10 +32,11 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+### `npm run deploy `  
 
-### To deploy Changes
-`npm run deploy `  
+Deploys changes to the webiste. Uses Github Actions to build and deploy the website to production.  
+
+### `npm run eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
