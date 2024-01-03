@@ -530,7 +530,6 @@ const EventList = forwardRef((props, ref) => {
       </div>
       {notifications.length > 0 ? (
         notifications.map((event, i) => {
-          if (i === 1) console.log(event);
           return (
             <div
               className="flex border-solid border-2 border-black rounded-xl space-x-2 overflow-hidden bg-[#26272f]"
