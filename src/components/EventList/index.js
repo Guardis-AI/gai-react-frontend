@@ -83,7 +83,7 @@ const EventList = forwardRef((props, ref) => {
         setSeverity(model.severity);
       }
 
-      if (model.notification_type) {
+      if (model.feedback_notification_type) {
         const notificationType = notificationTypes.find(
           (option) => option.id === model.id
         );
@@ -177,14 +177,14 @@ const EventList = forwardRef((props, ref) => {
     }
 
     if (severity || notificationType) {
-      model.notification_type = {};
+      model.feedback_notification_type = {};
 
       if (notificationType) {
-        model.notification_type.id = notificationType.id;
+        model.feedback_notification_type.id = notificationType.id;
       }
 
       if (severity) {
-        model.notification_type.severity = severity;
+        model.feedback_notification_type.severity = severity;
       }
     }
 
@@ -250,6 +250,7 @@ const EventList = forwardRef((props, ref) => {
         severity: notification.severity,
         user_feedback: notification.user_feedback,
         notification_type: notification.notification_type,
+        feedback_notification_type: notification.feedback_notification_type,
       };
     });
 
@@ -540,33 +541,44 @@ const EventList = forwardRef((props, ref) => {
         notifications.map((event, i) => {
           return (
             <div
-              className="flex p-4 border-solid border-2 border-black rounded-xl bg-[#26272f] space-x-2"
+              className="flex border-solid border-2 border-black rounded-xl space-x-2 overflow-hidden bg-[#26272f]"
               key={i}
               onClick={() =>
                 props.handleNotificationClick(event, getCurrentFilterModel())
               }
             >
-              <PlayCircleOutlineIcon
-                className="self-center ml-2 mr-4"
-                fontSize="large"
-              />
-              <div className="space-y-3 text-sm">
+              <div
+                className={
+                  "flex justify-items-center mr-1 " +
+                  (event.user_feedback !== null ? " bg-[#30ac64]" : "")
+                }
+              >
+                <PlayCircleOutlineIcon
+                  className="self-center ml-3 mr-3"
+                  fontSize="large"
+                />
+              </div>
+              <div className="space-y-3 text-sm py-4 pr-4">
                 <p>
                   <strong>Camera:</strong> {event.cameraname} <br />
                   <strong>Date:</strong> {event.sent_date}
                   <br />
                   <strong>Type:</strong>{" "}
-                  <span>{event.notification_type?.human_readable}</span>
+                  <span>
+                    {event.feedback_notification_type?.human_readable}
+                  </span>
                   <br />
                   <strong>Severity:</strong>&nbsp;
                   <span
                     style={{
                       color: getSeveritiesLabelColor(
-                        event.notification_type.severity
+                        event.feedback_notification_type.severity
                       ),
                     }}
                   >
-                    {getSeveritiesLabel(event.notification_type.severity)}
+                    {getSeveritiesLabel(
+                      event.feedback_notification_type.severity
+                    )}
                   </span>
                 </p>
               </div>

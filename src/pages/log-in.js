@@ -19,12 +19,12 @@ export default function LogIn() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [popoverMessage, setPopoverMessage] = useState(false);
-  const [anchorEl, setAnchorEl] = React.useState(null);  
-  
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
 
-  let errorMessageModal = useRef(); 
+  let errorMessageModal = useRef();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -118,7 +118,7 @@ export default function LogIn() {
       .get(`${url}camera/ping`)
       .then(function (response) {
         console.log(response);
-        return response.data == "PONG!";
+        return response.data === "PONG!";
       })
       .catch(function (error) {
         console.log(error);
@@ -174,7 +174,7 @@ export default function LogIn() {
     setTimeout(() => {
       setAnchorEl(null);
     }, timeToBeDisplay);
-  }; 
+  };
 
   return (
     <div className="flex h-full w-full bg-[#e0e2da] place-content-center place-items-center overflow-hidden">
@@ -385,7 +385,7 @@ export default function LogIn() {
           <div className="flex flex-col w-full">
             <button
               type="submit"
-              className="bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white text-white font-bold py-2 px-4 rounded-full"
+              className="bg-[#30ac64] hover:bg-emerald-600  rounded-full text-white font-bold py-2 px-4"
             >
               Save
             </button>
@@ -405,7 +405,10 @@ export default function LogIn() {
           }}
         >
           <Typography sx={{ p: 0.5, fontSize: 11 }}>
-            <InfoSharpIcon sx={{ fontSize: 15, color:'#30ac64' }} ></InfoSharpIcon> {popoverMessage}
+            <InfoSharpIcon
+              sx={{ fontSize: 15, color: "#30ac64" }}
+            ></InfoSharpIcon>{" "}
+            {popoverMessage}
           </Typography>
         </Popover>
       </Modal>
