@@ -49,10 +49,12 @@ const EventList = forwardRef((props, ref) => {
   const [alertMessage, setAlertMessage] = useState("");
   let errorMessageModal = useRef();
   let alertMessageModal = useRef();
+  let cameraList = useRef(null);
 
   useImperativeHandle(ref, () => ({
     getNextNotification,
     removeNotificationById,
+    setCamerasList,
   }));
 
   useEffect(() => {
@@ -103,6 +105,10 @@ const EventList = forwardRef((props, ref) => {
 
     getNotifications(model, false);
   }, [state]);
+
+  const setCamerasList = (cameras)=>{
+    cameraList.current =cameras;
+  }
 
   const getSeveritiesLabel = (value) => {
     const severity = severities.find((option) => option.value === value);
@@ -220,12 +226,15 @@ const EventList = forwardRef((props, ref) => {
     }
   };
 
-  const updateCameraNameInNotifications = (notifications) => {
+  const updateCameraNameInNotifications = (notifications, ) => {
+
+   const camera_List = cameraList.current? cameraList.current: props.cameraList;
+
     let notification_list = notifications.map((notification) => {
       let cameraname = "Generic";
 
-      if (props.cameraList !== null) {
-        const camera = props.cameraList.find(
+      if (camera_List !== null) {
+        const camera = camera_List.find(
           (c) => c.mac === notification.camera_id
         );
         cameraname = camera ? camera.name : cameraname;
