@@ -239,8 +239,7 @@ export default function Events() {
       <EventList
         ref={eventListControl}
         handleNotificationClick={setMainNotification}
-        setMainNotification={setMainNotification}
-        cameraList={cameraList.current}
+        setMainNotification={setMainNotification}       
       />
       <UserFeedbackModal
         ref={userFeedbackModal}

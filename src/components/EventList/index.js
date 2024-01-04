@@ -47,6 +47,8 @@ const EventList = forwardRef((props, ref) => {
   const { state } = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
+  const [loadingNotification, setLoadingNotification] = useState(true);
+
   let errorMessageModal = useRef();
   let alertMessageModal = useRef();
   let cameraList = useRef(null);
@@ -72,8 +74,8 @@ const EventList = forwardRef((props, ref) => {
         endDate = new Date(model.timestamp[1]);
       }
 
-      if (model.camera_id && props.cameraList != null) {
-        const camara = props.cameraList.find(
+      if (model.camera_id && cameraList.current != null) {
+        const camara = cameraList.current.find(
           (option) => option.mac === model.camera_id
         );
         setCamera(camara);
@@ -106,9 +108,9 @@ const EventList = forwardRef((props, ref) => {
     getNotifications(model, false);
   }, [state]);
 
-  const setCamerasList = (cameras)=>{
-    cameraList.current =cameras;
-  }
+  const setCamerasList = (cameras) => {
+    cameraList.current = cameras;
+  };
 
   const getSeveritiesLabel = (value) => {
     const severity = severities.find((option) => option.value === value);
@@ -226,9 +228,8 @@ const EventList = forwardRef((props, ref) => {
     }
   };
 
-  const updateCameraNameInNotifications = (notifications, ) => {
-
-   const camera_List = cameraList.current? cameraList.current: props.cameraList;
+  const updateCameraNameInNotifications = (notifications) => {
+    const camera_List = cameraList.current;
 
     let notification_list = notifications.map((notification) => {
       let cameraname = "Generic";
@@ -258,6 +259,7 @@ const EventList = forwardRef((props, ref) => {
   };
 
   const getNotifications = async (model, displayNotFoundMessage = true) => {
+    setLoadingNotification(true)
     const notificationList = await getNotificationsFromServer(model);
     if (notificationList) {
       setTotalOfNotification(notificationList.length);
@@ -286,7 +288,11 @@ const EventList = forwardRef((props, ref) => {
           "There is not notification that match with current values selected in the filters!"
         );
       }
+
+      setNotifications([]);
     }
+
+    setLoadingNotification(false);
   };
 
   const getNotificationTypes = async () => {
@@ -510,7 +516,7 @@ const EventList = forwardRef((props, ref) => {
               placeholder={"Select an option"}
               className="text-sm rounded-lg"
               onChange={handleCameraSelectChange}
-              options={props.cameraList}
+              options={cameraList.current}
               value={camera}
               isSearchable={true}
             />
@@ -537,7 +543,15 @@ const EventList = forwardRef((props, ref) => {
           </div>
         </div>
       </div>
-      {notifications.length > 0 ? (
+      {loadingNotification ? (
+        <div>
+          <br/>
+          <br/>
+          <div class="flex items-center justify-center">
+            <div class="w-16 h-16 border-t-4 border-green-400 border-solid rounded-full animate-spin"></div>
+          </div>
+        </div>
+      ) : notifications.length > 0 ? (
         notifications.map((event, i) => {
           return (
             <div
