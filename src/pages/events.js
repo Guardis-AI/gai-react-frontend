@@ -58,7 +58,7 @@ export default function Events() {
 
     cameraList.current = await request;
 
-    eventListControl.current.setCamerasList(cameraList.current)
+    eventListControl.current.setCamerasList(cameraList.current);
   };
 
   const setMainNotification = (notification) => {
@@ -184,11 +184,13 @@ export default function Events() {
             </p>
             <p>
               <strong>Type:</strong>&nbsp;
-              {currNoti?.notification_type?.human_readable}
+              {currNoti?.feedback_notification_type?.human_readable}
             </p>
             <p>
               <strong>Severity:</strong>&nbsp;
-              {getSeveritiesLabel(currNoti?.notification_type?.severity)}
+              {getSeveritiesLabel(
+                currNoti?.feedback_notification_type?.severity
+              )}
             </p>
             <p>
               <strong>Date:</strong>&nbsp;{currNoti?.sent_date}
