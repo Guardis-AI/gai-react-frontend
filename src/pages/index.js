@@ -263,7 +263,7 @@ export default function Home() {
           })}
         </div>
       </div>
-      <EventList  ref={eventListControl} handleNotificationClick={navNoti} cameraList={cameraList} />
+      <EventList  ref={eventListControl} handleNotificationClick={navNoti} />
     </div>
   );
 }
