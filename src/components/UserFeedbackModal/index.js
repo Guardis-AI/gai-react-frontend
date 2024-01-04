@@ -4,11 +4,14 @@ import {
   useState,
   forwardRef,
   useImperativeHandle,
+  useEffect,
 } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import Select from "react-select";
 import { useSelector } from 'react-redux';
+import Select from "react-select";
+import notificationTypeApi from "../../api/notification";
 
 const UserFeedbackModal = forwardRef((props, ref) => {
   let notificationTypes = [...useSelector((state) => state.notification.notificationTypes)];
@@ -16,29 +19,64 @@ const UserFeedbackModal = forwardRef((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notificationType, setNotificationType] = useState();
   const [severity, setSeverity] = useState();
+  const [detectedNotificationType, setDetectedNotificationType] = useState();
+  const [detectedSeverity, setDetectedSeverity] = useState();
   const cancelButtonRef = useRef(null);
-  const [selectedColor, setSelectedColor] = useState("");
+  const [showValiation, setShowValiation] = useState(false);
+  const [notificationTypes, setNotificationTypes] = useState([]);
+  const dialogRef = useRef(null);
   const dialogRef = useRef(null);
 
+  const severities = [
+    { label: "Information", value: "INFORMATION", color: "#30ac64" },
+    { label: "Warning", value: "WARNING", color: "#FF7518" },
+    { label: "Critical", value: "CRITICAL", color: "#FF0000" },
+  ];
+
+  useEffect(() => {
+    getNotificationTypes();
+  }, []);
+
+  const getNotificationTypes = async () => {
+    let notificationTypeList = await notificationTypeApi.getNotificationTypes();
+
+    if (notificationTypeList) {
+      notificationTypeList = groupBy(notificationTypeList, "severity");
+    }
+
+    setNotificationTypes(notificationTypeList);
+  };
+
   const closeModal = (result) => {
+    if (result) {
+      if (
+        detectedNotificationType === notificationType &&
+        detectedSeverity === severity
+      ) {
+        setShowValiation(true);
+        return;
+      } else {
+        setShowValiation(false);
+
+        notificationType.severity = severity;
+
+        props.SaveFeedbackCallback(result, notificationType);
+      }
+    }
     setIsOpen(false);
-    props.SaveFeedbackCallback(result, notificationType, severity);
   };
 
   const openModal = (event) => {
-    const notificationType = notificationTypes.find(
-      (option) => option.value === event.notification_type
-    );
+    if (event) {
+      setDetectedNotificationType(event.notification_type);
+      setShowValiation(false);
+      setSeverity(event.notification_type.severity);
+      setDetectedSeverity(event.notification_type.severity);
 
-    setNotificationType(notificationType);
-    setSeverity(event.severity);
-    setIsOpen(true);
+      setIsOpen(true);
 
-    const selectedOption = severities.find(
-      (option) => option.value === event.severity
-    );
-
-    setSelectedColor(selectedOption.color);
+      setNotificationType(event.notification_type);
+    }
   };
 
   useImperativeHandle(ref, () => ({
@@ -49,20 +87,60 @@ const UserFeedbackModal = forwardRef((props, ref) => {
     setNotificationType(selectedOption);
   };
 
-  const handleSeveritySelectChange = (e) => {
-    e.preventDefault();
-    const selectedOption = severities.find(
-      (option) => option.value === e.target.value
-    );
+  const groupBy = (array, property) => {
+    return Object.values(
+      array.reduce((acc, obj) => {
+        const key = obj[property];
 
-    setSeverity(selectedOption.value);
-    setSelectedColor(selectedOption.color);
+        // Check if the key (group) already exists, if not, create it
+        if (!acc[key]) {
+          acc[key] = { label: key, options: [] };
+        }
+
+        // Push the current object to the group's options
+        if (obj.meta_type !== "hidden") {
+          acc[key].options.push(obj);
+        }
+
+        return acc;
+      }, {})
+    );
+  };
+
+  const getOptionTextColor = (option, state) => {
+    // Set text color based on the group property
+    if (option.label === "CRITICAL") {
+      return "#FF0000";
+    }
+
+    if (option.label === "WARNING") {
+      return "#FF7518";
+    }
+
+    if (option.label === "INFORMATION") {
+      return "#30ac64";
+    }
+    // Default text color for other options
+    return "black";
+  };
+
+  const customStyles = {
+    placeholder: (provided) => ({
+      ...provided,
+      color: "black",
+    }),
+    groupHeading: (provided, state) => ({
+      ...provided,
+      color: getOptionTextColor(state.data),
+      fontSize: "12px",
+      textTransform: "capitalize!import",
+    }),
   };
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog
-      ref={dialogRef}
+        ref={dialogRef}
         as="div"
         className="relative z-10 your-dialog-content-class"
         initialFocus={cancelButtonRef}
@@ -115,50 +193,34 @@ const UserFeedbackModal = forwardRef((props, ref) => {
                     <div className="inset-0 items-center justify-center">
                       <div className="p-2">
                         <Select
-                        style="overflow: visible"
-                        name={"notificationTypes"}
+                          getOptionValue={(option) => option.id}
+                          getOptionLabel={(option) => option.human_readable}
+                          style="overflow: visible"
+                          name={"notificationTypes"}
                           placeholder={"Select an option"}
                           className="text-sm  rounded-lg"
                           onChange={handleNotificationTypeSelectChange}
-                          options={notificationTypes.sort((a, b) =>
-                            a.label.localeCompare(b.label)
-                          )}
+                          options={notificationTypes}
                           value={notificationType}
-                          isSearchable ={true}                          
-                        />                        
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg shadow-md mt-3">
-                      <p className="text-sm text-gray-500">
-                        How do you classify the event?
-                      </p>
-                      <div  className="pt-2">
-                      <select
-                        id="severity"
-                        className=" w-full border-gray-300 border py-2 pl-3 rounded-lg text-sm text-gray-900"
-                        value={severity}
-                        onChange={handleSeveritySelectChange}
-                        style={{ color: selectedColor }}
-                      >
-                        <option value="" disabled>
-                          Select an option
-                        </option>
-                        {severities.map((option) => (
-                          <option
-                            key={option.value}
-                            value={option.value}
-                            style={{ color: option.color }}
-                          >
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                          isSearchable={true}
+                          styles={customStyles}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                {showValiation && (
+                  <div className="bg-gray-50 ">
+                    <span
+                      className="mx-12 mt-4 text-sm  bg-red-100 border-l-4 border-red-500 text-red-700 p-2"
+                      role="alert"
+                    >
+                      Please select different values than values detected
+                      previously!
+                    </span>
+                  </div>
+                )}
+                <div className="bg-gray-50 my-3 mx-1 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                   <button
                     type="button"
                     className="inline-flex w-full justify-center rounded-md bg-[#26272f] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#4f5263] sm:ml-3 sm:w-auto"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactPlayer from "react-player";
 import EventList from "../components/EventList";
@@ -8,44 +8,69 @@ import CancelIcon from "@mui/icons-material/CancelTwoTone";
 import { useDispatch, useSelector } from "react-redux";
 import { getNotifications } from "../store/notification/notificationAction";
 import { getCameras } from "../store/camera/cameraAction";
+import PersonalVideoIcon from "@mui/icons-material/PersonalVideo";
 
 export default function Home() {
   const dispatch = useDispatch();
-  const events = useSelector((state) => state.notification.notifications);
-  const cameraList = useSelector((state) => state.camera.cameraList);
+  const events = useSelector((state) => state.notification.notifications); 
   const unreadCount = useSelector((state) => state.notification.unreadCount);
   const navigate = useNavigate();
-
+  const [cameraList, setCameraList] = useState(null);
+  const hasCameras = useRef(false);
+  let eventListControl = useRef();
+  
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
-      dispatch(getCameras());
-      dispatch(getNotifications());
-      
-  }, [navigate, dispatch]);
+    //Avoid to load the cameras detail multiple times.
+    if (!hasCameras.current) {
+      hasCameras.current = true;
+      getCameras();
+    }
+  }, [navigate]);
+
+  const getCameras = async () => {
+    const request = axios
+      .get(localStorage.getItem("cfUrl") + "camera/credentials")
+      .then(function (response) {
+        if (response == null) {
+          console.log("No devices found!");
+        } else {
+          const camera_list = response.data.map((camera) => {
+            return {
+              uuid: camera.uuid,
+              name: camera.name,
+              mac: camera.mac,
+              editMode: false,
+            };
+          });
+          return camera_list;
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    const camera_list = await request;
+    setCameraList(camera_list);
+
+    eventListControl.current.setCamerasList(camera_list)
+  };
 
   function createUrl(macOfCamera) {
-    return (
-      localStorage.getItem("cfUrl") +
-      "media/live/" +
-      macOfCamera +
-      "/output.m3u8"
-    );
+    const url = `${localStorage.getItem(
+      "cfUrl"
+    )}media/live/${macOfCamera}/output.m3u8`;
+
+    return url;
   }
 
-  function navNoti(id) {
-    const selNoti = events.find((i) => i.clip_id === id);
-
-    const url = `${localStorage.getItem("cfUrl")}notifications/get_video/${
-      selNoti.clip_id
-    }`;
-
+  function navNoti(notification, filterModel) {
     navigate("/events", {
       state: {
-        id: id,
-        url: url,
-        cameraname: selNoti.cameraname,
+        filterModel: filterModel,
+        notification: notification,
       },
     });
   }
@@ -92,6 +117,58 @@ export default function Home() {
     //setCameraList(updatedCamera);
   };
 
+  const openModalVideo = (videoUrl, camera) => {
+    const winHtml = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Camere: ${camera.name}</title>
+      <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+      <style>
+        body {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          margin: 0;
+        }    
+        video {
+          width: 100%;
+          max-width: 800px;
+        }
+      </style>
+    </head>
+    <body>    
+    <video id="videoPlayer${camera.uuid}" controls autoplay muted ></video>    
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const video = document.getElementById('videoPlayer${camera.uuid}');
+        const videoUrl = '${videoUrl}'; // Replace with the actual URL to your .m3u8 file
+    
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(videoUrl);
+          hls.attachMedia(video);
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = videoUrl;
+        }
+      });
+    </script>    
+    </body>
+    </html>`;
+
+    const winUrl = URL.createObjectURL(
+      new Blob([winHtml], { type: "text/html" })
+    );
+
+    window.open(
+      winUrl,
+      "win",
+      "toolbar=no, location=no, directories=no, status=no, menubar=no,fullscreen=yes, resizable=yes, scrollbars=no, titlebar=yes"
+    );
+  };
+
   return (
     <div className="h-full flex flex-col xl:flex-row space-y-2 p-3 overflow-auto">
       <div className="xl:grow w-full md:w-5/6 px-6 pr-8">
@@ -124,12 +201,26 @@ export default function Home() {
                     </button>
                   </div>
                 ) : (
-                  <h1
-                    className="pb-2 text-white"
-                    onClick={() => handleEditMode(index, true)}
-                  >
-                    {camera.name}
-                  </h1>
+                  <div className="flex">
+                    <div className="w-full">
+                      <h1
+                        className="text-white"
+                        onClick={() => handleEditMode(index, true)}
+                      >
+                        {camera.name}
+                      </h1>
+                    </div>
+                    <div >
+                      <button
+                        className="text-white float-right"
+                        onClick={() =>
+                          openModalVideo(createUrl(camera.mac), camera)
+                        }
+                      >
+                        <PersonalVideoIcon></PersonalVideoIcon>
+                      </button>
+                    </div>
+                  </div>
                 )}
                 <div
                   onClick={() =>
@@ -152,8 +243,24 @@ export default function Home() {
                         hlsOptions: {
                           maxBufferLength: 10, // or 15 or 20 based on tests
                           maxMaxBufferLength: 30,
+                          maxBufferSize: 90,
+                          maxBufferHole: 2.5,
+                          highBufferWatchdogPeriod: 10,
+                          maxFragLookUpTolerance: 2.5,
+                          enableWorker: true,
+                          lowLatencyMode: true,
+                          backBufferLength: 90,
                         },
                       },
+                    }}
+                    onError={(...args) => {
+                      console.log(
+                        `Camera:${
+                          camera.name
+                        }, there is a error with the video: ${JSON.stringify(
+                          args[1]
+                        )}`
+                      );
                     }}
                   />
                 </div>
@@ -162,11 +269,7 @@ export default function Home() {
           })}
         </div>
       </div>
-      <EventList
-        events={events}
-        setMainVideo={navNoti}
-        unreadCount={unreadCount}
-      />
+      <EventList  ref={eventListControl} handleNotificationClick={navNoti} cameraList={cameraList} />
     </div>
   );
 }
