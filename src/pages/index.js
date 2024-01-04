@@ -6,51 +6,57 @@ import { useNavigate } from "react-router-dom";
 import SaveIcon from "@mui/icons-material/SaveTwoTone";
 import CancelIcon from "@mui/icons-material/CancelTwoTone";
 import PersonalVideoIcon from "@mui/icons-material/PersonalVideo";
+import { getCameras } from "../store/camera/cameraAction";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function Home() {
   const navigate = useNavigate();
-  const [cameraList, setCameraList] = useState(null);
+  // const [cameraList, setCameraList] = useState(null);
+  const cameraList = useSelector((state) => state.camera.cameraList);
   const hasCameras = useRef(false);
   let eventListControl = useRef();
+  const dispatch = useDispatch();
   
   useEffect(() => {
     if (localStorage.getItem("loginStatus") !== "true")
       return navigate("/log-in");
 
+
     //Avoid to load the cameras detail multiple times.
     if (!hasCameras.current) {
       hasCameras.current = true;
-      getCameras();
+      // getCameras();
+      dispatch(getCameras());
     }
   }, [navigate]);
 
-  const getCameras = async () => {
-    const request = axios
-      .get(localStorage.getItem("cfUrl") + "camera/credentials")
-      .then(function (response) {
-        if (response == null) {
-          console.log("No devices found!");
-        } else {
-          const camera_list = response.data.map((camera) => {
-            return {
-              uuid: camera.uuid,
-              name: camera.name,
-              mac: camera.mac,
-              editMode: false,
-            };
-          });
-          return camera_list;
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  // const getCameras = async () => {
+  //   const request = axios
+  //     .get(localStorage.getItem("cfUrl") + "camera/credentials")
+  //     .then(function (response) {
+  //       if (response == null) {
+  //         console.log("No devices found!");
+  //       } else {
+  //         const camera_list = response.data.map((camera) => {
+  //           return {
+  //             uuid: camera.uuid,
+  //             name: camera.name,
+  //             mac: camera.mac,
+  //             editMode: false,
+  //           };
+  //         });
+  //         return camera_list;
+  //       }
+  //     })
+  //     .catch(function (error) {
+  //       console.log(error);
+  //     });
 
-    const camera_list = await request;
-    setCameraList(camera_list);
+  //   const camera_list = await request;
+  //   setCameraList(camera_list);
 
-    eventListControl.current.setCamerasList(camera_list)
-  };
+  //   eventListControl.current.setCamerasList(camera_list)
+  // };
 
   function createUrl(macOfCamera) {
     const url = `${localStorage.getItem(
@@ -91,7 +97,7 @@ export default function Home() {
               editMode: false,
             };
           });
-          setCameraList(camera_list);
+         // setCameraList(camera_list);
         }
       })
       .catch(function (error) {
@@ -102,13 +108,13 @@ export default function Home() {
   const handleChange = (index, value) => {
     const updatedCamera = [...cameraList];
     updatedCamera[index].name = value;
-    setCameraList(updatedCamera);
+    //setCameraList(updatedCamera);
   };
 
   const handleEditMode = (index, value) => {
     const updatedCamera = [...cameraList];
     updatedCamera[index].editMode = value;
-    setCameraList(updatedCamera);
+    //setCameraList(updatedCamera);
   };
 
   const openModalVideo = (videoUrl, camera) => {
