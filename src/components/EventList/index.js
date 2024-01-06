@@ -57,6 +57,7 @@ const EventList = forwardRef((props, ref) => {
     getNextNotification,
     removeNotificationById,
     setCamerasList,
+    getNotifications,
   }));
 
   useEffect(() => {
@@ -259,7 +260,7 @@ const EventList = forwardRef((props, ref) => {
   };
 
   const getNotifications = async (model, displayNotFoundMessage = true) => {
-    setLoadingNotification(true)
+    setLoadingNotification(true);
     const notificationList = await getNotificationsFromServer(model);
     if (notificationList) {
       setTotalOfNotification(notificationList.length);
@@ -545,8 +546,8 @@ const EventList = forwardRef((props, ref) => {
       </div>
       {loadingNotification ? (
         <div>
-          <br/>
-          <br/>
+          <br />
+          <br />
           <div class="flex items-center justify-center">
             <div class="w-16 h-16 border-t-4 border-green-400 border-solid rounded-full animate-spin"></div>
           </div>
