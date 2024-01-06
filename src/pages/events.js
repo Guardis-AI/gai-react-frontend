@@ -11,6 +11,7 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningMessageModal from "../components/WarningMessageModal";
+import moment from "moment";
 
 export default function Events() {
   const navigate = useNavigate();
@@ -82,10 +83,15 @@ export default function Events() {
           notification.feedback_notification_type.id,
       })
       .then(function (response) {
-        eventListControl.current.removeNotificationById(clip_id);
-        const notification = eventListControl.current.getNextNotification();
-        setMainNotification(notification);
-        setAnchorEl(null);
+        const endDate = Date.now();
+        const startDate = new Date(endDate - 86400 * 1000);
+        const model = {
+          timestamp: [
+            moment(startDate).format("YYYY-MM-DD HH:mm:ss"),
+            moment(endDate).format("YYYY-MM-DD HH:mm:ss"),
+          ],
+        };
+        eventListControl.current.getNotifications(model);
       })
       .catch(function (error) {
         openErrorModal(error.message);
@@ -241,7 +247,7 @@ export default function Events() {
       <EventList
         ref={eventListControl}
         handleNotificationClick={setMainNotification}
-        setMainNotification={setMainNotification}       
+        setMainNotification={setMainNotification}
       />
       <UserFeedbackModal
         ref={userFeedbackModal}
