@@ -7,6 +7,7 @@ import Setup from "./pages/setup";
 import Live from "./pages/live";
 import Playback from "./pages/playback";
 import Events from "./pages/events";
+import Analytics from "./pages/analytics";
 import LogIn from "./pages/log-in";
 import SignOut from "./pages/signout";
 import useWindowDimensions from "./utils/useWindowDimensions";
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/live" element={<Live />} />
             <Route path="/playback" element={<Playback />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/analytics" element={<Analytics />} />
             <Route path="/log-in" element={<LogIn />} />
             <Route path="/sign-out" element={<SignOut />} />
           </Routes>
@@ -41,6 +43,7 @@ export default function App() {
           <Route path="/live" element={<Live />} />
           <Route path="/playback" element={<Playback />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/log-in" element={<LogIn />} />
           <Route path="/sign-out" element={<SignOut />} />
         </Routes>

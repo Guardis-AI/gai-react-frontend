@@ -32,12 +32,18 @@ export const navData = [
   },
   {
     id: 4,
+    icon: <NotificationsIcon />,
+    text: "Analytics",
+    link: "analytics",
+  },
+  {
+    id: 5,
     icon: <SettingsIcon />,
     text: "Setup",
     link: "setup",
   },
   {
-    id: 5,
+    id: 6,
     icon: <LogoutIcon />,
     text: "Sign Out",
     link: "sign-out",
